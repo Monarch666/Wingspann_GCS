@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS Extended Tuning Module</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 12px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-select {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            outline: none;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2b333e;
+            color: #5b6575;
+            cursor: not-allowed;
+        }
+
+        /* Tabs Navigation */
+        .tab-bar {
+            display: block;
+            border-bottom: 1px solid #1c222c;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .tab-link {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            color: #8a96a8;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            outline: none;
+            float: left;
+            position: relative;
+        }
+
+        .tab-link:hover {
+            color: #ffffff;
+            border-color: #ff5a1f80;
+            background-color: #161a23;
+        }
+
+        .tab-link.active {
+            color: #ffffff;
+            background-color: #ff5a1f;
+            border-color: #ff5a1f;
+        }
+
+        /* Workspace Grid */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-content: flex-start;
+            padding-right: 5px;
+        }
+
+        /* Parameter Cards */
+        .card {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            width: calc(50% - 10px);
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card.wide {
+            width: 100%;
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 1px solid #1c222c;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            color: #8a96a8;
+            font-weight: 600;
+        }
+
+        .input-control-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 2px 6px;
+        }
+
+        .input-control-wrapper:focus-within {
+            border-color: #ff5a1f;
+        }
+
+        .input-field {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 12px;
+            width: 100%;
+            height: 24px;
+            outline: none;
+        }
+
+        /* Checkbox styling */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 28px;
+        }
+
+        .checkbox-field {
+            accent-color: #ff5a1f;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Sidebar Info Panels */
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-shrink: 0;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-guide-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 11px;
+            color: #8a96a8;
+        }
+
+        .panel-guide-item {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .panel-guide-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #ff5a1f;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        /* Help box */
+        .help-box {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 12px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .help-param-name {
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ff5a1f;
+        }
+
+        .help-text {
+            color: #e2e2e5;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+
+        /* Footer */
+        .footer {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px solid #1c222c;
+            padding-top: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-msg {
+            margin-right: auto;
+            font-size: 11px;
+            color: #8a96a8;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #8a96a8;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <h1>Extended Tuning</h1>
+            <p>Fine tune your vehicle's attitude, rate and stability parameters.</p>
+        </div>
+        <div class="header-actions">
+            <select class="profile-select" id="profile-dropdown" onchange="loadPresetProfile()">
+                <option value="default">Profile 1 (Default)</option>
+                <option value="aggressive">Profile 2 (Aggressive)</option>
+                <option value="smooth">Profile 3 (Smooth)</option>
+            </select>
+            <button class="btn" onclick="importProfile()">Import</button>
+            <button class="btn" onclick="exportProfile()">Export</button>
+            <button class="btn" style="width: 32px; padding: 0;">⋮</button>
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="tab-bar">
+        <button class="tab-link active" onclick="switchCategory('attitude', this)">Attitude Stabilization</button>
+        <button class="tab-link" onclick="switchCategory('rate', this)">Rate Controllers</button>
+        <button class="tab-link" onclick="switchCategory('limits', this)">Acceleration & Limits</button>
+        <button class="tab-link" onclick="switchCategory('filters', this)">Filters</button>
+        <button class="tab-link" onclick="switchCategory('notch', this)">Notch Filters</button>
+        <button class="tab-link" onclick="switchCategory('advanced', this)">Advanced</button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <div class="content-area" id="cards-container">
+            
+            <!-- ATTITUDE CATEGORY -->
+            <div class="category-group" id="cat-attitude" style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Stabilize Roll -->
+                <div class="card">
+                    <div class="card-header">Stabilize Roll (Error to Rate)</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <span class="input-label">P</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="0.1" class="input-field param-input" id="STB_RLL_P" onfocus="showHelp('STB_RLL_P')" onchange="markModified()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-label">Accel Max</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="1000" class="input-field param-input" id="ATC_ACCEL_R_MAX" onfocus="showHelp('ATC_ACCEL_R_MAX')" onchange="markModified()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stabilize Pitch -->
+                <div class="card">
+                    <div class="card-header">Stabilize Pitch (Error to Rate)</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <span class="input-label">P</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="0.1" class="input-field param-input" id="STB_PIT_P" onfocus="showHelp('STB_PIT_P')" onchange="markModified()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-label">Accel Max</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="1000" class="input-field param-input" id="ATC_ACCEL_P_MAX" onfocus="showHelp('ATC_ACCEL_P_MAX')" onchange="markModified()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stabilize Yaw -->
+                <div class="card">
+                    <div class="card-header">Stabilize Yaw (Error to Rate)</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <span class="input-label">P</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="0.1" class="input-field param-input" id="STB_YAW_P" onfocus="showHelp('STB_YAW_P')" onchange="markModified()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-label">Accel Max</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="1000" class="input-field param-input" id="ATC_ACCEL_Y_MAX" onfocus="showHelp('ATC_ACCEL_Y_MAX')" onchange="markModified()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Position XY -->
+                <div class="card">
+                    <div class="card-header">Position XY (Dist to Speed)</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <span class="input-label">P</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="0.1" class="input-field param-input" id="PSC_POSXY_P" onfocus="showHelp('PSC_POSXY_P')" onchange="markModified()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-label">Input TC</span>
+                            <div class="input-control-wrapper">
+                                <input type="number" step="0.01" class="input-field param-input" id="ATC_INPUT_TC" onfocus="showHelp('ATC_INPUT_TC')" onchange="markModified()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RATE CATEGORY -->
+            <div class="category-group" id="cat-rate" style="display: none; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Rate Roll -->
+                <div class="card">
+                    <div class="card-header">Rate Roll</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">P</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_RLL_P" onfocus="showHelp('RATE_RLL_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">I</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_RLL_I" onfocus="showHelp('RATE_RLL_I')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">D</span><div class="input-control-wrapper"><input type="number" step="0.0005" class="input-field param-input" id="RATE_RLL_D" onfocus="showHelp('RATE_RLL_D')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">IMax</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="RATE_RLL_IMAX" onfocus="showHelp('RATE_RLL_IMAX')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTE</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="RATE_RLL_FILT" onfocus="showHelp('RATE_RLL_FILT')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTD</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_RLL_FLTD" onfocus="showHelp('ATC_RAT_RLL_FLTD')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTT</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_RLL_FLTT" onfocus="showHelp('ATC_RAT_RLL_FLTT')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Rate Pitch -->
+                <div class="card">
+                    <div class="card-header">Rate Pitch</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">P</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_PIT_P" onfocus="showHelp('RATE_PIT_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">I</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_PIT_I" onfocus="showHelp('RATE_PIT_I')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">D</span><div class="input-control-wrapper"><input type="number" step="0.0005" class="input-field param-input" id="RATE_PIT_D" onfocus="showHelp('RATE_PIT_D')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">IMax</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="RATE_PIT_IMAX" onfocus="showHelp('RATE_PIT_IMAX')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTE</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="RATE_PIT_FILT" onfocus="showHelp('RATE_PIT_FILT')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTD</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_PIT_FLTD" onfocus="showHelp('ATC_RAT_PIT_FLTD')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTT</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_PIT_FLTT" onfocus="showHelp('ATC_RAT_PIT_FLTT')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Rate Yaw -->
+                <div class="card">
+                    <div class="card-header">Rate Yaw</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">P</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_YAW_P" onfocus="showHelp('RATE_YAW_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">I</span><div class="input-control-wrapper"><input type="number" step="0.005" class="input-field param-input" id="RATE_YAW_I" onfocus="showHelp('RATE_YAW_I')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">D</span><div class="input-control-wrapper"><input type="number" step="0.0005" class="input-field param-input" id="RATE_YAW_D" onfocus="showHelp('RATE_YAW_D')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">IMax</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="RATE_YAW_IMAX" onfocus="showHelp('RATE_YAW_IMAX')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTE</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="RATE_YAW_FILT" onfocus="showHelp('RATE_YAW_FILT')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTD</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_YAW_FLTD" onfocus="showHelp('ATC_RAT_YAW_FLTD')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">FLTT</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="ATC_RAT_YAW_FLTT" onfocus="showHelp('ATC_RAT_YAW_FLTT')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LIMITS CATEGORY -->
+            <div class="category-group" id="cat-limits" style="display: none; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Velocity XY -->
+                <div class="card">
+                    <div class="card-header">Velocity XY (Vel to Accel)</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">P</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="PSC_VELXY_P" onfocus="showHelp('PSC_VELXY_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">I</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="PSC_VELXY_I" onfocus="showHelp('PSC_VELXY_I')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">D</span><div class="input-control-wrapper"><input type="number" step="0.01" class="input-field param-input" id="PSC_VELXY_D" onfocus="showHelp('PSC_VELXY_D')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">IMax</span><div class="input-control-wrapper"><input type="number" step="10" class="input-field param-input" id="PSC_VELXY_IMAX" onfocus="showHelp('PSC_VELXY_IMAX')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Throttle Accel -->
+                <div class="card">
+                    <div class="card-header">Throttle Accel (Accel to motor)</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">P</span><div class="input-control-wrapper"><input type="number" step="0.05" class="input-field param-input" id="PSC_ACCZ_P" onfocus="showHelp('PSC_ACCZ_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">I</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="PSC_ACCZ_I" onfocus="showHelp('PSC_ACCZ_I')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">D</span><div class="input-control-wrapper"><input type="number" step="0.01" class="input-field param-input" id="PSC_ACCZ_D" onfocus="showHelp('PSC_ACCZ_D')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">IMax</span><div class="input-control-wrapper"><input type="number" step="10" class="input-field param-input" id="PSC_ACCZ_IMAX" onfocus="showHelp('PSC_ACCZ_IMAX')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Throttle Rate & Altitude Hold -->
+                <div class="card">
+                    <div class="card-header">Throttle Rate & Alt Hold</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">Throttle Rate P</span><div class="input-control-wrapper"><input type="number" step="0.5" class="input-field param-input" id="PSC_VELZ_P" onfocus="showHelp('PSC_VELZ_P')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Alt Hold P</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="PSC_POSZ_P" onfocus="showHelp('PSC_POSZ_P')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- WPNav Settings -->
+                <div class="card">
+                    <div class="card-header">WPNav Limits</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">Speed (cm/s)</span><div class="input-control-wrapper"><input type="number" step="50" class="input-field param-input" id="WPNAV_SPEED" onfocus="showHelp('WPNAV_SPEED')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Radius (cm)</span><div class="input-control-wrapper"><input type="number" step="10" class="input-field param-input" id="WPNAV_RADIUS" onfocus="showHelp('WPNAV_RADIUS')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Speed Up (cm/s)</span><div class="input-control-wrapper"><input type="number" step="10" class="input-field param-input" id="WPNAV_SPEED_UP" onfocus="showHelp('WPNAV_SPEED_UP')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Speed Dn (cm/s)</span><div class="input-control-wrapper"><input type="number" step="10" class="input-field param-input" id="WPNAV_SPEED_DN" onfocus="showHelp('WPNAV_SPEED_DN')" onchange="markModified()"></div></div>
+                        <div class="input-group" style="grid-column: span 2;"><span class="input-label">Loiter Speed (cm/s)</span><div class="input-control-wrapper"><input type="number" step="50" class="input-field param-input" id="WPNAV_LOIT_SPEED" onfocus="showHelp('WPNAV_LOIT_SPEED')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTERS CATEGORY -->
+            <div class="category-group" id="cat-filters" style="display: none; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Basic Filters -->
+                <div class="card">
+                    <div class="card-header">Basic Filters</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">Gyro LPF (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_GYRO_FILTER" onfocus="showHelp('INS_GYRO_FILTER')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Accel LPF (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_ACCEL_FILTER" onfocus="showHelp('INS_ACCEL_FILTER')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Filter Logs -->
+                <div class="card">
+                    <div class="card-header">Filter Logs</div>
+                    <div class="card-body">
+                        <div class="input-group"><span class="input-label">Log Bat Mask</span><div class="input-control-wrapper"><input type="number" class="input-field param-input" id="INS_LOG_BAT_MASK" onfocus="showHelp('INS_LOG_BAT_MASK')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Log Bat Options</span><div class="input-control-wrapper"><input type="number" class="input-field param-input" id="INS_LOG_BAT_OPT" onfocus="showHelp('INS_LOG_BAT_OPT')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOTCH FILTERS CATEGORY -->
+            <div class="category-group" id="cat-notch" style="display: none; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Static Notch -->
+                <div class="card">
+                    <div class="card-header">Static Notch Filter</div>
+                    <div class="card-body">
+                        <div class="input-group checkbox-wrapper" style="grid-column: span 2;">
+                            <input type="checkbox" class="checkbox-field" id="INS_NOTCH_ENABLE" onfocus="showHelp('INS_NOTCH_ENABLE')" onchange="markCheckboxModified('INS_NOTCH_ENABLE')">
+                            <span class="input-label" style="margin-top: 0; color: #ffffff;">Enable Notch Filter</span>
+                        </div>
+                        <div class="input-group"><span class="input-label">Frequency (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_NOTCH_FREQ" onfocus="showHelp('INS_NOTCH_FREQ')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Bandwidth (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_NOTCH_BW" onfocus="showHelp('INS_NOTCH_BW')" onchange="markModified()"></div></div>
+                        <div class="input-group" style="grid-column: span 2;"><span class="input-label">Attenuation (dB)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_NOTCH_ATT" onfocus="showHelp('INS_NOTCH_ATT')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+
+                <!-- Harmonic Notch -->
+                <div class="card">
+                    <div class="card-header">Harmonic Notch Filter</div>
+                    <div class="card-body">
+                        <div class="input-group checkbox-wrapper" style="grid-column: span 2;">
+                            <input type="checkbox" class="checkbox-field" id="INS_HNTCH_ENABLE" onfocus="showHelp('INS_HNTCH_ENABLE')" onchange="markCheckboxModified('INS_HNTCH_ENABLE')">
+                            <span class="input-label" style="margin-top: 0; color: #ffffff;">Enable Harmonic Notch</span>
+                        </div>
+                        <div class="input-group"><span class="input-label">Mode</span><div class="input-control-wrapper"><input type="number" class="input-field param-input" id="INS_HNTCH_MODE" onfocus="showHelp('INS_HNTCH_MODE')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Reference</span><div class="input-control-wrapper"><input type="number" step="0.1" class="input-field param-input" id="INS_HNTCH_REF" onfocus="showHelp('INS_HNTCH_REF')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Frequency (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_HNTCH_FREQ" onfocus="showHelp('INS_HNTCH_FREQ')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Bandwidth (Hz)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_HNTCH_BW" onfocus="showHelp('INS_HNTCH_BW')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Attenuation (dB)</span><div class="input-control-wrapper"><input type="number" step="1" class="input-field param-input" id="INS_HNTCH_ATT" onfocus="showHelp('INS_HNTCH_ATT')" onchange="markModified()"></div></div>
+                        <div class="input-group"><span class="input-label">Options</span><div class="input-control-wrapper"><input type="number" class="input-field param-input" id="INS_HNTCH_OPTS" onfocus="showHelp('INS_HNTCH_OPTS')" onchange="markModified()"></div></div>
+                        <div class="input-group" style="grid-column: span 2;"><span class="input-label">Harmonics</span><div class="input-control-wrapper"><input type="number" class="input-field param-input" id="INS_HNTCH_HMNCS" onfocus="showHelp('INS_HNTCH_HMNCS')" onchange="markModified()"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADVANCED CATEGORY -->
+            <div class="category-group" id="cat-advanced" style="display: none; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <div class="card wide">
+                    <div class="card-header">Expert Stabilization & RC Settings</div>
+                    <div class="card-body" style="grid-template-columns: repeat(3, 1fr);">
+                        <p style="grid-column: span 3; color: #8a96a8; line-height: 1.5; margin-bottom: 10px;">
+                            Advanced options are intended for experienced operators. Ensure your vehicle has completed basic sensor calibrations before adjusting these values.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title">About Extended Tuning</div>
+                <div class="panel-guide-list">
+                    <div class="panel-guide-item">
+                        <div class="panel-guide-dot"></div>
+                        <span>Change values gradually (e.g. in increments of 10-15%).</span>
+                    </div>
+                    <div class="panel-guide-item">
+                        <div class="panel-guide-dot"></div>
+                        <span>Always test configurations in a safe, controlled environment.</span>
+                    </div>
+                    <div class="panel-guide-item">
+                        <div class="panel-guide-dot"></div>
+                        <span>Use telemetry Log Review to evaluate flight behaviour.</span>
+                    </div>
+                </div>
+                <button class="btn" style="margin-top: 5px; width: 100%;">Parameter Guide</button>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">Help Panel</div>
+                <div class="help-box">
+                    <div class="help-param-name" id="help-title">Select a parameter</div>
+                    <div class="help-text" id="help-desc">Focus or hover over any input field to view its description, recommended ranges and default autopilot values.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Footer -->
+    <div class="footer">
+        <div class="status-msg">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Synchronized</span>
+        </div>
+        <button class="btn" onclick="rerequestParams()">Refresh</button>
+        <button class="btn" style="margin-left: 0;" onclick="restoreDefaults()">Restore Defaults</button>
+        <button class="btn btn-primary" id="btn-apply" onclick="saveExtendedSettings()" disabled>Save to Vehicle</button>
+    </div>
+
+    <script>
+        // Parameters database cache
+        var params = {};
+        var originalParams = {};
+        var modified = false;
+
+        // Metadata descriptions for focused help
+        var metadata = {
+            "STB_RLL_P": { title: "Stabilize Roll P (ATC_ANG_RLL_P)", desc: "Proportional gain for roll attitude stabilization. Higher values make the vehicle track stick commands faster, but setting this too high will cause rapid oscillations." },
+            "STB_PIT_P": { title: "Stabilize Pitch P (ATC_ANG_PIT_P)", desc: "Proportional gain for pitch attitude stabilization. Controls how aggressively the vehicle corrects pitch angle errors." },
+            "STB_YAW_P": { title: "Stabilize Yaw P (ATC_ANG_YAW_P)", desc: "Proportional gain for yaw attitude stabilization. Controls how aggressively the vehicle tracks yaw commands." },
+            "ATC_ACCEL_R_MAX": { title: "Accel Max Roll (ATC_ACCEL_R_MAX)", desc: "Maximum angular acceleration rate allowed on the roll axis. Measured in centi-degrees/sec/sec." },
+            "ATC_ACCEL_P_MAX": { title: "Accel Max Pitch (ATC_ACCEL_P_MAX)", desc: "Maximum angular acceleration rate allowed on the pitch axis." },
+            "ATC_ACCEL_Y_MAX": { title: "Accel Max Yaw (ATC_ACCEL_Y_MAX)", desc: "Maximum angular acceleration rate allowed on the yaw axis." },
+            "ATC_INPUT_TC": { title: "Sensitivity Input TC (ATC_INPUT_TC)", desc: "Tuning sensitivity time constant. Lower values make the stick control tracking faster, higher values make it feel smoother." },
+            "PSC_POSXY_P": { title: "Position XY P (PSC_POSXY_P)", desc: "Proportional gain for horizontal position loop. Controls speed response based on GPS distance errors." },
+            
+            "RATE_RLL_P": { title: "Rate Roll P (ATC_RAT_RLL_P)", desc: "Proportional gain for roll rate loop. Directly maps motor authority response to angular rate error." },
+            "RATE_RLL_I": { title: "Rate Roll I (ATC_RAT_RLL_I)", desc: "Integral gain for roll rate loop. Compensates for slow drift, offset errors, and external wind." },
+            "RATE_RLL_D": { title: "Rate Roll D (ATC_RAT_RLL_D)", desc: "Derivative gain for roll rate loop. Damps overshoot and stick oscillations." },
+            "RATE_RLL_IMAX": { title: "Rate Roll IMax (ATC_RAT_RLL_IMAX)", desc: "Limits the maximum amount of integrator build-up for the roll rate controller." },
+            "RATE_RLL_FILT": { title: "Rate Roll FLTE (ATC_RAT_RLL_FLTE)", desc: "Low-pass filter frequency cut-off for the roll rate error loop." },
+            "ATC_RAT_RLL_FLTD": { title: "Rate Roll FLTD (ATC_RAT_RLL_FLTD)", desc: "Derivative filter cut-off frequency for Roll controller." },
+            "ATC_RAT_RLL_FLTT": { title: "Rate Roll FLTT (ATC_RAT_RLL_FLTT)", desc: "Target filter cut-off frequency for Roll controller." },
+
+            "RATE_PIT_P": { title: "Rate Pitch P (ATC_RAT_PIT_P)", desc: "Proportional gain for pitch rate loop. Adjusts motor authority response to pitch velocity error." },
+            "RATE_PIT_I": { title: "Rate Pitch I (ATC_RAT_PIT_I)", desc: "Integral gain for pitch rate loop. Compensates for structural offsets and wind effects." },
+            "RATE_PIT_D": { title: "Rate Pitch D (ATC_RAT_PIT_D)", desc: "Derivative gain for pitch rate loop. Dampens stick tracking overshoot." },
+            "RATE_PIT_IMAX": { title: "Rate Pitch IMax (ATC_RAT_PIT_IMAX)", desc: "Maximum integrator output limit for pitch controller." },
+            "RATE_PIT_FILT": { title: "Rate Pitch FLTE (ATC_RAT_PIT_FLTE)", desc: "Low-pass filter frequency cut-off for the pitch rate error loop." },
+            "ATC_RAT_PIT_FLTD": { title: "Rate Pitch FLTD (ATC_RAT_PIT_FLTD)", desc: "Derivative filter cut-off frequency for Pitch controller." },
+            "ATC_RAT_PIT_FLTT": { title: "Rate Pitch FLTT (ATC_RAT_PIT_FLTT)", desc: "Target filter cut-off frequency for Pitch controller." },
+
+            "RATE_YAW_P": { title: "Rate Yaw P (ATC_RAT_YAW_P)", desc: "Proportional gain for yaw rate loop. Controls responsiveness to yaw rate errors." },
+            "RATE_YAW_I": { title: "Rate Yaw I (ATC_RAT_YAW_I)", desc: "Integral gain for yaw rate loop. Corrects long-term yaw drift." },
+            "RATE_YAW_D": { title: "Rate Yaw D (ATC_RAT_YAW_D)", desc: "Derivative gain for yaw rate loop. Stabilizes yaw rate responses." },
+            "RATE_YAW_IMAX": { title: "Rate Yaw IMax (ATC_RAT_YAW_IMAX)", desc: "Maximum integrator output limit for yaw controller." },
+            "RATE_YAW_FILT": { title: "Rate Yaw FLTE (ATC_RAT_YAW_FLTE)", desc: "Low-pass filter frequency cut-off for the yaw rate error loop." },
+            "ATC_RAT_YAW_FLTD": { title: "Rate Yaw FLTD (ATC_RAT_YAW_FLTD)", desc: "Derivative filter cut-off frequency for Yaw controller." },
+            "ATC_RAT_YAW_FLTT": { title: "Rate Yaw FLTT (ATC_RAT_YAW_FLTT)", desc: "Target filter cut-off frequency for Yaw controller." },
+
+            "PSC_VELXY_P": { title: "Velocity XY P (PSC_VELXY_P)", desc: "Proportional gain for velocity control. Adjusts acceleration response to speed deviations." },
+            "PSC_VELXY_I": { title: "Velocity XY I (PSC_VELXY_I)", desc: "Integral gain for velocity control. Corrects steady-state speed tracking error." },
+            "PSC_VELXY_D": { title: "Velocity XY D (PSC_VELXY_D)", desc: "Derivative gain for velocity control. Prevents velocity overshoot." },
+            "PSC_VELXY_IMAX": { title: "Velocity XY IMax (PSC_VELXY_IMAX)", desc: "Maximum integrator output limit for velocity controller." },
+
+            "PSC_ACCZ_P": { title: "Throttle Accel P (PSC_ACCZ_P)", desc: "Proportional gain for vertical acceleration loops." },
+            "PSC_ACCZ_I": { title: "Throttle Accel I (PSC_ACCZ_I)", desc: "Integral gain for vertical acceleration loops." },
+            "PSC_ACCZ_D": { title: "Throttle Accel D (PSC_ACCZ_D)", desc: "Derivative gain for vertical acceleration loops." },
+            "PSC_ACCZ_IMAX": { title: "Throttle Accel IMax (PSC_ACCZ_IMAX)", desc: "Integrator output limit for vertical acceleration control loops." },
+            "PSC_VELZ_P": { title: "Throttle Rate P (PSC_VELZ_P)", desc: "Proportional gain for vertical velocity loop. Converts vertical speed requests to target acceleration." },
+            "PSC_POSZ_P": { title: "Altitude Hold P (PSC_POSZ_P)", desc: "Proportional gain for altitude hold control loop. Maps altitude error to vertical velocity commands." },
+
+            "WPNAV_SPEED": { title: "WPNav Speed (WPNAV_SPEED)", desc: "Horizontal speed target in cm/s during autonomous waypoint navigation mission phases." },
+            "WPNAV_RADIUS": { title: "WPNav Radius (WPNAV_RADIUS)", desc: "The distance from a waypoint in cm at which the vehicle registers waypoint completion." },
+            "WPNAV_SPEED_UP": { title: "WPNav Speed Up (WPNAV_SPEED_UP)", desc: "Maximum climb rate speed in cm/s during autonomous navigation." },
+            "WPNAV_SPEED_DN": { title: "WPNav Speed Dn (WPNAV_SPEED_DN)", desc: "Maximum descent rate speed in cm/s during autonomous navigation." },
+            "WPNAV_LOIT_SPEED": { title: "WPNav Loiter Speed (WPNAV_LOIT_SPEED)", desc: "Maximum loiter reposition speed target in cm/s." },
+
+            "INS_GYRO_FILTER": { title: "Gyro Filter (INS_GYRO_FILTER)", desc: "Low-pass filter cutoff frequency in Hz for gyro raw sensor data inputs." },
+            "INS_ACCEL_FILTER": { title: "Accel Filter (INS_ACCEL_FILTER)", desc: "Low-pass filter cutoff frequency in Hz for accelerometer sensor data inputs." },
+            "INS_LOG_BAT_MASK": { title: "Log Bat Mask (INS_LOG_BAT_MASK)", desc: "Log bit mask control selection to configure battery log information." },
+            "INS_LOG_BAT_OPT": { title: "Log Bat Options (INS_LOG_BAT_OPT)", desc: "Additional log options selection configuration parameter." },
+
+            "INS_NOTCH_ENABLE": { title: "Notch Enable (INS_NOTCH_ENABLE)", desc: "Check this box to enable the static notch filter, removing motor noise spikes." },
+            "INS_NOTCH_FREQ": { title: "Notch Freq (INS_NOTCH_FREQ)", desc: "Center frequency in Hz for the static notch filter." },
+            "INS_NOTCH_BW": { title: "Notch Bandwidth (INS_NOTCH_BW)", desc: "Notch filter bandwidth configuration in Hz." },
+            "INS_NOTCH_ATT": { title: "Notch Attenuation (INS_NOTCH_ATT)", desc: "Static notch filter attenuation levels in dB." },
+
+            "INS_HNTCH_ENABLE": { title: "Harmonic Notch Enable (INS_HNTCH_ENABLE)", desc: "Enable the dynamic harmonic notch filter, tracking prop frequencies." },
+            "INS_HNTCH_MODE": { title: "Harmonic Notch Mode (INS_HNTCH_MODE)", desc: "The source for harmonic notch frequency tracking (e.g. Throttle, ESC telemetry)." },
+            "INS_HNTCH_REF": { title: "Harmonic Notch Ref (INS_HNTCH_REF)", desc: "Harmonic notch reference frequency target scaling factor." },
+            "INS_HNTCH_FREQ": { title: "Harmonic Notch Freq (INS_HNTCH_FREQ)", desc: "Base tracking frequency in Hz." },
+            "INS_HNTCH_ATT": { title: "Harmonic Notch Attenuation (INS_HNTCH_ATT)", desc: "Harmonic notch attenuation in dB." },
+            "INS_HNTCH_BW": { title: "Harmonic Notch Bandwidth (INS_HNTCH_BW)", desc: "Harmonic notch filter bandwidth in Hz." },
+            "INS_HNTCH_OPTS": { title: "Harmonic Notch Options (INS_HNTCH_OPTS)", desc: "Dynamic tracking option bits." },
+            "INS_HNTCH_HMNCS": { title: "Harmonic Notch Harmonics (INS_HNTCH_HMNCS)", desc: "A bitmask setting specifying which motor harmonics to filter." }
+        };
+
+        window.onload = function() {
+            requestParams();
+        };
+
+        function requestParams() {
+            if (window.external && window.external.GetExtendedParams) {
+                try {
+                    var jsonStr = window.external.GetExtendedParams();
+                    onParamsLoaded(jsonStr);
+                } catch(e) {
+                    console.log("Error requesting params: " + e);
+                    mockParams();
+                }
+            } else {
+                mockParams();
+            }
+        }
+
+        function mockParams() {
+            var mockJson = {
+                connected: true,
+                STB_RLL_P: 4.5,
+                STB_PIT_P: 4.5,
+                STB_YAW_P: 4.5,
+                ATC_ACCEL_R_MAX: 110000,
+                ATC_ACCEL_P_MAX: 110000,
+                ATC_ACCEL_Y_MAX: 27000,
+                ATC_INPUT_TC: 0.150,
+                
+                RATE_RLL_P: 0.135,
+                RATE_RLL_I: 0.135,
+                RATE_RLL_D: 0.0036,
+                RATE_RLL_IMAX: 0.500,
+                RATE_RLL_FILT: 20.0,
+                ATC_RAT_RLL_FLTD: 20.0,
+                ATC_RAT_RLL_FLTT: 20.0,
+
+                RATE_PIT_P: 0.135,
+                RATE_PIT_I: 0.135,
+                RATE_PIT_D: 0.0036,
+                RATE_PIT_IMAX: 0.500,
+                RATE_PIT_FILT: 20.0,
+                ATC_RAT_PIT_FLTD: 20.0,
+                ATC_RAT_PIT_FLTT: 20.0,
+
+                RATE_YAW_P: 0.180,
+                RATE_YAW_I: 0.018,
+                RATE_YAW_D: 0.000,
+                RATE_YAW_IMAX: 0.500,
+                RATE_YAW_FILT: 2.5,
+                ATC_RAT_YAW_FLTD: 20.0,
+                ATC_RAT_YAW_FLTT: 20.0,
+
+                PSC_VELXY_P: 2.0,
+                PSC_VELXY_I: 1.0,
+                PSC_VELXY_D: 0.250,
+                PSC_VELXY_IMAX: 100,
+
+                PSC_ACCZ_P: 0.500,
+                PSC_ACCZ_I: 1.000,
+                PSC_ACCZ_D: 0.000,
+                PSC_ACCZ_IMAX: 80,
+                PSC_VELZ_P: 5.0,
+                PSC_POSZ_P: 1.0,
+
+                WPNAV_SPEED: 1000,
+                WPNAV_RADIUS: 200,
+                WPNAV_SPEED_UP: 250,
+                WPNAV_SPEED_DN: 150,
+                WPNAV_LOIT_SPEED: 1250,
+
+                INS_GYRO_FILTER: 20,
+                INS_ACCEL_FILTER: 20,
+                INS_LOG_BAT_MASK: 0,
+                INS_LOG_BAT_OPT: 0,
+
+                INS_NOTCH_ENABLE: 0,
+                INS_NOTCH_FREQ: 10,
+                INS_NOTCH_BW: 5,
+                INS_NOTCH_ATT: 5,
+
+                INS_HNTCH_ENABLE: 0,
+                INS_HNTCH_MODE: 0,
+                INS_HNTCH_REF: 0,
+                INS_HNTCH_FREQ: 10,
+                INS_HNTCH_ATT: 5,
+                INS_HNTCH_BW: 5,
+                INS_HNTCH_OPTS: 0,
+                INS_HNTCH_HMNCS: 0
+            };
+            onParamsLoaded(JSON.stringify(mockJson));
+        }
+
+        window.onParamsLoaded = function(jsonStr) {
+            params = JSON.parse(jsonStr);
+            originalParams = JSON.parse(jsonStr); // clone original state
+
+            // Populate all inputs
+            var inputs = document.querySelectorAll('.param-input');
+            for(var i=0; i<inputs.length; i++) {
+                var el = inputs[i];
+                var val = params[el.id];
+                if (val !== undefined) {
+                    el.value = val;
+                    el.style.backgroundColor = ''; // clear changed highlights
+                }
+            }
+
+            // Populate checkboxes
+            var checkIds = ['INS_NOTCH_ENABLE', 'INS_HNTCH_ENABLE'];
+            for(var i=0; i<checkIds.length; i++) {
+                var cid = checkIds[i];
+                var cel = document.getElementById(cid);
+                if (cel && params[cid] !== undefined) {
+                    cel.checked = (params[cid] === 1);
+                }
+            }
+
+            // Sync status
+            modified = false;
+            updateStatusText("Synchronized", "#00ff41");
+            document.getElementById('btn-apply').disabled = true;
+        };
+
+        function switchCategory(catId, btnEl) {
+            // Manage active class on tabs
+            var links = document.querySelectorAll('.tab-bar .tab-link');
+            for(var i=0; i<links.length; i++) {
+                links[i].classList.remove('active');
+            }
+            btnEl.classList.add('active');
+
+            // Hide/Show category groups
+            var groups = document.querySelectorAll('.category-group');
+            for(var i=0; i<groups.length; i++) {
+                groups[i].style.display = 'none';
+            }
+            document.getElementById('cat-' + catId).style.display = 'flex';
+        }
+
+        function showHelp(paramId) {
+            var meta = metadata[paramId];
+            if (meta) {
+                document.getElementById('help-title').innerText = meta.title;
+                document.getElementById('help-desc').innerText = meta.desc;
+            } else {
+                document.getElementById('help-title').innerText = paramId;
+                document.getElementById('help-desc').innerText = "Extended autopilot tuning parameter.";
+            }
+        }
+
+        function markModified() {
+            modified = true;
+            updateStatusText("Pending Changes", "#ff5a1f");
+            document.getElementById('btn-apply').disabled = false;
+
+            // Highlight changed input
+            if (event && event.target) {
+                event.target.style.backgroundColor = 'rgba(255, 90, 31, 0.08)';
+            }
+        }
+
+        function markCheckboxModified(cid) {
+            var cel = document.getElementById(cid);
+            params[cid] = cel.checked ? 1 : 0;
+            markModified();
+        }
+
+        function updateStatusText(text, color) {
+            document.getElementById('status-text').innerText = text;
+            document.getElementById('status-dot').style.backgroundColor = color;
+        }
+
+        function rerequestParams() {
+            updateStatusText("Refreshing...", "#ffaa00");
+            if (window.external && window.external.RerequestParams) {
+                window.external.RerequestParams();
+            } else {
+                mockParams();
+            }
+        }
+
+        function restoreDefaults() {
+            onParamsLoaded(JSON.stringify(originalParams));
+        }
+
+        function saveExtendedSettings() {
+            if (!modified) return;
+
+            updateStatusText("Saving Parameters...", "#ffaa00");
+            document.getElementById('btn-apply').disabled = true;
+
+            // Gather all input fields state
+            var payload = {};
+            var inputs = document.querySelectorAll('.param-input');
+            for(var i=0; i<inputs.length; i++) {
+                var el = inputs[i];
+                var valF = parseFloat(el.value);
+                if (!isNaN(valF)) {
+                    payload[el.id] = valF;
+                }
+            }
+
+            // Gather checkboxes
+            var checkIds = ['INS_NOTCH_ENABLE', 'INS_HNTCH_ENABLE'];
+            for(var i=0; i<checkIds.length; i++) {
+                var cid = checkIds[i];
+                var cel = document.getElementById(cid);
+                if (cel) {
+                    payload[cid] = cel.checked ? 1 : 0;
+                }
+            }
+
+            var payloadStr = JSON.stringify(payload);
+
+            if (window.external && window.external.SaveExtendedParams) {
+                var success = window.external.SaveExtendedParams(payloadStr);
+                if (success) {
+                    originalParams = JSON.parse(JSON.stringify(payload));
+                    modified = false;
+                    updateStatusText("Updated", "#00ff41");
+                    
+                    // Clear background color highlights
+                    var inputsEl = document.querySelectorAll('.param-input');
+                    for(var i=0; i<inputsEl.length; i++) {
+                        inputsEl[i].style.backgroundColor = '';
+                    }
+                } else {
+                    updateStatusText("Failed to Save", "#ff4d4d");
+                    document.getElementById('btn-apply').disabled = false;
+                }
+            } else {
+                setTimeout(function() {
+                    originalParams = JSON.parse(JSON.stringify(payload));
+                    modified = false;
+                    updateStatusText("Updated (Mock)", "#00ff41");
+                    
+                    var inputsEl = document.querySelectorAll('.param-input');
+                    for(var i=0; i<inputsEl.length; i++) {
+                        inputsEl[i].style.backgroundColor = '';
+                    }
+                }, 500);
+            }
+        }
+
+        function backupParams() {
+            var paramsStr = JSON.stringify(params);
+            if (window.external && window.external.BackupParams) {
+                var success = window.external.BackupParams(paramsStr);
+                if (success) {
+                    alert("Backup file created successfully!");
+                }
+            } else {
+                alert("Backup file created successfully (Mock)!");
+            }
+        }
+
+        function importProfile() {
+            if (window.external && window.external.ImportProfile) {
+                var jsonStr = window.external.ImportProfile();
+                if (jsonStr) {
+                    try {
+                        onParamsLoaded(jsonStr);
+                        markModified();
+                    } catch(e) {
+                        alert("Invalid profile JSON format.");
+                    }
+                }
+            } else {
+                alert("Mock profile imported successfully.");
+                var mockImport = JSON.stringify(params); // reuse current state
+                onParamsLoaded(mockImport);
+                markModified();
+            }
+        }
+
+        function exportProfile() {
+            backupParams();
+        }
+
+        function loadPresetProfile() {
+            var dropdown = document.getElementById('profile-dropdown');
+            var val = dropdown.value;
+
+            if (val === 'aggressive') {
+                document.getElementById('STB_RLL_P').value = 5.2;
+                document.getElementById('STB_PIT_P').value = 5.2;
+                document.getElementById('STB_YAW_P').value = 4.8;
+                document.getElementById('RATE_RLL_P').value = 0.160;
+                document.getElementById('RATE_PIT_P').value = 0.160;
+            } else if (val === 'smooth') {
+                document.getElementById('STB_RLL_P').value = 3.8;
+                document.getElementById('STB_PIT_P').value = 3.8;
+                document.getElementById('STB_YAW_P').value = 4.0;
+                document.getElementById('RATE_RLL_P').value = 0.110;
+                document.getElementById('RATE_PIT_P').value = 0.110;
+            } else {
+                document.getElementById('STB_RLL_P').value = 4.5;
+                document.getElementById('STB_PIT_P').value = 4.5;
+                document.getElementById('STB_YAW_P').value = 4.5;
+                document.getElementById('RATE_RLL_P').value = 0.135;
+                document.getElementById('RATE_PIT_P').value = 0.135;
+            }
+
+            markModified();
+        }
+    </script>
+</body>
+</html>

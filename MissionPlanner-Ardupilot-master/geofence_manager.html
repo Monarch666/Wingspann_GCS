@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS GeoFence Configuration</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 13px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 4px;
+        }
+
+        .btn-help {
+            background-color: #1a202c;
+            color: #a0aec0;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .btn-help:hover {
+            color: #ffffff;
+            border-color: #4a5568;
+        }
+
+        /* Toggle Panel */
+        .toggle-panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-label h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-label p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 3px;
+        }
+
+        /* Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2b3547;
+            transition: .2s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #ff5a1f;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Workspace Grid */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1.2;
+            gap: 20px;
+        }
+
+        .right-panel {
+            flex: 1;
+            position: relative;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        /* Settings Grid Layout */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            color: #8a96a8;
+            font-weight: 600;
+        }
+
+        .form-control {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ff5a1f;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            height: 35px;
+        }
+
+        /* Custom Number Input with increment buttons */
+        .number-input-wrapper {
+            position: relative;
+            display: flex;
+        }
+
+        .number-input-wrapper input {
+            padding-right: 30px;
+        }
+
+        .spin-buttons {
+            position: absolute;
+            right: 1px;
+            top: 1px;
+            bottom: 1px;
+            width: 25px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #2d3748;
+            background-color: #161a23;
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .spin-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #8a96a8;
+            font-size: 8px;
+            user-select: none;
+        }
+
+        .spin-btn:hover {
+            color: #ffffff;
+            background-color: #1f2533;
+        }
+
+        .spin-up {
+            border-bottom: 1px solid #2d3748;
+            border-top-right-radius: 3px;
+        }
+
+        .spin-down {
+            border-bottom-right-radius: 3px;
+        }
+
+        /* Warning Banner */
+        .info-banner {
+            background-color: #ff5a1f0a;
+            border: 1px solid #ff5a1f20;
+            border-radius: 5px;
+            padding: 12px 15px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-top: auto;
+        }
+
+        .info-banner-icon {
+            width: 18px;
+            height: 18px;
+            fill: #ff5a1f;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .info-banner-text h4 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .info-banner-text p {
+            font-size: 11px;
+            color: #8a96a8;
+            line-height: 1.4;
+        }
+
+        /* Interactive Canvas */
+        .preview-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            background-color: #0c0e12;
+            border: 1px solid #1c222c;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+
+        /* Canvas Legends */
+        .legends {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 10px;
+            color: #6c788a;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Action Buttons footer */
+        .footer {
+            height: 50px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-msg {
+            margin-right: auto;
+            font-size: 11px;
+            color: #8a96a8;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #8a96a8;
+            border-radius: 50%;
+        }
+
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+        }
+
+        .btn:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2b333e;
+            color: #5b6575;
+            cursor: not-allowed;
+        }
+
+        /* Validation Warning Card overlay */
+        .validation-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #ff4d4d15;
+            border: 1px solid #ff4d4d35;
+            border-radius: 4px;
+            padding: 8px 12px;
+            max-width: 250px;
+            font-size: 10px;
+            color: #ff8888;
+            line-height: 1.3;
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="header-title">
+            <h1>
+                <svg width="18" height="18" fill="#ff5a1f" viewBox="0 0 24 24" style="margin-top: 1px;"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 12c-2.7 0-5-2-5.7-4.6.3-.9.8-1.7 1.6-2.1.8-.4 1.7-.6 2.6-.6s1.8.2 2.6.6c.8.4 1.3 1.2 1.6 2.1-.7 2.6-3 4.6-5.7 4.6z"/></svg>
+                Geo Fence
+            </h1>
+            <p>Configure geofence boundaries and behavior to enhance flight safety.</p>
+        </div>
+        <button class="btn-help">? HELP</button>
+    </div>
+
+    <!-- Enable/Disable Fence Switch Panel -->
+    <div class="toggle-panel">
+        <div class="toggle-label">
+            <h3>Enable Geofence</h3>
+            <p>Turn on geofence to restrict the vehicle within a defined boundary.</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="fence-enable-switch" onchange="toggleFenceEnable(event)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <!-- Settings Panel -->
+        <div class="panel left-panel">
+            <div class="panel-title">Geofence Settings</div>
+            
+            <div class="settings-grid" id="controls-container">
+                <!-- Type Selection -->
+                <div class="input-group">
+                    <label for="fence-type">Type</label>
+                    <select class="form-control" id="fence-type" onchange="markModified()"></select>
+                </div>
+
+                <!-- Action Selection -->
+                <div class="input-group">
+                    <label for="fence-action">Action</label>
+                    <select class="form-control" id="fence-action" onchange="markModified()"></select>
+                </div>
+
+                <!-- Max Altitude -->
+                <div class="input-group">
+                    <label for="fence-alt-max">Max Altitude (m)</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" class="form-control" id="fence-alt-max" oninput="onNumericInput(event)">
+                        <div class="spin-buttons">
+                            <div class="spin-btn spin-up" onclick="stepNumber('fence-alt-max', 5)">▲</div>
+                            <div class="spin-btn spin-down" onclick="stepNumber('fence-alt-max', -5)">▼</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Min Altitude -->
+                <div class="input-group">
+                    <label for="fence-alt-min">Min Altitude (m)</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" class="form-control" id="fence-alt-min" oninput="onNumericInput(event)">
+                        <div class="spin-buttons">
+                            <div class="spin-btn spin-up" onclick="stepNumber('fence-alt-min', 1)">▲</div>
+                            <div class="spin-btn spin-down" onclick="stepNumber('fence-alt-min', -1)">▼</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Max Radius -->
+                <div class="input-group">
+                    <label for="fence-radius">Max Radius (m)</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" class="form-control" id="fence-radius" oninput="onNumericInput(event)">
+                        <div class="spin-buttons">
+                            <div class="spin-btn spin-up" onclick="stepNumber('fence-radius', 10)">▲</div>
+                            <div class="spin-btn spin-down" onclick="stepNumber('fence-radius', -10)">▼</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RTL Altitude -->
+                <div class="input-group">
+                    <label for="fence-rtl-alt">RTL Altitude (m)</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" class="form-control" id="fence-rtl-alt" oninput="onNumericInput(event)">
+                        <div class="spin-buttons">
+                            <div class="spin-btn spin-up" onclick="stepNumber('fence-rtl-alt', 2)">▲</div>
+                            <div class="spin-btn spin-down" onclick="stepNumber('fence-rtl-alt', -2)">▼</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Information Banner -->
+            <div class="info-banner">
+                <svg class="info-banner-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                <div class="info-banner-text">
+                    <h4>About Geo Fence</h4>
+                    <p>The vehicle will trigger the selected action when it breaches the boundary or altitude limits. Ensure your RTL altitude is safe for your environment.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boundary Preview Panel -->
+        <div class="panel right-panel">
+            <div class="panel-title">Boundary Preview</div>
+            
+            <!-- Live Canvas View -->
+            <div class="preview-container">
+                <canvas id="preview-canvas"></canvas>
+                <!-- Validation Warn overlay -->
+                <div class="validation-overlay" id="val-warning"></div>
+            </div>
+
+            <!-- Legends Row -->
+            <div class="legends">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff5a1f;"></div>
+                    <span>Boundary (<span id="lbl-radius">300</span>m)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #00ff41;"></div>
+                    <span>Home Position</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #00a8ff;"></div>
+                    <span>Max Alt: <span id="lbl-alt-max">100</span>m</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #a800ff;"></div>
+                    <span>Min Alt: <span id="lbl-alt-min">-10</span>m</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions & Status Footer -->
+    <div class="footer">
+        <div class="status-msg">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Synchronized</span>
+        </div>
+        <button class="btn" onclick="resetToDefaults()">Reset to Defaults</button>
+        <button class="btn btn-primary" id="btn-save" onclick="saveFenceSettings()" disabled>Save Settings</button>
+    </div>
+
+    <script>
+        // State Cache
+        var params = {
+            connected: false,
+            FENCE_ENABLE: 0,
+            FENCE_TYPE: 3,
+            FENCE_ACTION: 1,
+            FENCE_ALT_MAX: 100,
+            FENCE_ALT_MIN: -10,
+            FENCE_RADIUS: 300,
+            RTL_ALT: 15,
+            RTL_ALT_NAME: "RTL_ALT",
+            typeOptions: [],
+            actionOptions: []
+        };
+
+        var originalParams = {};
+        var modified = false;
+
+        // Interactive Canvas state
+        var canvas = document.getElementById('preview-canvas');
+        var ctx = canvas.getContext('2d');
+        var dragRadius = false;
+        var dragAltMax = false;
+        var dragAltMin = false;
+        var dragRtlAlt = false;
+
+        window.onload = function() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            requestParams();
+            setupInteractiveCanvas();
+        };
+
+        function resizeCanvas() {
+            var rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            drawPreview();
+        }
+
+        function requestParams() {
+            if (window.external && window.external.GetFenceParams) {
+                try {
+                    var jsonStr = window.external.GetFenceParams();
+                    onParamsLoaded(jsonStr);
+                } catch(e) {
+                    console.log("Error requesting params: " + e);
+                    mockParams();
+                }
+            } else {
+                mockParams();
+            }
+        }
+
+        function mockParams() {
+            var mockJson = {
+                connected: true,
+                FENCE_ENABLE: 1,
+                FENCE_TYPE: 3,
+                FENCE_ACTION: 1,
+                FENCE_ALT_MAX: 100,
+                FENCE_ALT_MIN: -10,
+                FENCE_RADIUS: 300,
+                RTL_ALT: 15,
+                RTL_ALT_NAME: "RTL_ALT",
+                typeOptions: [
+                    { key: 1, value: "Altitude Only" },
+                    { key: 2, value: "Circle Only" },
+                    { key: 3, value: "Circle & Altitude" },
+                    { key: 4, value: "Polygon Only" },
+                    { key: 7, value: "Circle, Polygon & Altitude" }
+                ],
+                actionOptions: [
+                    { key: 0, value: "Report Only" },
+                    { key: 1, value: "RTL or Land" },
+                    { key: 2, value: "Land Only" },
+                    { key: 3, value: "Brake" },
+                    { key: 4, value: "Smart RTL" }
+                ]
+            };
+            onParamsLoaded(JSON.stringify(mockJson));
+        }
+
+        window.onParamsLoaded = function(jsonStr) {
+            params = JSON.parse(jsonStr);
+            originalParams = JSON.parse(jsonStr); // cache copy
+
+            // Sync Toggle
+            document.getElementById('fence-enable-switch').checked = (params.FENCE_ENABLE === 1);
+            
+            // Pop lists
+            populateDropdown('fence-type', params.typeOptions, params.FENCE_TYPE);
+            populateDropdown('fence-action', params.actionOptions, params.FENCE_ACTION);
+
+            // Pop inputs
+            document.getElementById('fence-alt-max').value = params.FENCE_ALT_MAX;
+            document.getElementById('fence-alt-min').value = params.FENCE_ALT_MIN;
+            document.getElementById('fence-radius').value = params.FENCE_RADIUS;
+            document.getElementById('fence-rtl-alt').value = params.RTL_ALT;
+
+            // Sync Lock
+            updateControlsState();
+
+            // Clear dirty
+            modified = false;
+            updateStatusText("Synchronized", "#00ff41");
+            document.getElementById('btn-save').disabled = true;
+
+            // Draw
+            drawPreview();
+        };
+
+        function populateDropdown(id, list, selectedKey) {
+            var select = document.getElementById(id);
+            select.innerHTML = '';
+            for(var i=0; i<list.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = list[i].key;
+                opt.innerText = list[i].value;
+                if (list[i].key === selectedKey) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function updateControlsState() {
+            var enable = document.getElementById('fence-enable-switch').checked;
+            var container = document.getElementById('controls-container');
+            var inputs = container.querySelectorAll('input, select');
+            
+            for(var i=0; i<inputs.length; i++) {
+                inputs[i].disabled = !enable;
+            }
+        }
+
+        function toggleFenceEnable(e) {
+            params.FENCE_ENABLE = e.target.checked ? 1 : 0;
+            updateControlsState();
+            markModified();
+        }
+
+        function stepNumber(id, step) {
+            var input = document.getElementById(id);
+            if (input.disabled) return;
+            var val = parseFloat(input.value) || 0;
+            input.value = val + step;
+            syncStateFromUI();
+            markModified();
+        }
+
+        function onNumericInput(e) {
+            syncStateFromUI();
+            markModified();
+        }
+
+        function syncStateFromUI() {
+            params.FENCE_TYPE = parseInt(document.getElementById('fence-type').value);
+            params.FENCE_ACTION = parseInt(document.getElementById('fence-action').value);
+            params.FENCE_ALT_MAX = parseFloat(document.getElementById('fence-alt-max').value) || 0;
+            params.FENCE_ALT_MIN = parseFloat(document.getElementById('fence-alt-min').value) || 0;
+            params.FENCE_RADIUS = parseFloat(document.getElementById('fence-radius').value) || 0;
+            params.RTL_ALT = parseFloat(document.getElementById('fence-rtl-alt').value) || 0;
+
+            drawPreview();
+        }
+
+        function markModified() {
+            modified = true;
+            updateStatusText("Pending Changes", "#ff5a1f");
+            validateParams();
+        }
+
+        function updateStatusText(text, color) {
+            document.getElementById('status-text').innerText = text;
+            document.getElementById('status-dot').style.backgroundColor = color;
+        }
+
+        function validateParams() {
+            var errors = [];
+            
+            if (params.FENCE_ALT_MIN >= params.FENCE_ALT_MAX) {
+                errors.push("Max Altitude must exceed Min Altitude.");
+            }
+            if (params.RTL_ALT > params.FENCE_ALT_MAX) {
+                errors.push("RTL Altitude exceeds Max Fence Limit.");
+            }
+            if (params.RTL_ALT < params.FENCE_ALT_MIN) {
+                errors.push("RTL Altitude is below Min Fence Limit.");
+            }
+            if (params.FENCE_RADIUS < 30) {
+                errors.push("Recommended minimum fence radius is 30m.");
+            }
+
+            var warningEl = document.getElementById('val-warning');
+            if (errors.length > 0) {
+                warningEl.innerHTML = "⚠️ <strong>Validation Error:</strong><br>" + errors.join("<br>");
+                warningEl.style.display = 'block';
+                document.getElementById('btn-save').disabled = true;
+            } else {
+                warningEl.style.display = 'none';
+                document.getElementById('btn-save').disabled = !modified;
+            }
+        }
+
+        // Draw Interactive Preview
+        function drawPreview() {
+            if (!canvas.width || !canvas.height) return;
+
+            // Clear
+            ctx.fillStyle = '#0c0e12';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Legends update
+            document.getElementById('lbl-radius').innerText = params.FENCE_RADIUS;
+            document.getElementById('lbl-alt-max').innerText = params.FENCE_ALT_MAX;
+            document.getElementById('lbl-alt-min').innerText = params.FENCE_ALT_MIN;
+
+            // Centered boundary preview circle
+            var cx = canvas.width / 2 + 30; // offset right to give space for altitude bar
+            var cy = canvas.height / 2;
+            var maxR = Math.min(canvas.width, canvas.height) * 0.35;
+
+            // Grid background
+            ctx.strokeStyle = '#181f2a';
+            ctx.lineWidth = 1;
+            for(var x=0; x<canvas.width; x+=30) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for(var y=0; y<canvas.height; y+=30) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw Boundary
+            ctx.beginPath();
+            ctx.arc(cx, cy, maxR, 0, 2*Math.PI);
+            ctx.fillStyle = 'rgba(255, 90, 31, 0.04)';
+            ctx.fill();
+            ctx.strokeStyle = '#ff5a1f';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Boundary radius text indicator
+            ctx.fillStyle = '#a0aec0';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(params.FENCE_RADIUS + " m", cx, cy - maxR - 8);
+            
+            // Dotted radius indicator line
+            ctx.beginPath();
+            ctx.setLineDash([3, 3]);
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx, cy - maxR);
+            ctx.strokeStyle = '#ff5a1f60';
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw Home Marker
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, 2*Math.PI);
+            ctx.fillStyle = '#00ff41';
+            ctx.fill();
+
+            // Draw Drone icon placeholder (a quad shape)
+            ctx.beginPath();
+            ctx.arc(cx, cy - maxR * 0.4, 4, 0, 2*Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#a0aec0';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // --- Draw Left Vertical Altitude Slider Bar ---
+            var barX = 40;
+            var barTop = 40;
+            var barBottom = canvas.height - 40;
+            var barH = barBottom - barTop;
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#181f2a';
+            ctx.beginPath();
+            ctx.moveTo(barX, barTop);
+            ctx.lineTo(barX, barBottom);
+            ctx.stroke();
+
+            // Max Alt Slider
+            ctx.beginPath();
+            ctx.arc(barX, barTop, 6, 0, 2*Math.PI);
+            ctx.fillStyle = '#00a8ff';
+            ctx.fill();
+
+            // Min Alt Slider
+            ctx.beginPath();
+            ctx.arc(barX, barBottom, 6, 0, 2*Math.PI);
+            ctx.fillStyle = '#a800ff';
+            ctx.fill();
+
+            // RTL Height Slider indicator line (scaled relatively)
+            var rtlRatio = (params.RTL_ALT - params.FENCE_ALT_MIN) / (params.FENCE_ALT_MAX - params.FENCE_ALT_MIN);
+            if (rtlRatio < 0) rtlRatio = 0;
+            if (rtlRatio > 1) rtlRatio = 1;
+            var rtlY = barBottom - (rtlRatio * barH);
+
+            ctx.beginPath();
+            ctx.moveTo(barX - 10, rtlY);
+            ctx.lineTo(barX + 15, rtlY);
+            ctx.strokeStyle = '#00ff41';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#00ff41';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("RTL: " + params.RTL_ALT + "m", barX + 20, rtlY + 3);
+        }
+
+        // Setup drags and click-events on Canvas
+        function setupInteractiveCanvas() {
+            canvas.onmousedown = function(e) {
+                var rect = canvas.getBoundingClientRect();
+                var mx = e.clientX - rect.left;
+                var my = e.clientY - rect.top;
+
+                // Check click on altitude bar elements
+                var barX = 40;
+                var barTop = 40;
+                var barBottom = canvas.height - 40;
+                var barH = barBottom - barTop;
+
+                // Max Alt handle detection
+                if (Math.abs(mx - barX) < 15 && Math.abs(my - barTop) < 15) {
+                    dragAltMax = true;
+                    return;
+                }
+                // Min Alt handle detection
+                if (Math.abs(mx - barX) < 15 && Math.abs(my - barBottom) < 15) {
+                    dragAltMin = true;
+                    return;
+                }
+
+                // Check click on boundary circle radius ring
+                var cx = canvas.width / 2 + 30;
+                var cy = canvas.height / 2;
+                var maxR = Math.min(canvas.width, canvas.height) * 0.35;
+                var dist = Math.sqrt((mx - cx)*(mx - cx) + (my - cy)*(my - cy));
+
+                if (Math.abs(dist - maxR) < 15) {
+                    dragRadius = true;
+                }
+            };
+
+            canvas.onmousemove = function(e) {
+                var rect = canvas.getBoundingClientRect();
+                var mx = e.clientX - rect.left;
+                var my = e.clientY - rect.top;
+
+                var enable = document.getElementById('fence-enable-switch').checked;
+                if (!enable) return;
+
+                if (dragRadius) {
+                    var cx = canvas.width / 2 + 30;
+                    var cy = canvas.height / 2;
+                    var maxR = Math.min(canvas.width, canvas.height) * 0.35;
+                    var dist = Math.sqrt((mx - cx)*(mx - cx) + (my - cy)*(my - cy));
+                    
+                    // Scale radius value proportionally (let default 300m = maxR pixels)
+                    var calculatedRadius = Math.round((dist / maxR) * 300);
+                    if (calculatedRadius < 30) calculatedRadius = 30;
+                    if (calculatedRadius > 2000) calculatedRadius = 2000;
+                    
+                    document.getElementById('fence-radius').value = calculatedRadius;
+                    params.FENCE_RADIUS = calculatedRadius;
+                    markModified();
+                }
+
+                if (dragAltMax) {
+                    // Update max alt based on vertical drag position
+                    var barTop = 40;
+                    var pct = (canvas.height - 40 - my) / (canvas.height - 80);
+                    if (pct < 0) pct = 0;
+                    if (pct > 1) pct = 1;
+                    var calculatedAlt = Math.round(pct * 300);
+                    
+                    document.getElementById('fence-alt-max').value = calculatedAlt;
+                    params.FENCE_ALT_MAX = calculatedAlt;
+                    markModified();
+                }
+
+                if (dragAltMin) {
+                    // Update min alt based on vertical drag
+                    var pct = (canvas.height - 40 - my) / (canvas.height - 80);
+                    if (pct < 0) pct = 0;
+                    if (pct > 1) pct = 1;
+                    var calculatedAlt = Math.round((pct * 100) - 50); // range: -50 to 50
+                    
+                    document.getElementById('fence-alt-min').value = calculatedAlt;
+                    params.FENCE_ALT_MIN = calculatedAlt;
+                    markModified();
+                }
+            };
+
+            canvas.onmouseup = canvas.onmouseleave = function() {
+                dragRadius = false;
+                dragAltMax = false;
+                dragAltMin = false;
+            };
+        }
+
+        function resetToDefaults() {
+            onParamsLoaded(JSON.stringify(originalParams));
+        }
+
+        function saveFenceSettings() {
+            if (!modified) return;
+
+            updateStatusText("Saving Parameters...", "#ff5a1f");
+            document.getElementById('btn-save').disabled = true;
+
+            var payload = {
+                FENCE_ENABLE: params.FENCE_ENABLE,
+                FENCE_TYPE: params.FENCE_TYPE,
+                FENCE_ACTION: params.FENCE_ACTION,
+                FENCE_ALT_MAX: params.FENCE_ALT_MAX,
+                FENCE_ALT_MIN: params.FENCE_ALT_MIN,
+                FENCE_RADIUS: params.FENCE_RADIUS
+            };
+            payload[params.RTL_ALT_NAME] = params.RTL_ALT;
+
+            var payloadStr = JSON.stringify(payload);
+
+            if (window.external && window.external.SaveFenceParams) {
+                var success = window.external.SaveFenceParams(payloadStr);
+                if (success) {
+                    // Sync original cache
+                    originalParams = JSON.parse(JSON.stringify(params));
+                    modified = false;
+                    updateStatusText("Configuration Saved", "#00ff41");
+                    validateParams();
+                } else {
+                    updateStatusText("Failed to Save settings", "#ff4d4d");
+                    document.getElementById('btn-save').disabled = false;
+                }
+            } else {
+                setTimeout(function() {
+                    originalParams = JSON.parse(JSON.stringify(params));
+                    modified = false;
+                    updateStatusText("Configuration Saved (Mock)", "#00ff41");
+                    validateParams();
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>

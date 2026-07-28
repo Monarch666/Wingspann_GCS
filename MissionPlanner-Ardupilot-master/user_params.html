@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS User Parameters</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 12px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon-badge {
+            width: 42px;
+            height: 42px;
+            background-color: #1a202c;
+            border: 1px solid #ff5a1f40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon {
+            width: 20px;
+            height: 20px;
+            fill: #ff5a1f;
+        }
+
+        .header-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-count {
+            background-color: #1c222c;
+            border: 1px solid #2d3748;
+            color: #ff5a1f;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-count-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #ff5a1f;
+            border-radius: 50%;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn:disabled {
+            background-color: #161a23;
+            color: #4a5568;
+            border-color: #232a36;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f1a;
+            color: #ff5a1f;
+            border: 1px solid #ff5a1f60;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border-color: #ff5a1f;
+        }
+
+        /* Filter & Search Bar */
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            color: #ffffff;
+            padding: 6px 15px 6px 36px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+            height: 38px;
+        }
+
+        .search-input:focus {
+            border-color: #ff5a1f;
+            background-color: #161a23;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            fill: #6c788a;
+        }
+
+        .select-filter {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            color: #ffffff;
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            height: 38px;
+            width: 180px;
+            cursor: pointer;
+        }
+
+        .select-filter:focus {
+            border-color: #ff5a1f;
+        }
+
+        /* Workspace layout */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .main-content {
+            flex: 1;
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Table Design */
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #1c222c;
+            background-color: #141820;
+            padding: 12px 20px;
+            font-weight: 700;
+            color: #8a96a8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #1c222c;
+            padding: 14px 20px;
+            transition: background-color 0.15s ease;
+            cursor: pointer;
+        }
+
+        .table-row:hover {
+            background-color: #161a23;
+        }
+
+        .table-row.selected {
+            background-color: #1b202c;
+            border-left: 2px solid #ff5a1f;
+            padding-left: 18px;
+        }
+
+        /* Columns */
+        .col-status { width: 30px; display: flex; align-items: center; }
+        .col-param { flex: 1.5; display: flex; flex-direction: column; gap: 4px; }
+        .col-current { flex: 1; color: #8a96a8; font-family: monospace; font-size: 11px; }
+        .col-new { flex: 1.2; display: flex; align-items: center; }
+        .col-desc { flex: 2; color: #6c788a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-info-btn { width: 30px; display: flex; justify-content: flex-end; }
+
+        /* Status dots */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #2ec4b6; /* Green for synced */
+        }
+
+        .status-dot.modified {
+            background-color: #ff9f1c; /* Orange for modified */
+            box-shadow: 0 0 8px #ff9f1c80;
+        }
+
+        .status-dot.invalid {
+            background-color: #ff4a55; /* Red for invalid */
+            box-shadow: 0 0 8px #ff4a5580;
+        }
+
+        .param-name {
+            color: #ffffff;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .param-title {
+            color: #6c788a;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Value Editors */
+        .edit-select {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            outline: none;
+            width: 100%;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        .edit-select:focus {
+            border-color: #ff5a1f;
+        }
+
+        .edit-input {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+            outline: none;
+            width: 100%;
+            height: 28px;
+        }
+
+        .edit-input:focus {
+            border-color: #ff5a1f;
+        }
+
+        .edit-input.modified, .edit-select.modified {
+            border-color: #ff9f1c;
+            background-color: #ff9f1c0d;
+        }
+
+        .edit-input.invalid {
+            border-color: #ff4a55;
+            background-color: #ff4a550d;
+        }
+
+        .row-info-icon {
+            fill: #6c788a;
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            transition: fill 0.15s ease;
+        }
+
+        .row-info-icon:hover {
+            fill: #ffffff;
+        }
+
+        /* Sidebar info panel */
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid #1c222c;
+            padding-bottom: 12px;
+        }
+
+        .doc-name {
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .doc-desc {
+            font-size: 11px;
+            color: #8a96a8;
+            line-height: 1.4;
+        }
+
+        .doc-meta-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .doc-meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .doc-meta-label {
+            color: #6c788a;
+            font-weight: 600;
+        }
+
+        .doc-meta-value {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .doc-meta-value.range {
+            font-family: monospace;
+        }
+
+        /* Help panel usage guide */
+        .guide-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 11px;
+            color: #8a96a8;
+            line-height: 1.4;
+        }
+
+        .guide-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #ff5a1f;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        /* Bottom status / pending changes bar */
+        .bottom-bar {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .pending-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a96a8;
+        }
+
+        .pending-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6c788a;
+            border-radius: 50%;
+        }
+
+        .pending-dot.active {
+            background-color: #ff9f1c;
+            box-shadow: 0 0 8px #ff9f1c80;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Empty states */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px;
+            color: #6c788a;
+            gap: 12px;
+            min-height: 250px;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            fill: #1c222c;
+        }
+
+        .empty-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #8a96a8;
+        }
+
+        .empty-desc {
+            font-size: 11px;
+            text-align: center;
+            max-width: 250px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="header-icon-badge">
+                <svg class="header-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div class="header-text">
+                <h1>User Parameters</h1>
+                <p>Configure custom RC options and user parameters. Changes are applied in real-time.</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="badge-count">
+                <div class="badge-count-dot"></div>
+                <span id="param-count-lbl">0 Parameters</span>
+            </div>
+            <button class="btn btn-primary" id="btn-top-save" onclick="writeAllChanges()" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                Write Changes
+            </button>
+            <button class="btn" onclick="refreshDirectory()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter row -->
+    <div class="filter-row">
+        <div class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" class="search-input" id="search-field" placeholder="Search RC options (e.g., RC7_OPTION)..." onkeyup="filterItems()">
+        </div>
+        <select class="select-filter" id="category-filter" onchange="filterItems()">
+            <option value="all">All Parameters</option>
+            <option value="rc">RC Options Only</option>
+            <option value="non-rc">Other User Options</option>
+        </select>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+        
+        <!-- Table container -->
+        <div class="main-content">
+            <div class="table-header">
+                <div class="col-status"></div>
+                <div class="col-param">Parameter</div>
+                <div class="col-current">Current Value</div>
+                <div class="col-new">New Value</div>
+                <div class="col-desc">Description</div>
+                <div class="col-info-btn"></div>
+            </div>
+            <div class="table-container" id="rows-container">
+                <!-- Parameters will load here dynamically -->
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title">Selected Parameter</div>
+                <div id="details-card-container">
+                    <div class="guide-item" style="padding: 10px 0;">
+                        <span>Select any parameter row in the table to view full documentation, default settings, and allowed values.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">About User Parameters</div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span>These parameters assign functions or modes to RC channels or autopilot ports.</span>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span><strong>Move to New Value:</strong> Select a new option from the dropdown or type in the range limit.</span>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span><strong>Apply Changes:</strong> Click Write Changes to save all modifications permanently to the vehicle.</span>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span><strong>Refresh:</strong> Reloads the parameters list from the vehicle caching registry.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Actions bar -->
+    <div class="bottom-bar">
+        <div class="pending-info">
+            <div class="pending-dot" id="pending-dot"></div>
+            <span id="pending-lbl">No pending changes</span>
+        </div>
+        <div class="pending-actions">
+            <button class="btn" onclick="discardChanges()">Discard</button>
+            <button class="btn btn-primary" id="btn-action-save" onclick="writeAllChanges()" disabled>Write Changes</button>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        var params = [];
+        var pendingChanges = {};
+        var selectedParam = null;
+        var connected = false;
+
+        window.onload = function() {
+            checkConnection();
+        };
+
+        function checkConnection() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetSystemStatus !== "undefined") {
+                    var status = JSON.parse(window.external.GetSystemStatus());
+                    connected = status.connected;
+
+                    if (connected) {
+                        refreshDirectory();
+                    } else {
+                        showOfflineState();
+                    }
+                } else {
+                    console.log("Debug Mockup mode");
+                    connected = true;
+                    loadMockupData();
+                }
+            } catch (e) {
+                console.error(e);
+                showOfflineState();
+            }
+        }
+
+        function showOfflineState() {
+            var container = document.getElementById("rows-container");
+            container.innerHTML = 
+                '<div class="empty-state">' +
+                '    <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>' +
+                '    <div class="empty-title">Autopilot Disconnected</div>' +
+                '    <div class="empty-desc">Connect telemetry link and refresh to download parameters.</div>' +
+                '</div>';
+            document.getElementById("btn-top-save").disabled = true;
+            document.getElementById("btn-action-save").disabled = true;
+        }
+
+        function loadMockupData() {
+            params = [
+                { name: "RC6_OPTION", displayName: "Function assigned to RC channel 6", value: 4, description: "RC6 channel assignment option", units: "", range: "0 100", increment: "1", options: [{value:"0",label:"Do Nothing"},{value:"4",label:"RTL"},{value:"7",label:"Camera Trigger"}] },
+                { name: "RC7_OPTION", displayName: "Function assigned to RC channel 7", value: 0, description: "RC7 channel assignment option", units: "", range: "0 100", increment: "1", options: [{value:"0",label:"Do Nothing"},{value:"4",label:"RTL"},{value:"7",label:"Camera Trigger"}] },
+                { name: "RC8_OPTION", displayName: "Function assigned to RC channel 8", value: 0, description: "RC8 channel assignment option", units: "", range: "0 100", increment: "1", options: [{value:"0",label:"Do Nothing"},{value:"4",label:"RTL"},{value:"7",label:"Camera Trigger"}] },
+                { name: "RC9_OPTION", displayName: "Function assigned to RC channel 9", value: 0, description: "RC9 channel assignment option", units: "", range: "0 100", increment: "1", options: [{value:"0",label:"Do Nothing"},{value:"4",label:"RTL"},{value:"7",label:"Camera Trigger"}] },
+                { name: "RC10_OPTION", displayName: "Function assigned to RC channel 10", value: 0, description: "RC10 channel assignment option", units: "", range: "0 100", increment: "1", options: [{value:"0",label:"Do Nothing"},{value:"4",label:"RTL"},{value:"7",label:"Camera Trigger"}] }
+            ];
+            renderTable(params);
+        }
+
+        function refreshDirectory() {
+            if (!connected) return;
+
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetUserParams !== "undefined") {
+                    var listJson = window.external.GetUserParams();
+                    params = JSON.parse(listJson);
+                    
+                    // Sort alphabetically by parameter name
+                    params.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    renderTable(params);
+                    pendingChanges = {};
+                    updatePendingToolbar();
+                }
+            } catch (e) {
+                console.error("Failed to load parameters", e);
+            }
+        }
+
+        function renderTable(items) {
+            var container = document.getElementById("rows-container");
+            container.innerHTML = "";
+
+            document.getElementById("param-count-lbl").textContent = items.length + " Parameters";
+
+            if (items.length === 0) {
+                container.innerHTML = 
+                    '<div class="empty-state">' +
+                    '    <svg class="empty-icon" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-1 8h-3v3h-2v-3h-3v-2h3V9h2v3h3v2z"/></svg>' +
+                    '    <div class="empty-title">No parameters found</div>' +
+                    '    <div class="empty-desc">No parameters match your search criteria.</div>' +
+                    '</div>';
+                return;
+            }
+
+            items.forEach(function(item) {
+                var row = document.createElement("div");
+                row.className = "table-row";
+                row.id = "row-" + item.name;
+                row.onclick = function() { selectRow(item, row); };
+
+                // Get pending value or original value
+                var isChanged = pendingChanges.hasOwnProperty(item.name);
+                var activeVal = isChanged ? pendingChanges[item.name] : item.value;
+
+                // Build New Value cell control
+                var newCellHtml = "";
+                if (item.options && item.options.length > 0) {
+                    // Dropdown options selector
+                    var optHtml = "";
+                    var matched = false;
+                    item.options.forEach(function(opt) {
+                        var selected = parseFloat(opt.value) === parseFloat(activeVal) ? "selected" : "";
+                        if (selected) matched = true;
+                        optHtml += '<option value="' + opt.value + '" ' + selected + '>' + opt.value + ': ' + opt.label + '</option>';
+                    });
+                    // Handle custom unlisted value
+                    if (!matched) {
+                        optHtml += '<option value="' + activeVal + '" selected>' + activeVal + ': Custom Value</option>';
+                    }
+
+                    newCellHtml = 
+                        '<select class="edit-select ' + (isChanged ? 'modified' : '') + '" onchange="changeParamValue('' + item.name + '', this.value)">' +
+                            optHtml +
+                        '</select>';
+                } else {
+                    // Numeric range field
+                    var rangeParts = (item.range || "").split(" ");
+                    var minAttr = rangeParts[0] ? 'min="' + rangeParts[0] + '"' : "";
+                    var maxAttr = rangeParts[1] ? 'max="' + rangeParts[1] + '"' : "";
+                    var stepAttr = item.increment ? 'step="' + item.increment + '"' : "";
+
+                    newCellHtml = 
+                        '<input type="number" class="edit-input ' + (isChanged ? 'modified' : '') + '" ' +
+                               'value="' + activeVal + '" ' + minAttr + ' ' + maxAttr + ' ' + stepAttr + ' ' +
+                               'onchange="changeParamValue('' + item.name + '', this.value)" ' +
+                               'onkeyup="changeParamValue('' + item.name + '', this.value)">';
+                }
+
+                // Render row
+                row.innerHTML = 
+                    '<div class="col-status"><div class="status-dot ' + (isChanged ? 'modified' : '') + '" id="dot-' + item.name + '"></div></div>' +
+                    '<div class="col-param">' +
+                        '<span class="param-name">' + item.name + '</span>' +
+                        '<span class="param-title">' + (item.displayName || '') + '</span>' +
+                    '</div>' +
+                    '<div class="col-current">' + (item.options && item.options.length > 0 ? getOptionLabel(item, item.value) : item.value) + '</div>' +
+                    '<div class="col-new" onclick="event.stopPropagation()">' + newCellHtml + '</div>' +
+                    '<div class="col-desc">' + (item.description || 'No description available') + '</div>' +
+                    '<div class="col-info-btn">' +
+                        '<svg class="row-info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>' +
+                    '</div>';
+
+                container.appendChild(row);
+            });
+        }
+
+        function getOptionLabel(item, val) {
+            var label = val;
+            if (item.options) {
+                item.options.forEach(function(opt) {
+                    if (parseFloat(opt.value) === parseFloat(val)) {
+                        label = opt.value + ": " + opt.label;
+                    }
+                });
+            }
+            return label;
+        }
+
+        function selectRow(item, element) {
+            // Highlight selected row
+            var rows = document.getElementsByClassName("table-row");
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].classList.remove("selected");
+            }
+            element.classList.add("selected");
+
+            selectedParam = item;
+            updateDetailsPanel(item);
+        }
+
+        function updateDetailsPanel(item) {
+            var container = document.getElementById("details-card-container");
+            if (!item) {
+                container.innerHTML = 
+                    '<div class="guide-item" style="padding: 10px 0;">' +
+                    '    <span>Select any parameter row in the table to view full documentation, default settings, and allowed values.</span>' +
+                    '</div>';
+                return;
+            }
+
+            var rangeParts = (item.range || "N/A").split(" ");
+            var rangeStr = rangeParts.length === 2 ? (rangeParts[0] + ' to ' + rangeParts[1]) : "N/A";
+
+            // Compile options listing
+            var optsHtml = "";
+            if (item.options && item.options.length > 0) {
+                optsHtml = '<div class="doc-meta-item" style="flex-direction: column; align-items: flex-start; gap: 4px; border-top: 1px solid #1c222c; padding-top: 8px; margin-top: 8px;">' +
+                           '    <span class="doc-meta-label">Allowed Values:</span>' +
+                           '    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #8a96a8; width: 100%; text-align: left; max-height: 120px; overflow-y: auto;">';
+                for (var j = 0; j < item.options.length; j++) {
+                    var opt = item.options[j];
+                    optsHtml += '<div><strong>' + opt.value + '</strong>: ' + opt.label + '</div>';
+                }
+                optsHtml += '    </div>' +
+                           '</div>';
+            }
+
+            container.innerHTML = 
+                '<div class="doc-card">' +
+                '    <div class="doc-name">' + item.name + '</div>' +
+                '    <div class="doc-desc">' + (item.description || 'No description available for this parameter.') + '</div>' +
+                '</div>' +
+                '<div class="doc-meta-list">' +
+                '    <div class="doc-meta-item">' +
+                '        <span class="doc-meta-label">Units:</span>' +
+                '        <span class="doc-meta-value">' + (item.units || 'None') + '</span>' +
+                '    </div>' +
+                '    <div class="doc-meta-item">' +
+                '        <span class="doc-meta-label">Range:</span>' +
+                '        <span class="doc-meta-value range">' + rangeStr + '</span>' +
+                '    </div>' +
+                '    <div class="doc-meta-item">' +
+                '        <span class="doc-meta-label">Increment:</span>' +
+                '        <span class="doc-meta-value range">' + (item.increment || 'N/A') + '</span>' +
+                '    </div>' +
+                '    <div class="doc-meta-item">' +
+                '        <span class="doc-meta-label">Current:</span>' +
+                '        <span class="doc-meta-value">' + item.value + '</span>' +
+                '    </div>' +
+                optsHtml +
+                '</div>';
+        }
+
+        function changeParamValue(name, val) {
+            var item = null;
+            for (var i = 0; i < params.length; i++) {
+                if (params[i].name === name) {
+                    item = params[i];
+                    break;
+                }
+            }
+            if (!item) return;
+
+            var numericVal = parseFloat(val);
+            if (isNaN(numericVal)) return;
+
+            // Validate range
+            var dot = document.getElementById("dot-" + name);
+            var isInvalid = false;
+            if (item.range) {
+                var parts = item.range.split(" ");
+                if (parts.length === 2) {
+                    var min = parseFloat(parts[0]);
+                    var max = parseFloat(parts[1]);
+                    if (numericVal < min || numericVal > max) {
+                        isInvalid = true;
+                    }
+                }
+            }
+
+            if (isInvalid) {
+                dot.className = "status-dot invalid";
+                pendingChanges[name] = numericVal;
+            } else if (parseFloat(item.value) === numericVal) {
+                // Synced back to original value
+                delete pendingChanges[name];
+                dot.className = "status-dot";
+            } else {
+                // Valid modified value
+                pendingChanges[name] = numericVal;
+                dot.className = "status-dot modified";
+            }
+
+            updatePendingToolbar();
+        }
+
+        function updatePendingToolbar() {
+            var count = Object.keys(pendingChanges).length;
+            var lbl = document.getElementById("pending-lbl");
+            var dot = document.getElementById("pending-dot");
+
+            var btnTopSave = document.getElementById("btn-top-save");
+            var btnActionSave = document.getElementById("btn-action-save");
+
+            if (count > 0) {
+                lbl.textContent = count + " pending parameter change(s) detected.";
+                dot.className = "pending-dot active";
+                btnTopSave.disabled = false;
+                btnActionSave.disabled = false;
+            } else {
+                lbl.textContent = "No pending changes";
+                dot.className = "pending-dot";
+                btnTopSave.disabled = true;
+                btnActionSave.disabled = true;
+            }
+        }
+
+        function filterItems() {
+            var query = document.getElementById("search-field").value.toLowerCase();
+            var category = document.getElementById("category-filter").value;
+
+            var filtered = params.filter(function(item) {
+                // Text search matching parameter name or description
+                var matchesText = item.name.toLowerCase().indexOf(query) !== -1 || 
+                                  (item.displayName && item.displayName.toLowerCase().indexOf(query) !== -1) ||
+                                  (item.description && item.description.toLowerCase().indexOf(query) !== -1);
+
+                // Category filtering
+                var matchesCategory = true;
+                if (category === "rc") {
+                    matchesCategory = item.name.indexOf("RC") === 0 && item.name.indexOf("_OPTION") !== -1;
+                } else if (category === "non-rc") {
+                    matchesCategory = !(item.name.indexOf("RC") === 0 && item.name.indexOf("_OPTION") !== -1);
+                }
+
+                return matchesText && matchesCategory;
+            });
+
+            renderTable(filtered);
+        }
+
+        function quickNavigate(path) {
+            // Filter by prefix or predefined sets
+            var select = document.getElementById("category-filter");
+            if (path === "/") {
+                select.value = "all";
+            } else if (path === "/scripts") {
+                select.value = "non-rc";
+                document.getElementById("search-field").value = "SCR_";
+            } else if (path === "/@SYS/logs") {
+                select.value = "non-rc";
+                document.getElementById("search-field").value = "LOG_";
+            } else if (path === "/@SYS") {
+                select.value = "non-rc";
+                document.getElementById("search-field").value = "SYS_";
+            }
+            filterItems();
+        }
+
+        function discardChanges() {
+            pendingChanges = {};
+            renderTable(params);
+            updatePendingToolbar();
+            updateDetailsPanel(selectedParam);
+        }
+
+        function writeAllChanges() {
+            if (!connected) return;
+            var count = Object.keys(pendingChanges).length;
+            if (count === 0) return;
+
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.WriteChanges !== "undefined") {
+                    var jsonStr = JSON.stringify(pendingChanges);
+                    var success = window.external.WriteChanges(jsonStr);
+                    if (success) {
+                        alert("Changes written successfully to autopilot!");
+                        refreshDirectory();
+                    } else {
+                        alert("Failed to write some parameters. Check connections.");
+                    }
+                }
+            } catch (e) {
+                console.error("Write failed", e);
+            }
+        }
+    </script>
+</body>
+</html>

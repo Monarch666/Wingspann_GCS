@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaadu Mantar Parameter Manager</title>
+    <style>
+        /* Modern styling with dark glassmorphism and matrix highlights */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #07090b;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 13px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0f12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #252a32;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e4652;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #121518;
+            border-bottom: 1px solid #1a1e24;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 55px;
+            z-index: 10;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-text {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ff5a1f;
+        }
+
+        .logo-sub {
+            color: #8b95a5;
+            font-size: 11px;
+            border-left: 1px solid #2e353f;
+            padding-left: 10px;
+        }
+
+        .global-search-container {
+            position: relative;
+            width: 320px;
+        }
+
+        .global-search {
+            width: 100%;
+            background-color: #1a1e24;
+            border: 1px solid #2d3540;
+            border-radius: 6px;
+            color: #e2e2e5;
+            padding: 8px 12px;
+            font-size: 12px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .global-search:focus {
+            border-color: #ff5a1f;
+            box-shadow: 0 0 8px rgba(255, 90, 31, 0.25);
+        }
+
+        .search-shortcut-hint {
+            position: absolute;
+            right: 10px;
+            top: 7px;
+            color: #5b6575;
+            background-color: #0c0e12;
+            border: 1px solid #222830;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            pointer-events: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background-color: #1a1e24;
+            color: #e2e2e5;
+            border: 1px solid #2d3540;
+            border-radius: 5px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: #242931;
+            border-color: #3e4756;
+        }
+
+        .btn:active {
+            background-color: #15181d;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-primary:active {
+            background-color: #e04a14;
+        }
+
+        .btn-success {
+            background-color: #00ff41;
+            color: #050709;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #24ff5b;
+        }
+
+        .btn-success:active {
+            background-color: #00d434;
+        }
+
+        /* Workspace Grid Layout */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: #0d0f12;
+            border-right: 1px solid #1a1e24;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 12px 18px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #5b6575;
+            border-bottom: 1px solid #16191f;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 18px;
+            gap: 12px;
+            cursor: pointer;
+            color: #8b95a5;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-item:hover {
+            background-color: #12151a;
+            color: #e2e2e5;
+        }
+
+        .sidebar-menu-item.active {
+            background-color: #161920;
+            color: #ff5a1f;
+            border-left-color: #ff5a1f;
+            font-weight: 600;
+        }
+
+        .sidebar-menu-icon {
+            font-size: 14px;
+        }
+
+        /* Main Content Panel */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #07090b;
+        }
+
+        .breadcrumb-container {
+            padding: 12px 24px;
+            background-color: #0a0d10;
+            border-bottom: 1px solid #16191f;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 40px;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #8b95a5;
+        }
+
+        .breadcrumbs span.link {
+            cursor: pointer;
+        }
+
+        .breadcrumbs span.link:hover {
+            color: #ff5a1f;
+        }
+
+        .breadcrumbs span.active {
+            color: #e2e2e5;
+            font-weight: 600;
+        }
+
+        .stats-badge-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stats-badge {
+            font-size: 11px;
+            color: #8b95a5;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stats-badge span.val {
+            color: #e2e2e5;
+            font-weight: 700;
+        }
+
+        .view-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: none;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        /* Level 1: Category Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .category-card {
+            background-color: #121518;
+            border: 1px solid #1a1e24;
+            border-radius: 8px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: transparent;
+            transition: background-color 0.2s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-2px);
+            background-color: #161a1f;
+            border-color: #2b323c;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        .category-card:hover::before {
+            background-color: #ff5a1f;
+        }
+
+        .card-header-icon {
+            font-size: 20px;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e2e5;
+            margin-bottom: 6px;
+        }
+
+        .card-desc {
+            font-size: 11px;
+            color: #8b95a5;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            height: 30px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .card-desc p {
+            margin: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #5b6575;
+            border-top: 1px solid #1a1e24;
+            padding-top: 10px;
+        }
+
+        .card-footer span.hl {
+            color: #e2e2e5;
+            font-weight: 600;
+        }
+
+        .card-footer span.mod-count {
+            background-color: rgba(255, 90, 31, 0.15);
+            color: #ff5a1f;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        /* Level 3 Layout (Editor View) */
+        .editor-container {
+            display: flex;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .editor-main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid #1a1e24;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow: auto;
+        }
+
+        table.param-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        table.param-table th {
+            position: sticky;
+            top: 0;
+            background-color: #0c0e11;
+            border-bottom: 1px solid #1a1e24;
+            color: #8b95a5;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 16px;
+            z-index: 1;
+        }
+
+        table.param-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #121518;
+            color: #c9cdd4;
+            vertical-align: middle;
+        }
+
+        table.param-table tr:hover td {
+            background-color: #12151a;
+            color: #e2e2e5;
+        }
+
+        table.param-table tr.selected td {
+            background-color: #171b23;
+            color: #ffffff;
+            border-bottom-color: #2b323e;
+        }
+
+        .param-fav-star {
+            cursor: pointer;
+            font-size: 14px;
+            color: #3e4652;
+            transition: color 0.1s ease;
+        }
+
+        .param-fav-star.active {
+            color: #ffb319;
+        }
+
+        .param-fav-star:hover {
+            transform: scale(1.15);
+        }
+
+        .param-val-input {
+            width: 90px;
+            background-color: #1a1e24;
+            border: 1px solid #2d3540;
+            border-radius: 4px;
+            color: #e2e2e5;
+            padding: 4px 8px;
+            font-family: monospace;
+            font-size: 12px;
+            outline: none;
+            transition: all 0.15s ease;
+        }
+
+        .param-val-input:focus {
+            border-color: #ff5a1f;
+            background-color: #22272f;
+        }
+
+        .param-val-input.modified {
+            border-color: #ff9f1c;
+            background-color: rgba(255, 159, 28, 0.1);
+            color: #ff9f1c;
+            font-weight: 700;
+        }
+
+        .param-val-input.invalid {
+            border-color: #ff4d4d;
+            background-color: rgba(255, 77, 77, 0.1);
+            color: #ff4d4d;
+        }
+
+        .param-name-cell {
+            font-weight: 700;
+            color: #e2e2e5;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            width: 340px;
+            background-color: #0c0e11;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 20px;
+        }
+
+        .detail-header {
+            border-bottom: 1px solid #1a1e24;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .detail-title {
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ff5a1f;
+            margin-bottom: 4px;
+        }
+
+        .detail-subtitle {
+            font-size: 11px;
+            color: #8b95a5;
+        }
+
+        .detail-section {
+            margin-bottom: 18px;
+        }
+
+        .detail-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #5b6575;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-desc {
+            font-size: 12px;
+            color: #c9cdd4;
+            line-height: 1.5;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail-grid-item {
+            background-color: #121518;
+            border: 1px solid #1a1e24;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .detail-grid-label {
+            font-size: 9px;
+            color: #5b6575;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .detail-grid-val {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e2e5;
+            font-family: monospace;
+        }
+
+        .detail-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .detail-editor-input {
+            flex: 1;
+            background-color: #1a1e24;
+            border: 1px solid #2d3540;
+            border-radius: 4px;
+            color: #e2e2e5;
+            padding: 8px 12px;
+            font-family: monospace;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .detail-editor-input:focus {
+            border-color: #ff5a1f;
+        }
+
+        .detail-select {
+            width: 100%;
+            background-color: #1a1e24;
+            border: 1px solid #2d3540;
+            border-radius: 4px;
+            color: #e2e2e5;
+            padding: 8px;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .detail-select:focus {
+            border-color: #ff5a1f;
+        }
+
+        .detail-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        /* Command Palette Popup */
+        .palette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(4, 5, 6, 0.75);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            padding-top: 80px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .palette-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .palette-window {
+            width: 580px;
+            background-color: #121519;
+            border: 1px solid #2d3540;
+            border-radius: 8px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            max-height: 480px;
+            overflow: hidden;
+        }
+
+        .palette-search-container {
+            border-bottom: 1px solid #1a1e24;
+            padding: 14px;
+        }
+
+        .palette-search-input {
+            width: 100%;
+            background-color: #0c0e11;
+            border: 1px solid #222830;
+            border-radius: 5px;
+            color: #e2e2e5;
+            padding: 10px 14px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .palette-search-input:focus {
+            border-color: #ff5a1f;
+        }
+
+        .palette-results {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .palette-item {
+            padding: 10px 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #8b95a5;
+        }
+
+        .palette-item:hover, .palette-item.selected {
+            background-color: #1a1e24;
+            color: #ffffff;
+        }
+
+        .palette-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .palette-item-icon {
+            font-size: 14px;
+            color: #5b6575;
+        }
+
+        .palette-item-title {
+            font-weight: 700;
+            color: #e2e2e5;
+        }
+
+        .palette-item-path {
+            font-size: 11px;
+            color: #5b6575;
+        }
+
+        .palette-item-type {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: #222830;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #8b95a5;
+        }
+
+        .palette-item:hover .palette-item-type, .palette-item.selected .palette-item-type {
+            background-color: #ff5a1f;
+            color: #ffffff;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background-color: #0c0e11;
+            border-top: 1px solid #1a1e24;
+            height: 25px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #5b6575;
+            z-index: 10;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #5b6575;
+        }
+
+        .status-dot.active {
+            background-color: #00ff41;
+            box-shadow: 0 0 6px #00ff41;
+        }
+
+        .status-dot.inactive {
+            background-color: #ff4d4d;
+            box-shadow: 0 0 6px #ff4d4d;
+        }
+
+        /* Dialog overlays */
+        .overlay-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(4, 5, 6, 0.8);
+            z-index: 120;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay-dialog.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dialog-box {
+            width: 640px;
+            background-color: #121519;
+            border: 1px solid #2d3540;
+            border-radius: 8px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+
+        .dialog-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #1a1e24;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dialog-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ff5a1f;
+        }
+
+        .dialog-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .dialog-footer {
+            padding: 14px 20px;
+            border-top: 1px solid #1a1e24;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 40px;
+            right: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background-color: #121519;
+            border-left: 4px solid #ff5a1f;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            padding: 12px 18px;
+            color: #e2e2e5;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 300px;
+        }
+
+        .toast.success {
+            border-left-color: #00ff41;
+        }
+
+        .toast.error {
+            border-left-color: #ff4d4d;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #07090b;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 90, 31, 0.1);
+            border-radius: 50%;
+            border-top-color: #ff5a1f;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loading-screen" class="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-size: 12px; color: #8b95a5; font-weight: 600; letter-spacing: 0.5px;">LOADING PARAMETERS...</div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Top Navigation Bar -->
+    <div class="top-bar">
+        <div class="logo-section">
+            <span class="logo-text">JAADU MANTAR</span>
+            <span class="logo-sub">PARAMETER MANAGER</span>
+        </div>
+
+        <div class="global-search-container">
+            <input type="text" id="global-search" class="global-search" placeholder="Search parameters or Ctrl+P...">
+            <div class="search-shortcut-hint">Ctrl+P</div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-success" onclick="writeAllParams()">Write All</button>
+            <button class="btn" onclick="rerequestParams()">Refresh</button>
+            <button class="btn" onclick="compareParams()">Compare</button>
+            <button class="btn" onclick="importParams()">Import</button>
+            <button class="btn" onclick="exportParams()">Export</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <!-- Sidebar Navigation (Main Categories) -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">Main Categories</div>
+            <!-- Populated dynamically -->
+        </div>
+
+        <!-- Main Panel Content -->
+        <div class="main-content">
+            <!-- Breadcrumbs / Top Navigation Strip -->
+            <div class="breadcrumb-container">
+                <div id="breadcrumbs" class="breadcrumbs">
+                    <span class="link active" onclick="navigateToLevel(1)">Dashboard</span>
+                </div>
+                <div class="stats-badge-container">
+                    <div class="stats-badge">Total: <span id="stat-total" class="val">0</span></div>
+                    <div class="stats-badge">Modified: <span id="stat-modified" class="val" style="color: #ff9f1c;">0</span></div>
+                    <div class="stats-badge">Favs: <span id="stat-favs" class="val">0</span></div>
+                </div>
+            </div>
+
+            <!-- View Panel: Level 1 (Category Dashboard) -->
+            <div id="panel-level1" class="view-panel active">
+                <div id="category-grid" class="dashboard-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- View Panel: Level 2 (Subcategory Dashboard) -->
+            <div id="panel-level2" class="view-panel">
+                <div id="subcategory-grid" class="dashboard-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- View Panel: Level 3 (Parameter List Editor) -->
+            <div id="panel-level3" class="view-panel" style="padding: 0; height: 100%;">
+                <div class="editor-container">
+                    <!-- Main Grid column -->
+                    <div class="editor-main-panel">
+                        <div class="table-container">
+                            <table class="param-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px;">Fav</th>
+                                        <th style="width: 140px;">Name</th>
+                                        <th style="width: 100px;">Value</th>
+                                        <th style="width: 60px;">Units</th>
+                                        <th style="width: 150px;">Options/Range</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="param-table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right detail panel -->
+                    <div class="detail-panel">
+                        <div class="detail-header">
+                            <div id="detail-name" class="detail-title">SELECT A PARAMETER</div>
+                            <div id="detail-type" class="detail-subtitle">Click a row to edit details</div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div class="detail-section-title">Description</div>
+                            <div id="detail-desc" class="detail-desc">Select a parameter to view its documentation and details.</div>
+                        </div>
+
+                        <div class="detail-section detail-grid">
+                            <div class="detail-grid-item">
+                                <div class="detail-grid-label">Default Value</div>
+                                <div id="detail-default" class="detail-grid-val">-</div>
+                            </div>
+                            <div class="detail-grid-item">
+                                <div class="detail-grid-label">Units</div>
+                                <div id="detail-units" class="detail-grid-val">-</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div class="detail-section-title">Range / Options</div>
+                            <div id="detail-options" class="detail-desc" style="font-family: monospace; font-size: 11px;">-</div>
+                        </div>
+
+                        <div class="detail-section" id="detail-edit-box" style="display: none;">
+                            <div class="detail-section-title">Edit Value</div>
+                            <div class="detail-input-container">
+                                <!-- Option dropdown (if options are parsed) -->
+                                <div id="detail-options-container" style="display: none;">
+                                    <select id="detail-options-select" class="detail-select" onchange="onDetailSelectChanged()"></select>
+                                </div>
+                                <div class="detail-input-row">
+                                    <input type="text" id="detail-input-value" class="detail-editor-input" oninput="onDetailInputChanged()">
+                                    <button class="btn btn-primary" onclick="writeSingleDetailParam()">Write</button>
+                                </div>
+                            </div>
+                            <div class="detail-buttons">
+                                <button class="btn" style="flex: 1; justify-content: center;" onclick="resetDetailParamToDefault()">Reset Default</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-item">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">OFFLINE</span>
+            </div>
+            <div id="status-vehicle-info" class="status-item" style="border-left: 1px solid #222830; padding-left: 15px; display: none;">
+                VEHICLE: <span id="status-vehicle-val" style="color: #e2e2e5; font-weight: 700; margin-left: 4px;">QUADCOPTER</span>
+            </div>
+            <div id="status-link-info" class="status-item" style="border-left: 1px solid #222830; padding-left: 15px; display: none;">
+                LINK: <span id="status-link-val" style="color: #e2e2e5; font-weight: 700; margin-left: 4px;">100%</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <span>SYSID: <span id="status-sysid">0</span></span>
+        </div>
+    </div>
+
+    <!-- Command Palette Dialog -->
+    <div id="command-palette" class="palette-overlay" onclick="closeCommandPalette(event)">
+        <div class="palette-window">
+            <div class="palette-search-container">
+                <input type="text" id="palette-search" class="palette-search-input" placeholder="Type a parameter name, category, or description..." autocomplete="off">
+            </div>
+            <div id="palette-results" class="palette-results">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Dialog Overlay -->
+    <div id="compare-dialog" class="overlay-dialog" onclick="closeCompareDialog(event)">
+        <div class="dialog-box">
+            <div class="dialog-header">
+                <div class="dialog-title">PARAMETER COMPARISON</div>
+                <button class="btn" onclick="document.getElementById('compare-dialog').classList.remove('active')">X</button>
+            </div>
+            <div class="dialog-body" style="padding: 0;">
+                <table class="param-table" style="max-height: 400px; overflow-y: auto;">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Parameter</th>
+                            <th style="width: 120px;">Current Value</th>
+                            <th style="width: 120px;">Loaded Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compare-table-body">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="dialog-footer">
+                <button class="btn" onclick="document.getElementById('compare-dialog').classList.remove('active')">Cancel</button>
+                <button class="btn btn-success" onclick="mergeAllCompareParams()">Merge All Loaded Values</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        // Prefix-based dynamic category tree
+        var categoryMap = {
+            "Flight Configuration": {
+                icon: "✈️",
+                desc: "Airframe, motors, ESC, servos, flight modes, and RC channel mapping.",
+                subcategories: {
+                    "Airframe": ["FRAME_CLASS", "FRAME_TYPE", "Q_FRAME_CLASS", "Q_FRAME_TYPE"],
+                    "Motors": ["MOT_", "Q_M_", "THR_"],
+                    "ESC": ["ESC_", "SERVO_BLH_"],
+                    "Servos": ["SERVO", "Q_V_"],
+                    "Flight Modes": ["FLTMODE", "MODE", "Q_MODE", "SIMPLE"],
+                    "RC Mapping": ["RC", "RCMAP_"]
+                }
+            },
+            "Sensors & Calibration": {
+                icon: "📡",
+                desc: "Compass, accelerometer, gyroscope, GPS, barometer, and rangefinder setup.",
+                subcategories: {
+                    "Compass": ["COMPASS_"],
+                    "Accelerometer": ["INS_ACCL", "ACCEL_", "INS_ACC"],
+                    "GPS": ["GPS_"],
+                    "Gyroscope": ["INS_GYRO", "GYRO_"],
+                    "Barometer": ["BARO_", "GND_ABS_PRESS", "GND_TEMP"],
+                    "Airspeed": ["ARSPD_"],
+                    "Optical Flow": ["FLOW_", "OPTFLOW_"],
+                    "Rangefinder": ["RNGFND_"]
+                }
+            },
+            "Navigation": {
+                icon: "🧭",
+                desc: "RTL, Waypoint, Loiter, Terrain and Rally parameters.",
+                subcategories: {
+                    "RTL": ["RTL_", "Q_RTL_"],
+                    "Loiter": ["LOIT_", "Q_LOIT_"],
+                    "Waypoints": ["WP_", "MIS_", "WPNAV_", "Q_WPNAV_"],
+                    "Terrain": ["TERRAIN_"],
+                    "Rally": ["RALLY_"]
+                }
+            },
+            "EKF & State Estimation": {
+                icon: "🧮",
+                desc: "Extended Kalman Filters, sensor fusion, attitude and heading reference systems.",
+                subcategories: {
+                    "EKF2": ["EK2_"],
+                    "EKF3": ["EK3_"],
+                    "AHRS": ["AHRS_"],
+                    "Sensor Fusion": ["EKF_"],
+                    "Origin": ["GPS_O"]
+                }
+            },
+            "Flight Control": {
+                icon: "🕹️",
+                desc: "PID loops, rate control, position controller, and hover stabilization.",
+                subcategories: {
+                    "Roll PID": ["ATC_RAT_RLL_", "RATE_RLL_"],
+                    "Pitch PID": ["ATC_RAT_PIT_", "RATE_PIT_"],
+                    "Yaw PID": ["ATC_RAT_YAW_", "RATE_YAW_"],
+                    "Rate Controller": ["ATC_"],
+                    "Altitude": ["PSC_ACCZ_", "PSC_POSZ_"],
+                    "Position": ["PSC_POSXY_", "PSC_VELXY_"]
+                }
+            },
+            "Safety & Failsafes": {
+                icon: "🛡️",
+                desc: "Geofence boundary control, battery fail-safes, GCS connection loss triggers.",
+                subcategories: {
+                    "Failsafes": ["FS_", "BATT_FS_"],
+                    "Geofence": ["FENCE_"],
+                    "Battery": ["BATT_"],
+                    "GCS": ["GCS_"],
+                    "Terrain": ["TERRAIN_"]
+                }
+            },
+            "Power System": {
+                icon: "🔋",
+                desc: "Battery monitoring calibration, generator controls, ESC telemetry config.",
+                subcategories: {
+                    "Battery": ["BATT_"],
+                    "Power Module": ["BATT_MONITOR"],
+                    "ESC": ["ESC_"],
+                    "Generator": ["GEN_"]
+                }
+            },
+            "Radio & Communication": {
+                icon: "📻",
+                desc: "Telemetry stream rates, MAVLink configuration, RC radio calibration, antenna tracking.",
+                subcategories: {
+                    "Telemetry": ["SR0_", "SR1_", "SR2_", "SR3_", "TELEM_"],
+                    "MAVLink": ["MAV_", "SERIAL"],
+                    "RC": ["RC", "RCMAP_"],
+                    "Antenna Tracker": ["PITCH_", "YAW_"]
+                }
+            },
+            "Payload": {
+                icon: "📦",
+                desc: "Camera triggers, servos, robotic grabbers, parachutes, and ADSB-In receivers.",
+                subcategories: {
+                    "Camera": ["CAM_", "TRIG_"],
+                    "Gimbal": ["MNT_", "GMB_"],
+                    "Sprayer": ["SPRAY_"],
+                    "Gripper": ["GRIP_"],
+                    "Parachute": ["CHUTE_"],
+                    "ADSB": ["ADSB_"]
+                }
+            },
+            "Mission Planning": {
+                icon: "🗺️",
+                desc: "Automatic mission commands, georeferencing, pre-flight checklists, and rally boundaries.",
+                subcategories: {
+                    "Auto": ["AUTO_", "WP_"],
+                    "Rally": ["RALLY_"],
+                    "GeoRef": ["GPS_"],
+                    "Checklists": ["CH_"]
+                }
+            },
+            "Video & Imaging": {
+                icon: "🎥",
+                desc: "Video camera codecs, OSD display elements, goggles and FPV camera feeds.",
+                subcategories: {
+                    "Camera": ["CAM_"],
+                    "Video": ["VID_"],
+                    "OSD": ["OSD_"],
+                    "Goggles": ["VR_"]
+                }
+            },
+            "Obstacle Avoidance": {
+                icon: "🛑",
+                desc: "Proximity sensors, LiDAR height/distance parameters, radar and path planning.",
+                subcategories: {
+                    "Proximity": ["PRX_"],
+                    "LiDAR": ["RNGFND_"],
+                    "Radar": ["RADAR_"],
+                    "Avoidance": ["AVOID_"],
+                    "Path Planning": ["OA_"]
+                }
+            },
+            "Logging & Diagnostics": {
+                icon: "📝",
+                desc: "Onboard flash data logging, telemetry logs, runtime statistics and diagnostic tools.",
+                subcategories: {
+                    "Dataflash": ["LOG_"],
+                    "Tlog": ["TELEM_"],
+                    "Diagnostics": ["STAT_"],
+                    "Log Analyzer": ["LANA_"]
+                }
+            },
+            "Performance": {
+                icon: "⚡",
+                desc: "Main CPU task scheduler loop rates, memory checks, and multitasking config.",
+                subcategories: {
+                    "CPU": ["SCHED_"],
+                    "Loop Rate": ["SCHED_LOOP_RATE"],
+                    "Memory": ["MEM_"],
+                    "Threads": ["TH_"]
+                }
+            },
+            "Advanced": {
+                icon: "⚙️",
+                desc: "General parameter list, custom firmware scripting, plugins, and raw settings.",
+                subcategories: {
+                    "Parameters": ["_"],
+                    "Custom": ["CUST_"],
+                    "Scripts": ["SCR_"],
+                    "Plugins": ["PLUG_"]
+                }
+            },
+            "Firmware": {
+                icon: "💾",
+                desc: "Bootloader parameters, internal board setup, and hardware descriptors.",
+                subcategories: {
+                    "Bootloader": ["BOOT_"],
+                    "Board": ["BRD_"],
+                    "Install": ["INST_"]
+                }
+            },
+            "System": {
+                icon: "🖥️",
+                desc: "Universal system date & time parameters, theme layouts, and user preferences.",
+                subcategories: {
+                    "Date & Time": ["TIME_"],
+                    "User Preferences": ["SYS_"],
+                    "Themes": ["THEME_"]
+                }
+            }
+        };
+
+        // State Store
+        var rawParameters = [];
+        var categorizedParams = {};
+        var modifiedParams = {}; // name -> newValue
+        var favoriteParams = [];
+        
+        try {
+            favoriteParams = JSON.parse(localStorage.getItem('fav_params') || '[]');
+        } catch(e) {
+            favoriteParams = [];
+        }
+
+        var activeLevel = 1;
+        var selectedCategory = "";
+        var selectedSubcategory = "";
+        var selectedParameter = null;
+        
+        var systemStatus = {
+            connected: false,
+            firmware: "OFFLINE",
+            frame: "",
+            link: "0%",
+            port: "",
+            sysid: "0"
+        };
+
+        var selectedPaletteIndex = -1;
+        var filteredPaletteItems = [];
+        var compareData = null;
+
+        // Initialize Page
+        window.onload = function() {
+            initSearch();
+            initSidebar();
+            initHotkeys();
+            
+            // Check if bridge exists and request status/params
+            if (window.external) {
+                try {
+                    // C# will invoke onParamsLoaded and onStatusLoaded asynchronously
+                    if (window.external.GetSystemStatus) {
+                        onStatusLoaded(window.external.GetSystemStatus());
+                    }
+                    if (window.external.GetParametersJson) {
+                        onParamsLoaded(window.external.GetParametersJson());
+                    }
+                } catch(e) {
+                    console.log("Bridge initialization failed:", e);
+                    generateMockData();
+                }
+            } else {
+                generateMockData();
+            }
+        };
+
+        // Mock Data for Standalone Testing
+        function generateMockData() {
+            setTimeout(function() {
+                var mock = [];
+                for(var i = 0; i < 200; i++) {
+                    mock.push({
+                        name: "COMPASS_USE" + (i === 0 ? "" : i),
+                        value: i % 3 === 0 ? 0 : 1,
+                        defaultValue: "1",
+                        desc: "Enable/Disable compass for navigation. Allows ardupilot to fuse compass readings into heading calculations.",
+                        range: "0 to 1",
+                        options: "0:Disabled,1:Enabled",
+                        units: "mG"
+                    });
+                    mock.push({
+                        name: "MOT_PWM_TYPE" + (i === 0 ? "" : i),
+                        value: i % 4,
+                        defaultValue: "0",
+                        desc: "ESC Output PWM type. Determines the signal type generated for flight controller to ESC communication.",
+                        range: "0 to 4",
+                        options: "0:Normal,1:OneShot,2:OneShot125,3:DShot150,4:DShot600",
+                        units: "Hz"
+                    });
+                }
+                onParamsLoaded(JSON.stringify(mock));
+                onStatusLoaded(JSON.stringify({
+                    connected: true,
+                    firmware: "ArduCopter 4.6.3",
+                    frame: "QUAD",
+                    link: "99%",
+                    port: "COM7",
+                    sysid: "1"
+                }));
+            }, 300);
+        }
+
+        // Bridge Callbacks
+        window.onParamsLoaded = function(jsonStr) {
+            var loader = document.getElementById('loading-screen');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 300);
+            }
+
+            try {
+                rawParameters = JSON.parse(jsonStr);
+                processParameters();
+                updateStats();
+                renderCategoryGrid();
+                renderSidebar();
+                
+                // Keep view state
+                if (activeLevel === 3) {
+                    renderParameterTable();
+                } else if (activeLevel === 2) {
+                    renderSubcategoryGrid();
+                }
+            } catch(e) {
+                showToast("Failed to load parameters", "error");
+            }
+        };
+
+        window.onStatusLoaded = function(jsonStr) {
+            try {
+                systemStatus = JSON.parse(jsonStr);
+                updateStatusBar();
+            } catch(e) {
+                console.log("Failed to load system status:", e);
+            }
+        };
+
+        // Process & Categorize Parameters
+        function processParameters() {
+            // Reset Categorized Params
+            categorizedParams = {};
+            for (var cat in categoryMap) {
+                if (!categoryMap.hasOwnProperty(cat)) continue;
+                categorizedParams[cat] = {};
+                for (var subcat in categoryMap[cat].subcategories) {
+                    if (!categoryMap[cat].subcategories.hasOwnProperty(subcat)) continue;
+                    categorizedParams[cat][subcat] = [];
+                }
+            }
+
+            for (var i = 0; i < rawParameters.length; i++) {
+                var param = rawParameters[i];
+                var mapped = false;
+                
+                for (var catName in categoryMap) {
+                    if (!categoryMap.hasOwnProperty(catName)) continue;
+                    var cat = categoryMap[catName];
+                    for (var subcatName in cat.subcategories) {
+                        if (!cat.subcategories.hasOwnProperty(subcatName)) continue;
+                        var prefixes = cat.subcategories[subcatName];
+                        for (var k = 0; k < prefixes.length; k++) {
+                            var prefix = prefixes[k];
+                            if (param.name.indexOf(prefix) === 0) {
+                                categorizedParams[catName][subcatName].push(param);
+                                mapped = true;
+                                break;
+                            }
+                        }
+                        if (mapped) break;
+                    }
+                    if (mapped) break;
+                }
+                
+                if (!mapped) {
+                    // Fallback to Advanced -> Parameters
+                    if (!categorizedParams["Advanced"]) {
+                        categorizedParams["Advanced"] = { "Parameters": [] };
+                    }
+                    if (!categorizedParams["Advanced"]["Parameters"]) {
+                        categorizedParams["Advanced"]["Parameters"] = [];
+                    }
+                    categorizedParams["Advanced"]["Parameters"].push(param);
+                }
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').innerText = rawParameters.length;
+            document.getElementById('stat-modified').innerText = Object.keys(modifiedParams).length;
+            document.getElementById('stat-favs').innerText = favoriteParams.length;
+        }
+
+        // Sidebar Navigation
+        function initSidebar() {
+            renderSidebar();
+        }
+
+        function renderSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = '<div class="sidebar-header">Main Categories</div>';
+            
+            // Dashboard Item
+            var dbItem = document.createElement('div');
+            dbItem.className = 'sidebar-menu-item ' + (activeLevel === 1 ? 'active' : '');
+            dbItem.innerHTML = '<span class="sidebar-menu-icon">📊</span><span>Dashboard</span>';
+            dbItem.onclick = function() {
+                navigateToLevel(1);
+            };
+            sidebar.appendChild(dbItem);
+
+            // Category Items
+            for (var catName in categoryMap) {
+                if (!categoryMap.hasOwnProperty(catName)) continue;
+                var count = 0;
+                for (var sub in categorizedParams[catName]) {
+                    if (categorizedParams[catName].hasOwnProperty(sub)) {
+                        count += categorizedParams[catName][sub].length;
+                    }
+                }
+                
+                var item = document.createElement('div');
+                item.className = 'sidebar-menu-item ' + (selectedCategory === catName && activeLevel !== 1 ? 'active' : '');
+                item.innerHTML = '<span class="sidebar-menu-icon">' + categoryMap[catName].icon + '</span>' +
+                                 '<span style="flex: 1;">' + catName + '</span>' +
+                                 '<span style="font-size: 9px; color: #5b6575; font-weight: 700;">' + count + '</span>';
+                
+                (function(cName) {
+                    item.onclick = function() {
+                        selectCategory(cName);
+                    };
+                })(catName);
+
+                sidebar.appendChild(item);
+            }
+        }
+
+        // Render Dashboard Cards
+        function renderCategoryGrid() {
+            var grid = document.getElementById('category-grid');
+            grid.innerHTML = "";
+
+            for (var catName in categoryMap) {
+                if (!categoryMap.hasOwnProperty(catName)) continue;
+                var total = 0;
+                var modified = 0;
+                
+                for (var sub in categorizedParams[catName]) {
+                    if (!categorizedParams[catName].hasOwnProperty(sub)) continue;
+                    var list = categorizedParams[catName][sub];
+                    total += list.length;
+                    for (var i = 0; i < list.length; i++) {
+                        if (modifiedParams[list[i].name] !== undefined) modified++;
+                    }
+                }
+
+                var card = document.createElement('div');
+                card.className = "category-card";
+                card.innerHTML = '<span class="card-header-icon">' + categoryMap[catName].icon + '</span>' +
+                                 '<div class="card-title">' + catName + '</div>' +
+                                 '<div class="card-desc">' + categoryMap[catName].desc + '</div>' +
+                                 '<div class="card-footer">' +
+                                 '  <span>Params: <span class="hl">' + total + '</span></span>' +
+                                 (modified > 0 ? '  <span class="mod-count">' + modified + ' Modified</span>' : '  <span>0 Modified</span>') +
+                                 '</div>';
+                
+                (function(cName) {
+                    card.onclick = function() {
+                        selectCategory(cName);
+                    };
+                })(catName);
+
+                grid.appendChild(card);
+            }
+        }
+
+        function selectCategory(catName) {
+            selectedCategory = catName;
+            activeLevel = 2;
+            renderSidebar();
+            renderSubcategoryGrid();
+            updateBreadcrumbs();
+            
+            // Switch views
+            document.getElementById('panel-level1').classList.remove('active');
+            document.getElementById('panel-level3').classList.remove('active');
+            document.getElementById('panel-level2').classList.add('active');
+        }
+
+        // Render Subcategory Dashboard
+        function renderSubcategoryGrid() {
+            var grid = document.getElementById('subcategory-grid');
+            grid.innerHTML = "";
+
+            var subcats = categoryMap[selectedCategory].subcategories;
+            for (var subcatName in subcats) {
+                if (!subcats.hasOwnProperty(subcatName)) continue;
+                var list = categorizedParams[selectedCategory][subcatName] || [];
+                var total = list.length;
+                var modified = 0;
+                
+                for (var i = 0; i < list.length; i++) {
+                    if (modifiedParams[list[i].name] !== undefined) modified++;
+                }
+
+                var card = document.createElement('div');
+                card.className = "category-card";
+                card.innerHTML = '<span class="card-header-icon">📂</span>' +
+                                 '<div class="card-title">' + subcatName + '</div>' +
+                                 '<div class="card-desc">Edit calibration, outputs and dynamic modes for ' + subcatName + '.</div>' +
+                                 '<div class="card-footer">' +
+                                 '  <span>Params: <span class="hl">' + total + '</span></span>' +
+                                 (modified > 0 ? '  <span class="mod-count">' + modified + ' Modified</span>' : '  <span>0 Modified</span>') +
+                                 '</div>';
+                
+                (function(sName) {
+                    card.onclick = function() {
+                        selectSubcategory(sName);
+                    };
+                })(subcatName);
+
+                grid.appendChild(card);
+            }
+        }
+
+        function selectSubcategory(subcatName) {
+            selectedSubcategory = subcatName;
+            activeLevel = 3;
+            renderSidebar();
+            renderParameterTable();
+            updateBreadcrumbs();
+
+            // Switch views
+            document.getElementById('panel-level1').classList.remove('active');
+            document.getElementById('panel-level2').classList.remove('active');
+            document.getElementById('panel-level3').classList.add('active');
+        }
+
+        // Render Parameter Table Grid
+        function renderParameterTable() {
+            var tbody = document.getElementById('param-table-body');
+            tbody.innerHTML = "";
+
+            var list = categorizedParams[selectedCategory][selectedSubcategory] || [];
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #5b6575; padding: 30px;">No parameters found in this subcategory.</td></tr>';
+                return;
+            }
+
+            for (var i = 0; i < list.length; i++) {
+                var param = list[i];
+                var tr = document.createElement('tr');
+                tr.id = "param-row-" + param.name;
+                if (selectedParameter && selectedParameter.name === param.name) {
+                    tr.className = "selected";
+                }
+                
+                (function(p) {
+                    tr.onclick = function() {
+                        selectParameter(p);
+                    };
+                })(param);
+
+                var isFav = favoriteParams.indexOf(param.name) !== -1;
+                var currentVal = modifiedParams[param.name] !== undefined ? modifiedParams[param.name] : param.value;
+                var isModified = modifiedParams[param.name] !== undefined;
+
+                var cleanDesc = (param.desc || "").replace(/"/g, '&quot;');
+                var cleanRange = (param.range || "").replace(/"/g, '&quot;');
+                var cleanOptions = (param.options || "").replace(/"/g, '&quot;');
+
+                tr.innerHTML = '<td>' +
+                               '  <span class="param-fav-star ' + (isFav ? 'active' : '') + '" onclick="toggleFavorite(event, \'' + param.name + '\')">★</span>' +
+                               '</td>' +
+                               '<td class="param-name-cell">' + param.name + '</td>' +
+                               '<td>' +
+                               '  <input type="text" class="param-val-input ' + (isModified ? 'modified' : '') + '" ' +
+                               '         value="' + currentVal + '" ' +
+                               '         onchange="onTableInputChanged(event, \'' + param.name + '\')" ' +
+                               '         onclick="event.stopPropagation()">' +
+                               '</td>' +
+                               '<td style="font-family: monospace; font-size: 11px;">' + (param.units || '-') + '</td>' +
+                               '<td style="font-size: 11px; color: #8b95a5; font-family: monospace; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + cleanRange + ' ' + cleanOptions + '">' +
+                               '  ' + (param.range || '') + ' ' + (param.options || '') +
+                               '</td>' +
+                               '<td style="font-size: 12px; color: #8b95a5; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + cleanDesc + '">' +
+                               '  ' + (param.desc || '') +
+                               '</td>';
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Selection of single parameter -> detail panel
+        function selectParameter(param) {
+            selectedParameter = param;
+            
+            // Remove previous selections
+            var rows = document.querySelectorAll('#param-table-body tr');
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].classList.remove('selected');
+            }
+            
+            var row = document.getElementById("param-row-" + param.name);
+            if (row) row.classList.add('selected');
+
+            // Populate Detail Panel
+            document.getElementById('detail-name').innerText = param.name;
+            document.getElementById('detail-type').innerText = "RAM PARAMETER";
+            document.getElementById('detail-desc').innerText = param.desc || "No description available.";
+            document.getElementById('detail-default').innerText = param.defaultValue || "NaN";
+            document.getElementById('detail-units').innerText = param.units || "-";
+            
+            var optionsStr = (param.range ? "Range: " + param.range : "") + (param.options ? "\nOptions:\n" + param.options.split(',').join('\n') : "");
+            document.getElementById('detail-options').innerText = optionsStr || "-";
+
+            // Setup input
+            var editBox = document.getElementById('detail-edit-box');
+            editBox.style.display = 'block';
+
+            var currentVal = modifiedParams[param.name] !== undefined ? modifiedParams[param.name] : param.value;
+            var valInput = document.getElementById('detail-input-value');
+            valInput.value = currentVal;
+            valInput.className = "detail-editor-input " + (modifiedParams[param.name] !== undefined ? 'modified' : '');
+
+            // Dropdown options parsing
+            var selectContainer = document.getElementById('detail-options-container');
+            var select = document.getElementById('detail-options-select');
+            
+            if (param.options) {
+                selectContainer.style.display = 'block';
+                select.innerHTML = '<option value="">-- Choose Option --</option>';
+                
+                var opts = param.options.split(',');
+                for (var k = 0; k < opts.length; k++) {
+                    var opt = opts[k];
+                    var parts = opt.split(':');
+                    if (parts.length >= 2) {
+                        var optVal = parts[0].trim();
+                        var optText = parts[1].trim();
+                        var isSelected = Number(currentVal) === Number(optVal) ? 'selected' : '';
+                        select.innerHTML += '<option value="' + optVal + '" ' + isSelected + '>' + optVal + ': ' + optText + '</option>';
+                    }
+                }
+            } else {
+                selectContainer.style.display = 'none';
+            }
+        }
+
+        // Favorites
+        function toggleFavorite(event, name) {
+            event.stopPropagation();
+            var idx = favoriteParams.indexOf(name);
+            if (idx !== -1) {
+                favoriteParams.splice(idx, 1);
+                event.target.classList.remove('active');
+            } else {
+                favoriteParams.push(name);
+                event.target.classList.add('active');
+            }
+            try {
+                localStorage.setItem('fav_params', JSON.stringify(favoriteParams));
+            } catch(e) {}
+            updateStats();
+        }
+
+        // Breadcrumbs Manager
+        function updateBreadcrumbs() {
+            var breadcrumbs = document.getElementById('breadcrumbs');
+            breadcrumbs.innerHTML = "";
+
+            var span1 = document.createElement('span');
+            span1.className = "link";
+            span1.innerText = "Dashboard";
+            span1.onclick = function() { navigateToLevel(1); };
+            breadcrumbs.appendChild(span1);
+
+            if (activeLevel >= 2) {
+                breadcrumbs.appendChild(document.createTextNode(" > "));
+                var span2 = document.createElement('span');
+                span2.className = activeLevel === 2 ? "active" : "link";
+                span2.innerText = selectedCategory;
+                span2.onclick = function() { navigateToLevel(2); };
+                breadcrumbs.appendChild(span2);
+            }
+
+            if (activeLevel >= 3) {
+                breadcrumbs.appendChild(document.createTextNode(" > "));
+                var span3 = document.createElement('span');
+                span3.className = "active";
+                span3.innerText = selectedSubcategory;
+                breadcrumbs.appendChild(span3);
+            }
+        }
+
+        function navigateToLevel(level) {
+            activeLevel = level;
+            if (level === 1) {
+                selectedCategory = "";
+                selectedSubcategory = "";
+                selectedParameter = null;
+                document.getElementById('panel-level2').classList.remove('active');
+                document.getElementById('panel-level3').classList.remove('active');
+                document.getElementById('panel-level1').classList.add('active');
+            } else if (level === 2) {
+                selectedSubcategory = "";
+                selectedParameter = null;
+                document.getElementById('panel-level1').classList.remove('active');
+                document.getElementById('panel-level3').classList.remove('active');
+                document.getElementById('panel-level2').classList.add('active');
+                renderSubcategoryGrid();
+            }
+            renderSidebar();
+            updateBreadcrumbs();
+        }
+
+        // Input Changes Handles
+        function onTableInputChanged(event, name) {
+            var val = event.target.value.trim();
+            validateAndQueueParam(name, val, event.target);
+        }
+
+        function onDetailInputChanged() {
+            var input = document.getElementById('detail-input-value');
+            var val = input.value.trim();
+            validateAndQueueParam(selectedParameter.name, val, input);
+            
+            // Sync with table input
+            var tableInput = document.querySelector("#param-row-" + selectedParameter.name + " .param-val-input");
+            if (tableInput) {
+                tableInput.value = val;
+                tableInput.className = input.className.replace('detail-editor-input', 'param-val-input');
+            }
+            
+            // Update Select dropdown if matches
+            var select = document.getElementById('detail-options-select');
+            if (select) {
+                select.value = val;
+            }
+        }
+
+        function onDetailSelectChanged() {
+            var select = document.getElementById('detail-options-select');
+            if (select.value === "") return;
+            
+            var valInput = document.getElementById('detail-input-value');
+            valInput.value = select.value;
+            onDetailInputChanged();
+        }
+
+        // Validation & State Queuing
+        function validateAndQueueParam(name, valStr, inputElement) {
+            var val = parseFloat(valStr);
+            var param = null;
+            for (var i = 0; i < rawParameters.length; i++) {
+                if (rawParameters[i].name === name) {
+                    param = rawParameters[i];
+                    break;
+                }
+            }
+            if (!param) return;
+
+            // Range validation
+            var isValid = true;
+            if (param.range) {
+                var parts = param.range.split('to');
+                if (parts.length === 2) {
+                    var min = parseFloat(parts[0]);
+                    var max = parseFloat(parts[1]);
+                    if (!isNaN(min) && !isNaN(max)) {
+                        if (val < min || val > max) {
+                            isValid = false;
+                        }
+                    }
+                }
+            }
+
+            if (isNaN(val)) {
+                isValid = false;
+            }
+
+            if (!isValid) {
+                inputElement.classList.add('invalid');
+                return;
+            }
+
+            inputElement.classList.remove('invalid');
+
+            // Queue change if different from original MAV value
+            if (val === param.value) {
+                delete modifiedParams[name];
+                inputElement.classList.remove('modified');
+            } else {
+                modifiedParams[name] = val;
+                inputElement.classList.add('modified');
+            }
+
+            updateStats();
+        }
+
+        function resetDetailParamToDefault() {
+            if (!selectedParameter) return;
+            var defVal = parseFloat(selectedParameter.defaultValue);
+            if (isNaN(defVal)) return;
+
+            var input = document.getElementById('detail-input-value');
+            input.value = defVal;
+            onDetailInputChanged();
+            showToast("Reset " + selectedParameter.name + " to default value: " + defVal);
+        }
+
+        // Action Handlers (Writing/MAVLink integration)
+        function writeSingleDetailParam() {
+            if (!selectedParameter) return;
+            var name = selectedParameter.name;
+            var val = modifiedParams[name] !== undefined ? modifiedParams[name] : selectedParameter.value;
+
+            // Trigger C# bridge write
+            if (window.external && window.external.WriteParameter) {
+                var success = window.external.WriteParameter(name, val);
+                if (success) {
+                    // Update main list
+                    selectedParameter.value = val;
+                    delete modifiedParams[name];
+                    
+                    // Clear inputs highlight
+                    document.getElementById('detail-input-value').classList.remove('modified');
+                    var tableInput = document.querySelector("#param-row-" + name + " .param-val-input");
+                    if (tableInput) {
+                        tableInput.value = val;
+                        tableInput.classList.remove('modified');
+                    }
+                    
+                    showToast("Successfully wrote " + name + " = " + val, "success");
+                    updateStats();
+                } else {
+                    showToast("Failed to write parameter. Ensure vehicle is connected.", "error");
+                }
+            } else {
+                // Mock success
+                selectedParameter.value = val;
+                delete modifiedParams[name];
+                document.getElementById('detail-input-value').classList.remove('modified');
+                var tableInput = document.querySelector("#param-row-" + name + " .param-val-input");
+                if (tableInput) tableInput.classList.remove('modified');
+                showToast("[Mock] Wrote " + name + " = " + val, "success");
+                updateStats();
+            }
+        }
+
+        function writeAllParams() {
+            var changes = [];
+            for (var name in modifiedParams) {
+                if (modifiedParams.hasOwnProperty(name)) {
+                    changes.push({ name: name, value: modifiedParams[name] });
+                }
+            }
+
+            if (changes.length === 0) {
+                showToast("No pending modifications to write.");
+                return;
+            }
+
+            if (window.external && window.external.WriteParameters) {
+                var resMsg = window.external.WriteParameters(JSON.stringify(changes));
+                showToast(resMsg, resMsg.indexOf("Error") === 0 ? "error" : "success");
+                
+                // Clear changes
+                for (var i = 0; i < changes.length; i++) {
+                    var change = changes[i];
+                    var p = null;
+                    for (var k = 0; k < rawParameters.length; k++) {
+                        if (rawParameters[k].name === change.name) {
+                            p = rawParameters[k];
+                            break;
+                        }
+                    }
+                    if (p) p.value = change.value;
+                    
+                    // Remove highlight in grid
+                    var rowInput = document.querySelector("#param-row-" + change.name + " .param-val-input");
+                    if (rowInput) {
+                        rowInput.value = change.value;
+                        rowInput.classList.remove('modified');
+                    }
+                }
+                
+                modifiedParams = {};
+                if (selectedParameter) {
+                    selectParameter(selectedParameter);
+                }
+                updateStats();
+            } else {
+                // Mock success
+                showToast("[Mock] Wrote " + changes.length + " parameters successfully.", "success");
+                for (var i = 0; i < changes.length; i++) {
+                    var change = changes[i];
+                    var p = null;
+                    for (var k = 0; k < rawParameters.length; k++) {
+                        if (rawParameters[k].name === change.name) {
+                            p = rawParameters[k];
+                            break;
+                        }
+                    }
+                    if (p) p.value = change.value;
+                }
+                modifiedParams = {};
+                if (selectedParameter) selectParameter(selectedParameter);
+                updateStats();
+            }
+        }
+
+        function rerequestParams() {
+            var loader = document.getElementById('loading-screen');
+            if (loader) {
+                loader.style.display = 'flex';
+                loader.style.opacity = '1';
+            }
+            
+            if (window.external && window.external.RerequestParams) {
+                window.external.RerequestParams();
+            } else {
+                setTimeout(function() {
+                    if (loader) {
+                        loader.style.opacity = '0';
+                        setTimeout(function() { loader.style.display = 'none'; }, 300);
+                    }
+                    showToast("Parameters refreshed (Mock)");
+                }, 1000);
+            }
+        }
+
+        // Import / Export parameter files
+        function importParams() {
+            if (window.external && window.external.LoadParamsFromFile) {
+                var jsonStr = window.external.LoadParamsFromFile();
+                if (jsonStr) {
+                    var dict = JSON.parse(jsonStr);
+                    var importCount = 0;
+                    for (var name in dict) {
+                        if (!dict.hasOwnProperty(name)) continue;
+                        var val = dict[name];
+                        var p = null;
+                        for (var i = 0; i < rawParameters.length; i++) {
+                            if (rawParameters[i].name === name) {
+                                p = rawParameters[i];
+                                break;
+                            }
+                        }
+                        if (p) {
+                            modifiedParams[name] = val;
+                            importCount++;
+                        }
+                    }
+                    showToast("Imported " + importCount + " parameters. Review and click \"Write All\" to save to vehicle.");
+                    updateStats();
+                    
+                    if (activeLevel === 3) renderParameterTable();
+                }
+            } else {
+                showToast("Import is only supported inside Mission Planner", "error");
+            }
+        }
+
+        function exportParams() {
+            // Package all parameters (current + modified)
+            var dict = {};
+            for (var i = 0; i < rawParameters.length; i++) {
+                var p = rawParameters[i];
+                dict[p.name] = modifiedParams[p.name] !== undefined ? modifiedParams[p.name] : p.value;
+            }
+
+            if (window.external && window.external.SaveParamsToFile) {
+                var success = window.external.SaveParamsToFile(JSON.stringify(dict));
+                if (success) {
+                    showToast("Parameters exported successfully.", "success");
+                }
+            } else {
+                showToast("Export is only supported inside Mission Planner", "error");
+            }
+        }
+
+        // Parameter Compare Tool
+        function compareParams() {
+            if (window.external && window.external.LoadParamsFromFile) {
+                var jsonStr = window.external.LoadParamsFromFile();
+                if (jsonStr) {
+                    compareData = JSON.parse(jsonStr);
+                    showCompareDialog();
+                }
+            } else {
+                showToast("Compare tool is only supported inside Mission Planner", "error");
+            }
+        }
+
+        function showCompareDialog() {
+            var tbody = document.getElementById('compare-table-body');
+            tbody.innerHTML = "";
+            
+            var diffCount = 0;
+            for (var name in compareData) {
+                if (!compareData.hasOwnProperty(name)) continue;
+                var loadedVal = compareData[name];
+                var p = null;
+                for (var i = 0; i < rawParameters.length; i++) {
+                    if (rawParameters[i].name === name) {
+                        p = rawParameters[i];
+                        break;
+                    }
+                }
+                if (p) {
+                    var currentVal = modifiedParams[name] !== undefined ? modifiedParams[name] : p.value;
+                    if (Number(currentVal) !== Number(loadedVal)) {
+                        diffCount++;
+                        var tr = document.createElement('tr');
+                        tr.innerHTML = '<td class="param-name-cell">' + name + '</td>' +
+                                       '<td>' + currentVal + '</td>' +
+                                       '<td style="color: #ff9f1c; font-weight: bold;">' + loadedVal + '</td>' +
+                                       '<td>' +
+                                       '  <button class="btn btn-primary" style="padding: 2px 8px; font-size: 10px;" onclick="mergeSingleCompareParam(\'' + name + '\', ' + loadedVal + ')">Merge</button>' +
+                                       '</td>';
+                        tbody.appendChild(tr);
+                    }
+                }
+            }
+
+            if (diffCount === 0) {
+                showToast("No differences found between current configuration and selected file.", "success");
+                return;
+            }
+
+            document.getElementById('compare-dialog').classList.add('active');
+        }
+
+        function mergeSingleCompareParam(name, val) {
+            modifiedParams[name] = val;
+            updateStats();
+            if (activeLevel === 3) renderParameterTable();
+            showCompareDialog();
+        }
+
+        function mergeAllCompareParams() {
+            var mergeCount = 0;
+            for (var name in compareData) {
+                if (!compareData.hasOwnProperty(name)) continue;
+                var loadedVal = compareData[name];
+                var p = null;
+                for (var i = 0; i < rawParameters.length; i++) {
+                    if (rawParameters[i].name === name) {
+                        p = rawParameters[i];
+                        break;
+                    }
+                }
+                if (p) {
+                    var currentVal = modifiedParams[name] !== undefined ? modifiedParams[name] : p.value;
+                    if (Number(currentVal) !== Number(loadedVal)) {
+                        modifiedParams[name] = loadedVal;
+                        mergeCount++;
+                    }
+                }
+            }
+            updateStats();
+            if (activeLevel === 3) renderParameterTable();
+            document.getElementById('compare-dialog').classList.remove('active');
+            showToast("Merged " + mergeCount + " parameters. Click \"Write All\" to save to vehicle.", "success");
+        }
+
+        // Global search & command palette
+        function initSearch() {
+            // Global Search input filtering
+            document.getElementById('global-search').oninput = function(e) {
+                var val = e.target.value.toLowerCase().trim();
+                filterGlobalResults(val);
+            };
+
+            // Hotkey Ctrl+P / Ctrl+K
+            document.onkeydown = function(e) {
+                if ((e.ctrlKey && e.key === 'p') || (e.ctrlKey && e.key === 'k')) {
+                    e.preventDefault();
+                    openCommandPalette();
+                } else if (e.key === 'Escape') {
+                    closeCommandPalette();
+                }
+            };
+            
+            // Palette search input filter
+            document.getElementById('palette-search').oninput = function(e) {
+                var val = e.target.value.toLowerCase().trim();
+                renderPaletteResults(val);
+            };
+
+            document.getElementById('palette-search').onkeydown = function(e) {
+                var items = document.querySelectorAll('.palette-item');
+                if (items.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedPaletteIndex = (selectedPaletteIndex + 1) % items.length;
+                    highlightPaletteItem(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedPaletteIndex = (selectedPaletteIndex - 1 + items.length) % items.length;
+                    highlightPaletteItem(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedPaletteIndex >= 0 && selectedPaletteIndex < items.length) {
+                        items[selectedPaletteIndex].click();
+                    }
+                }
+            };
+        }
+
+        function filterGlobalResults(val) {
+            if (val === "") {
+                if (activeLevel === 3) renderParameterTable();
+                return;
+            }
+
+            activeLevel = 3;
+            document.getElementById('panel-level1').classList.remove('active');
+            document.getElementById('panel-level2').classList.remove('active');
+            document.getElementById('panel-level3').classList.add('active');
+
+            var tbody = document.getElementById('param-table-body');
+            tbody.innerHTML = "";
+
+            var matches = [];
+            for (var i = 0; i < rawParameters.length; i++) {
+                var p = rawParameters[i];
+                if (p.name.toLowerCase().indexOf(val) !== -1 || (p.desc && p.desc.toLowerCase().indexOf(val) !== -1)) {
+                    matches.push(p);
+                    if (matches.length >= 150) break;
+                }
+            }
+
+            if (matches.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #5b6575; padding: 30px;">No parameters match your search.</td></tr>';
+                return;
+            }
+
+            for (var k = 0; k < matches.length; k++) {
+                var param = matches[k];
+                var tr = document.createElement('tr');
+                tr.id = "param-row-" + param.name;
+                
+                (function(p) {
+                    tr.onclick = function() { selectParameter(p); };
+                })(param);
+                
+                var isFav = favoriteParams.indexOf(param.name) !== -1;
+                var currentVal = modifiedParams[param.name] !== undefined ? modifiedParams[param.name] : param.value;
+                var isModified = modifiedParams[param.name] !== undefined;
+
+                var cleanDesc = (param.desc || "").replace(/"/g, '&quot;');
+                var cleanRange = (param.range || "").replace(/"/g, '&quot;');
+                var cleanOptions = (param.options || "").replace(/"/g, '&quot;');
+
+                tr.innerHTML = '<td><span class="param-fav-star ' + (isFav ? 'active' : '') + '" onclick="toggleFavorite(event, \'' + param.name + '\')">★</span></td>' +
+                               '<td class="param-name-cell">' + param.name + '</td>' +
+                               '<td>' +
+                               '  <input type="text" class="param-val-input ' + (isModified ? 'modified' : '') + '" ' +
+                               '         value="' + currentVal + '" ' +
+                               '         onchange="onTableInputChanged(event, \'' + param.name + '\')" ' +
+                               '         onclick="event.stopPropagation()">' +
+                               '</td>' +
+                               '<td>' + (param.units || '-') + '</td>' +
+                               '<td style="font-size: 11px; color: #8b95a5; font-family: monospace; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + cleanRange + ' ' + cleanOptions + '">' + (param.range || '') + '</td>' +
+                               '<td style="font-size: 12px; color: #8b95a5; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + cleanDesc + '">' + (param.desc || '') + '</td>';
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Command Palette logic
+        function openCommandPalette() {
+            document.getElementById('command-palette').classList.add('active');
+            var input = document.getElementById('palette-search');
+            input.value = "";
+            input.focus();
+            selectedPaletteIndex = -1;
+            renderPaletteResults("");
+        }
+
+        function closeCommandPalette(e) {
+            if (!e || e.target.id === 'command-palette') {
+                document.getElementById('command-palette').classList.remove('active');
+            }
+        }
+
+        function closeCompareDialog(e) {
+            if (!e || e.target.id === 'compare-dialog') {
+                document.getElementById('compare-dialog').classList.remove('active');
+            }
+        }
+
+        function renderPaletteResults(query) {
+            var container = document.getElementById('palette-results');
+            container.innerHTML = "";
+            selectedPaletteIndex = -1;
+
+            if (query === "") {
+                var items = [];
+                for (var cat in categoryMap) {
+                    if (categoryMap.hasOwnProperty(cat)) {
+                        items.push({ type: 'category', name: cat, icon: categoryMap[cat].icon });
+                    }
+                }
+                filteredPaletteItems = items.slice(0, 10);
+            } else {
+                var items = [];
+                
+                for (var cat in categoryMap) {
+                    if (!categoryMap.hasOwnProperty(cat)) continue;
+                    if (cat.toLowerCase().indexOf(query) !== -1) {
+                        items.push({ type: 'category', name: cat, icon: categoryMap[cat].icon });
+                    }
+                    
+                    for (var sub in categoryMap[cat].subcategories) {
+                        if (!categoryMap[cat].subcategories.hasOwnProperty(sub)) continue;
+                        if (sub.toLowerCase().indexOf(query) !== -1) {
+                            items.push({ type: 'subcategory', name: sub, category: cat, icon: '📂' });
+                        }
+                    }
+                }
+
+                var paramCount = 0;
+                for (var i = 0; i < rawParameters.length; i++) {
+                    var p = rawParameters[i];
+                    if (p.name.toLowerCase().indexOf(query) !== -1) {
+                        var catInfo = categorizeParameter(p);
+                        items.push({ type: 'parameter', name: p.name, desc: p.desc, category: catInfo.category, subcategory: catInfo.subcategory, icon: '⚙️', param: p });
+                        paramCount++;
+                        if (paramCount >= 30) break;
+                    }
+                }
+
+                filteredPaletteItems = items;
+            }
+
+            if (filteredPaletteItems.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #5b6575;">No matches found.</div>';
+                return;
+            }
+
+            for (var k = 0; k < filteredPaletteItems.length; k++) {
+                var item = filteredPaletteItems[k];
+                var div = document.createElement('div');
+                div.className = "palette-item";
+                
+                (function(it) {
+                    div.onclick = function() {
+                        executePaletteJump(it);
+                    };
+                })(item);
+
+                if (item.type === 'category') {
+                    div.innerHTML = '<div class="palette-item-left">' +
+                                     '  <span class="palette-item-icon">' + item.icon + '</span>' +
+                                     '  <span class="palette-item-title">' + item.name + '</span>' +
+                                     '</div>' +
+                                     '<span class="palette-item-type">Category</span>';
+                } else if (item.type === 'subcategory') {
+                    div.innerHTML = '<div class="palette-item-left">' +
+                                     '  <span class="palette-item-icon">📂</span>' +
+                                     '  <div>' +
+                                     '      <span class="palette-item-title">' + item.name + '</span>' +
+                                     '      <span class="palette-item-path">in ' + item.category + '</span>' +
+                                     '  </div>' +
+                                     '</div>' +
+                                     '<span class="palette-item-type">Subcategory</span>';
+                } else if (item.type === 'parameter') {
+                    div.innerHTML = '<div class="palette-item-left">' +
+                                     '  <span class="palette-item-icon">⚙️</span>' +
+                                     '  <div>' +
+                                     '      <span class="palette-item-title" style="font-family: monospace;">' + item.name + '</span>' +
+                                     '      <span class="palette-item-path">in ' + item.category + ' → ' + item.subcategory + '</span>' +
+                                     '  </div>' +
+                                     '</div>' +
+                                     '<span class="palette-item-type">Parameter</span>';
+                }
+
+                container.appendChild(div);
+            }
+        }
+
+        function highlightPaletteItem(items) {
+            for (var idx = 0; idx < items.length; idx++) {
+                var item = items[idx];
+                if (idx === selectedPaletteIndex) {
+                    item.classList.add('selected');
+                    // scrollIntoView is standard ES5/DOM
+                    try {
+                        item.scrollIntoView({ block: 'nearest' });
+                    } catch(e) {
+                        item.scrollIntoView(false);
+                    }
+                } else {
+                    item.classList.remove('selected');
+                }
+            }
+        }
+
+        function executePaletteJump(item) {
+            closeCommandPalette();
+            if (item.type === 'category') {
+                selectCategory(item.name);
+            } else if (item.type === 'subcategory') {
+                selectedCategory = item.category;
+                selectSubcategory(item.name);
+            } else if (item.type === 'parameter') {
+                selectedCategory = item.category;
+                selectedSubcategory = item.subcategory;
+                activeLevel = 3;
+                
+                renderSidebar();
+                renderParameterTable();
+                updateBreadcrumbs();
+                
+                document.getElementById('panel-level1').classList.remove('active');
+                document.getElementById('panel-level2').classList.remove('active');
+                document.getElementById('panel-level3').classList.add('active');
+
+                // Select parameter and scroll it into view
+                var p = null;
+                for (var i = 0; i < rawParameters.length; i++) {
+                    if (rawParameters[i].name === item.name) {
+                        p = rawParameters[i];
+                        break;
+                    }
+                }
+                if (p) {
+                    selectParameter(p);
+                    setTimeout(function() {
+                        var row = document.getElementById("param-row-" + p.name);
+                        if (row) {
+                            try {
+                                row.scrollIntoView({ block: 'center' });
+                            } catch(e) {
+                                row.scrollIntoView(false);
+                            }
+                        }
+                    }, 50);
+                }
+            }
+        }
+
+        function categorizeParameter(param) {
+            var name = param.name;
+            for (var catName in categoryMap) {
+                var cat = categoryMap[catName];
+                for (var subcatName in cat.subcategories) {
+                    var prefixes = cat.subcategories[subcatName];
+                    for (var i = 0; i < prefixes.length; i++) {
+                        var prefix = prefixes[i];
+                        if (name.indexOf(prefix) === 0) {
+                            return { category: catName, subcategory: subcatName };
+                        }
+                    }
+                }
+            }
+            return { category: "Advanced", subcategory: "Parameters" };
+        }
+
+        // Status bar update helper
+        function updateStatusBar() {
+            var dot = document.getElementById('status-dot');
+            var text = document.getElementById('status-text');
+            
+            if (systemStatus.connected) {
+                dot.className = "status-dot active";
+                text.innerText = "CONNECTED (" + systemStatus.port + ")";
+                
+                document.getElementById('status-vehicle-info').style.display = 'flex';
+                document.getElementById('status-vehicle-val').innerText = systemStatus.firmware + " (" + systemStatus.frame + ")";
+                
+                document.getElementById('status-link-info').style.display = 'flex';
+                document.getElementById('status-link-val').innerText = systemStatus.link;
+            } else {
+                dot.className = "status-dot inactive";
+                text.innerText = "OFFLINE";
+                document.getElementById('status-vehicle-info').style.display = 'none';
+                document.getElementById('status-link-info').style.display = 'none';
+            }
+            document.getElementById('status-sysid').innerText = systemStatus.sysid;
+        }
+
+        // Toast feedback notifier
+        function showToast(message, type) {
+            if (!type) type = "info";
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = "toast " + type;
+            toast.innerHTML = '<span>' + message + '</span>' +
+                              '<span style="cursor: pointer; margin-left: 10px; font-weight: bold;" onclick="this.parentElement.remove()">×</span>';
+            container.appendChild(toast);
+            
+            // Auto remove after 4 seconds
+            setTimeout(function() {
+                try {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.5s ease';
+                    setTimeout(function() { toast.remove(); }, 500);
+                } catch(e) {}
+            }, 4000);
+        }
+
+        function initHotkeys() {
+            document.getElementById('global-search').onkeydown = function(e) {
+                if (e.key === 'Escape') {
+                    e.target.value = "";
+                    filterGlobalResults("");
+                    e.target.blur();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

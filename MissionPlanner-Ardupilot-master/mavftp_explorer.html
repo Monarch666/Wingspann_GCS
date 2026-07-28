@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS MAVFTP File Explorer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 12px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Search input */
+        .search-wrapper {
+            position: relative;
+            width: 200px;
+        }
+
+        .search-input {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 6px 12px 6px 28px;
+            border-radius: 4px;
+            font-size: 11px;
+            outline: none;
+            width: 100%;
+            height: 32px;
+        }
+
+        .search-input:focus {
+            border-color: #ff5a1f;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            fill: #6c788a;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn:disabled {
+            background-color: #161a23;
+            color: #4a5568;
+            border-color: #232a36;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-danger {
+            background-color: #3b181a;
+            color: #ff4a55;
+            border: 1px solid #632326;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff4a55;
+            color: #ffffff;
+            border-color: #ff4a55;
+        }
+
+        /* Workspace layout */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .main-explorer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* Breadcrumb Navigation */
+        .breadcrumb-bar {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a96a8;
+            flex-shrink: 0;
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            transition: color 0.15s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb-item:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #2d3748;
+        }
+
+        .breadcrumb-item.active {
+            color: #ff5a1f;
+            cursor: default;
+        }
+
+        /* Folder Cards Grid */
+        .folder-cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .folder-card {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .folder-card:hover {
+            border-color: #ff5a1f80;
+            background-color: #161a23;
+            transform: translateY(-1px);
+        }
+
+        .folder-card-icon {
+            width: 24px;
+            height: 24px;
+            fill: #ff5a1f;
+        }
+
+        .folder-card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .folder-card-name {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 11px;
+        }
+
+        .folder-card-desc {
+            font-size: 10px;
+            color: #6c788a;
+        }
+
+        /* Central File Grid */
+        .grid-container {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #1c222c;
+            background-color: #141820;
+            padding: 10px 15px;
+            font-weight: 700;
+            color: #8a96a8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .grid-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #1c222c;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .grid-row:hover {
+            background-color: #161a23;
+        }
+
+        .grid-row.selected {
+            background-color: #1b202c;
+            border-left: 2px solid #ff5a1f;
+            padding-left: 13px; /* Keep alignment correct */
+        }
+
+        /* Column widths */
+        .col-select { width: 40px; display: flex; justify-content: center; }
+        .col-name { flex: 2; display: flex; align-items: center; gap: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-type { flex: 0.8; color: #8a96a8; }
+        .col-size { flex: 0.8; text-align: right; margin-right: 20px; color: #8a96a8; }
+        .col-actions { width: 60px; display: flex; justify-content: flex-end; }
+
+        .row-checkbox {
+            accent-color: #ff5a1f;
+            cursor: pointer;
+        }
+
+        .file-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .icon-dir { fill: #ff9f1c; }
+        .icon-file { fill: #8a96a8; }
+        .icon-param { fill: #3a86ff; }
+        .icon-bin { fill: #ff006e; }
+
+        .item-name {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .row-action-dots {
+            color: #6c788a;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .row-action-dots:hover {
+            color: #ffffff;
+            background-color: #2d3748;
+        }
+
+        /* Context Menu inside Explorer */
+        .row-actions-dropdown {
+            position: relative;
+        }
+
+        /* Right Panel Details */
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Details card */
+        .details-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1c222c;
+        }
+
+        .details-large-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .details-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            word-break: break-all;
+        }
+
+        .details-desc {
+            font-size: 10px;
+            color: #6c788a;
+        }
+
+        .details-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .details-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .details-label {
+            color: #6c788a;
+            font-weight: 600;
+        }
+
+        .details-val {
+            color: #ffffff;
+            font-weight: 700;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Storage progress bar */
+        .storage-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .storage-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #8a96a8;
+            font-weight: 700;
+        }
+
+        .storage-bar-bg {
+            background-color: #1a202c;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .storage-bar-fill {
+            background-color: #00b4d8;
+            height: 100%;
+            border-radius: 3px;
+            width: 78%;
+            transition: width 0.3s ease;
+        }
+
+        .storage-bar-fill.warning {
+            background-color: #ff9f1c;
+        }
+
+        /* Quick actions buttons */
+        .actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Bottom status / progress panel */
+        .bottom-panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a96a8;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #6c788a;
+            border-radius: 50%;
+        }
+
+        .status-dot.connected {
+            background-color: #00b4d8;
+        }
+
+        .transfer-queue {
+            display: none;
+            align-items: center;
+            gap: 15px;
+            background-color: #161a23;
+            border: 1px solid #ff5a1f40;
+            border-radius: 4px;
+            padding: 4px 12px;
+            height: 28px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .transfer-progress-bar {
+            background-color: #1a202c;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .transfer-progress-fill {
+            background-color: #ff5a1f;
+            height: 100%;
+            width: 0%;
+        }
+
+        /* Empty states */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px;
+            color: #6c788a;
+            gap: 12px;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            fill: #1c222c;
+        }
+
+        .empty-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #8a96a8;
+        }
+
+        .empty-desc {
+            font-size: 11px;
+            text-align: center;
+            max-width: 250px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <h1>MAVFTP File Explorer</h1>
+            <p>Access and manage flight controller files over MAVLink FTP.</p>
+        </div>
+        <div class="header-actions">
+            <div class="search-wrapper">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" class="search-input" id="search-field" placeholder="Search current folder..." onkeyup="filterItems()">
+            </div>
+            <button class="btn" onclick="refreshDirectory()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                Refresh
+            </button>
+            <button class="btn btn-primary" id="btn-top-upload" onclick="triggerUpload()" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                Upload
+            </button>
+            <button class="btn" id="btn-top-download" onclick="triggerDownload()" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                Download
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        
+        <div class="main-explorer">
+            
+            <!-- Breadcrumbs -->
+            <div class="breadcrumb-bar" id="breadcrumb-container">
+                <!-- Breadcrumbs segments will load dynamically -->
+            </div>
+
+            <!-- Folder Cards for Quick Navigation -->
+            <div class="folder-cards">
+                <div class="folder-card" onclick="quickNavigate('/@SYS/logs')">
+                    <svg class="folder-card-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="folder-card-details">
+                        <span class="folder-card-name">Logs</span>
+                        <span class="folder-card-desc">Flight telemetry files</span>
+                    </div>
+                </div>
+                <div class="folder-card" onclick="quickNavigate('/')">
+                    <svg class="folder-card-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="folder-card-details">
+                        <span class="folder-card-name">Parameters</span>
+                        <span class="folder-card-desc">Vehicle config files</span>
+                    </div>
+                </div>
+                <div class="folder-card" onclick="quickNavigate('/scripts')">
+                    <svg class="folder-card-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="folder-card-details">
+                        <span class="folder-card-name">Scripts</span>
+                        <span class="folder-card-desc">Lua scripts cache</span>
+                    </div>
+                </div>
+                <div class="folder-card" onclick="quickNavigate('/@SYS')">
+                    <svg class="folder-card-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="folder-card-details">
+                        <span class="folder-card-name">Firmware</span>
+                        <span class="folder-card-desc">System app & settings</span>
+                    </div>
+                </div>
+                <div class="folder-card" onclick="quickNavigate('/')">
+                    <svg class="folder-card-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="folder-card-details">
+                        <span class="folder-card-name">Backups</span>
+                        <span class="folder-card-desc">Local backup files</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Files Grid -->
+            <div class="grid-container" id="grid-container">
+                <div class="grid-header">
+                    <div class="col-select"></div>
+                    <div class="col-name">Name</div>
+                    <div class="col-type">Type</div>
+                    <div class="col-size">Size</div>
+                    <div class="col-actions"></div>
+                </div>
+                <div id="grid-rows-container">
+                    <!-- Files will load here dynamically -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Panel -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title">Details</div>
+                <div class="details-card" id="details-card-container">
+                    <svg class="details-large-icon icon-dir" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <div class="details-name" id="details-name">@SYS</div>
+                    <div class="details-desc" id="details-desc">System Directory</div>
+                </div>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="details-label">Path:</span>
+                        <span class="details-val" id="details-path">/</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Type:</span>
+                        <span class="details-val" id="details-type">Directory</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Size:</span>
+                        <span class="details-val" id="details-size">--</span>
+                    </div>
+                </div>
+
+                <div class="storage-wrapper" style="margin-top: 10px;">
+                    <div class="storage-text">
+                        <span>STORAGE USED:</span>
+                        <span id="storage-lbl">12.6 MB / 16.0 MB (78%)</span>
+                    </div>
+                    <div class="storage-bar-bg">
+                        <div class="storage-bar-fill" id="storage-bar" style="width: 78%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">Quick Actions</div>
+                <div class="actions-list">
+                    <button class="btn" id="btn-action-mkdir" onclick="triggerNewFolder()" disabled>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-1 8h-3v3h-2v-3h-3v-2h3V9h2v3h3v2z"/></svg>
+                        New Folder
+                    </button>
+                    <button class="btn" id="btn-action-upload" onclick="triggerUpload()" disabled>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                        Upload File
+                    </button>
+                    <button class="btn" id="btn-action-rename" onclick="triggerRename()" disabled>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                        Rename
+                    </button>
+                    <button class="btn btn-danger" id="btn-action-delete" onclick="triggerDelete()" disabled>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        Delete
+                    </button>
+                    <button class="btn btn-danger" id="btn-action-format" onclick="triggerFormatFlash()" style="margin-top: 15px;" disabled>
+                        Format Flash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Status / Transfer Progress Panel -->
+    <div class="bottom-panel">
+        <div class="status-info">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Disconnected</span>
+        </div>
+
+        <div class="transfer-queue" id="transfer-queue">
+            <span id="queue-desc">Uploading: log_45.bin...</span>
+            <div class="transfer-progress-bar">
+                <div class="transfer-progress-fill" id="queue-fill" style="width: 45%;"></div>
+            </div>
+            <span id="queue-percent">45%</span>
+        </div>
+    </div>
+
+    <!-- Core Javascript Logic -->
+    <script>
+        var currentPath = "/";
+        var allItems = [];
+        var selectedItem = null;
+        var connected = false;
+
+        // SVGs as template variables
+        var svgFolder = '<svg class="file-icon icon-dir" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>';
+        var svgFileTxt = '<svg class="file-icon icon-file" viewBox="0 0 24 24"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>';
+        var svgFileBin = '<svg class="file-icon icon-bin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+        var svgFileParam = '<svg class="file-icon icon-param" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
+
+        window.onload = function() {
+            checkConnection();
+        };
+
+        function checkConnection() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetSystemStatus !== "undefined") {
+                    var statusJson = window.external.GetSystemStatus();
+                    var status = JSON.parse(statusJson);
+                    
+                    connected = status.connected;
+                    updateStatusBar(connected, status.sysid, status.compid);
+
+                    if (connected) {
+                        enableControls(true);
+                        refreshDirectory();
+                    } else {
+                        enableControls(false);
+                        showOfflineState();
+                    }
+                } else {
+                    // Debug Mode (mockup)
+                    console.log("window.external is not available. Loading mockup data.");
+                    connected = true;
+                    updateStatusBar(true, 1, 1);
+                    enableControls(true);
+                    loadMockupData();
+                }
+            } catch (e) {
+                console.error("Connection check failed", e);
+                showOfflineState();
+            }
+        }
+
+        function updateStatusBar(isConnected, sysid, compid) {
+            var dot = document.getElementById("status-dot");
+            var txt = document.getElementById("status-text");
+
+            if (isConnected) {
+                dot.className = "status-dot connected";
+                txt.textContent = "CONNECTED (SYSID: " + sysid + ", COMPID: " + compid + ")";
+            } else {
+                dot.className = "status-dot";
+                txt.textContent = "DISCONNECTED - Connect telemetry to browse files";
+            }
+        }
+
+        function enableControls(enabled) {
+            // Enable/disable buttons based on connection state
+            document.getElementById("btn-top-upload").disabled = !enabled;
+            document.getElementById("btn-action-mkdir").disabled = !enabled;
+            document.getElementById("btn-action-upload").disabled = !enabled;
+            document.getElementById("btn-action-format").disabled = !enabled;
+        }
+
+        function showOfflineState() {
+            var container = document.getElementById("grid-rows-container");
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg class="empty-icon" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/></svg>
+                    <div class="empty-title">Vehicle Disconnected</div>
+                    <div class="empty-desc">MAVFTP is unavailable. Please verify the telemetry link and click refresh.</div>
+                </div>
+            `;
+            updateBreadcrumbs();
+        }
+
+        function loadMockupData() {
+            currentPath = "/@SYS";
+            allItems = [
+                { name: "threads.txt", isDirectory: false, size: 99328, fullName: "/@SYS/threads.txt" },
+                { name: "tasks.txt", isDirectory: false, size: 99328, fullName: "/@SYS/tasks.txt" },
+                { name: "dma.txt", isDirectory: false, size: 99328, fullName: "/@SYS/dma.txt" },
+                { name: "memory.txt", isDirectory: false, size: 99328, fullName: "/@SYS/memory.txt" },
+                { name: "uarts.txt", isDirectory: false, size: 99328, fullName: "/@SYS/uarts.txt" },
+                { name: "timers.txt", isDirectory: false, size: 99328, fullName: "/@SYS/timers.txt" },
+                { name: "can_log.txt", isDirectory: false, size: 99328, fullName: "/@SYS/can_log.txt" },
+                { name: "can0_stats.txt", isDirectory: false, size: 99328, fullName: "/@SYS/can0_stats.txt" },
+                { name: "can1_stats.txt", isDirectory: false, size: 99328, fullName: "/@SYS/can1_stats.txt" },
+                { name: "persistent.param", isDirectory: false, size: 99328, fullName: "/@SYS/persistent.param" },
+                { name: "crash_dump.bin", isDirectory: false, size: 0, fullName: "/@SYS/crash_dump.bin" },
+                { name: "storage.bin", isDirectory: false, size: 32768, fullName: "/@SYS/storage.bin" },
+                { name: "flash.bin", isDirectory: false, size: 99328, fullName: "/@SYS/flash.bin" }
+            ];
+            renderGrid(allItems);
+            updateBreadcrumbs();
+            updateDetailsPanel(null);
+        }
+
+        function refreshDirectory() {
+            if (!connected) {
+                checkConnection();
+                return;
+            }
+
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetDirectoryContent !== "undefined") {
+                    var listJson = window.external.GetDirectoryContent(currentPath);
+                    allItems = JSON.parse(listJson);
+                    
+                    // Sort directories first, then files alphabetically
+                    allItems.sort(function(a, b) {
+                        if (a.isDirectory && !b.isDirectory) return -1;
+                        if (!a.isDirectory && b.isDirectory) return 1;
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    renderGrid(allItems);
+                    updateBreadcrumbs();
+                    updateDetailsPanel(null);
+                }
+            } catch (e) {
+                console.error("Failed to refresh directory", e);
+            }
+        }
+
+        function renderGrid(items) {
+            var container = document.getElementById("grid-rows-container");
+            container.innerHTML = "";
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-icon" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-1 8h-3v3h-2v-3h-3v-2h3V9h2v3h3v2z"/></svg>
+                        <div class="empty-title">This folder is empty</div>
+                        <div class="empty-desc">Click Upload or drag files here to transfer files to the vehicle.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(function(item, idx) {
+                var row = document.createElement("div");
+                row.className = "grid-row";
+                row.onclick = function() { selectRow(idx, row); };
+                row.ondblclick = function() { 
+                    if (item.isDirectory) {
+                        navigateTo(item.fullName);
+                    }
+                };
+
+                // Determine Icon
+                var icon = svgFileBin;
+                var typeStr = "File";
+                
+                if (item.isDirectory) {
+                    icon = svgFolder;
+                    typeStr = "Folder";
+                } else if (item.name.endsWith(".txt")) {
+                    icon = svgFileTxt;
+                    typeStr = "TXT File";
+                } else if (item.name.endsWith(".param") || item.name.endsWith(".params")) {
+                    icon = svgFileParam;
+                    typeStr = "PARAM File";
+                } else if (item.name.endsWith(".bin")) {
+                    icon = svgFileBin;
+                    typeStr = "BIN File";
+                }
+
+                row.innerHTML = `
+                    <div class="col-select"><input type="checkbox" class="row-checkbox" onclick="event.stopPropagation()"></div>
+                    <div class="col-name">${icon} <span class="item-name">${item.name}</span></div>
+                    <div class="col-type">${typeStr}</div>
+                    <div class="col-size">${item.isDirectory ? '--' : formatBytes(item.size)}</div>
+                    <div class="col-actions"><span class="row-action-dots">⋮</span></div>
+                `;
+
+                container.appendChild(row);
+            });
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            var k = 1024;
+            var sizes = ['B', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function selectRow(index, element) {
+            // Deselect previous
+            var rows = document.getElementsByClassName("grid-row");
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].classList.remove("selected");
+            }
+
+            element.classList.add("selected");
+            selectedItem = allItems[index];
+
+            updateDetailsPanel(selectedItem);
+        }
+
+        function updateDetailsPanel(item) {
+            var iconContainer = document.getElementById("details-card-container");
+            var nameEl = document.getElementById("details-name");
+            var descEl = document.getElementById("details-desc");
+            var pathEl = document.getElementById("details-path");
+            var typeEl = document.getElementById("details-type");
+            var sizeEl = document.getElementById("details-size");
+
+            // Buttons
+            var btnTopDownload = document.getElementById("btn-top-download");
+            var btnRename = document.getElementById("btn-action-rename");
+            var btnDelete = document.getElementById("btn-action-delete");
+
+            if (item) {
+                nameEl.textContent = item.name;
+                pathEl.textContent = item.fullName;
+                
+                if (item.isDirectory) {
+                    iconContainer.innerHTML = svgFolder;
+                    typeEl.textContent = "Directory";
+                    sizeEl.textContent = "--";
+                    descEl.textContent = "Folder inside vehicle storage";
+                    
+                    btnTopDownload.disabled = true;
+                    btnRename.disabled = !connected;
+                    btnDelete.disabled = !connected;
+                } else {
+                    var icon = svgFileBin;
+                    var type = "BIN File";
+                    if (item.name.endsWith(".txt")) {
+                        icon = svgFileTxt;
+                        type = "TXT File";
+                    } else if (item.name.endsWith(".param") || item.name.endsWith(".params")) {
+                        icon = svgFileParam;
+                        type = "PARAM File";
+                    }
+                    
+                    iconContainer.innerHTML = icon;
+                    typeEl.textContent = type;
+                    sizeEl.textContent = formatBytes(item.size);
+                    descEl.textContent = "System configuration or log file";
+
+                    btnTopDownload.disabled = !connected;
+                    btnRename.disabled = !connected;
+                    btnDelete.disabled = !connected;
+                }
+            } else {
+                // Folder Root representation
+                iconContainer.innerHTML = svgFolder;
+                nameEl.textContent = currentPath === "/" ? "Storage Root" : currentPath.split("/").pop();
+                descEl.textContent = "Current browsing directory";
+                pathEl.textContent = currentPath;
+                typeEl.textContent = "Directory";
+                sizeEl.textContent = "--";
+
+                btnTopDownload.disabled = true;
+                btnRename.disabled = true;
+                btnDelete.disabled = true;
+            }
+        }
+
+        function updateBreadcrumbs() {
+            var container = document.getElementById("breadcrumb-container");
+            container.innerHTML = "";
+
+            // Home segment
+            var homeSeg = document.createElement("span");
+            homeSeg.className = "breadcrumb-item";
+            homeSeg.textContent = "ROOT";
+            homeSeg.onclick = function() { navigateTo("/"); };
+            container.appendChild(homeSeg);
+
+            if (currentPath === "/") {
+                homeSeg.classList.add("active");
+                return;
+            }
+
+            var parts = currentPath.split("/");
+            var accumPath = "";
+            
+            parts.forEach(function(part, idx) {
+                if (!part) return;
+                accumPath += "/" + part;
+                
+                var separator = document.createElement("span");
+                separator.className = "breadcrumb-separator";
+                separator.textContent = "/";
+                container.appendChild(separator);
+
+                var segment = document.createElement("span");
+                segment.className = "breadcrumb-item";
+                segment.textContent = part;
+                
+                var capturePath = accumPath;
+                segment.onclick = function() { navigateTo(capturePath); };
+
+                if (idx === parts.length - 1) {
+                    segment.classList.add("active");
+                }
+
+                container.appendChild(segment);
+            });
+        }
+
+        function navigateTo(path) {
+            currentPath = path;
+            refreshDirectory();
+        }
+
+        function quickNavigate(path) {
+            navigateTo(path);
+        }
+
+        function filterItems() {
+            var query = document.getElementById("search-field").value.toLowerCase();
+            var filtered = allItems.filter(function(item) {
+                return item.name.toLowerCase().indexOf(query) !== -1;
+            });
+            renderGrid(filtered);
+        }
+
+        // --- File Operations ---
+
+        function triggerUpload() {
+            if (!connected) return;
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.UploadFile !== "undefined") {
+                    var success = window.external.UploadFile(currentPath);
+                    if (success) {
+                        refreshDirectory();
+                    }
+                }
+            } catch (e) {
+                console.error("Upload failed", e);
+            }
+        }
+
+        function triggerDownload() {
+            if (!connected || !selectedItem || selectedItem.isDirectory) return;
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.DownloadFile !== "undefined") {
+                    window.external.DownloadFile(selectedItem.fullName, selectedItem.name);
+                }
+            } catch (e) {
+                console.error("Download failed", e);
+            }
+        }
+
+        function triggerDelete() {
+            if (!connected || !selectedItem) return;
+            if (confirm("Are you sure you want to permanently delete '" + selectedItem.name + "'?")) {
+                try {
+                    if (typeof window.external !== "undefined" && typeof window.external.DeleteFile !== "undefined") {
+                        var success = window.external.DeleteFile(selectedItem.fullName);
+                        if (success) {
+                            refreshDirectory();
+                        } else {
+                            alert("Failed to delete item.");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Delete failed", e);
+                }
+            }
+        }
+
+        function triggerNewFolder() {
+            if (!connected) return;
+            var name = prompt("Enter new folder name:");
+            if (name) {
+                try {
+                    if (typeof window.external !== "undefined" && typeof window.external.CreateDirectory !== "undefined") {
+                        var newPath = (currentPath === "/" ? "" : currentPath) + "/" + name;
+                        var success = window.external.CreateDirectory(newPath);
+                        if (success) {
+                            refreshDirectory();
+                        } else {
+                            alert("Failed to create folder.");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Mkdir failed", e);
+                }
+            }
+        }
+
+        function triggerRename() {
+            if (!connected || !selectedItem) return;
+            var newName = prompt("Enter new name for '" + selectedItem.name + "':", selectedItem.name);
+            if (newName && newName !== selectedItem.name) {
+                try {
+                    if (typeof window.external !== "undefined" && typeof window.external.RenameFile !== "undefined") {
+                        var targetPath = (currentPath === "/" ? "" : currentPath) + "/" + newName;
+                        var success = window.external.RenameFile(selectedItem.fullName, targetPath);
+                        if (success) {
+                            refreshDirectory();
+                        } else {
+                            alert("Failed to rename item.");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Rename failed", e);
+                }
+            }
+        }
+
+        function triggerFormatFlash() {
+            if (!connected) return;
+            if (confirm("WARNING: This will erase all logs, parameters, and flight scripts stored on the vehicle. Do you want to proceed?")) {
+                alert("Formatting Flash is starting on the autopilot. Please do not power down the vehicle.");
+            }
+        }
+
+        // Callback invoked by C# to update progress bar
+        window.onTransferProgress = function(message, percent) {
+            var queue = document.getElementById("transfer-queue");
+            var desc = document.getElementById("queue-desc");
+            var fill = document.getElementById("queue-fill");
+            var pct = document.getElementById("queue-percent");
+
+            if (percent < 0 || percent >= 100) {
+                queue.style.display = "none";
+            } else {
+                queue.style.display = "flex";
+                desc.textContent = message;
+                fill.style.width = percent + "%";
+                pct.textContent = percent + "%";
+            }
+        };
+    </script>
+</body>
+</html>

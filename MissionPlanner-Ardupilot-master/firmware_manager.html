@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS Firmware Management Center</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 13px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #1c222c;
+            height: 60px;
+        }
+
+        .title-section h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .title-section p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 3px;
+        }
+
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 7px 15px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2b333e;
+            color: #5b6575;
+            cursor: not-allowed;
+        }
+
+        /* Workspace Layout */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left side options */
+        .left-menu {
+            width: 200px;
+            background-color: #080a0d;
+            border-right: 1px solid #1c222c;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .menu-item {
+            padding: 10px 25px;
+            cursor: pointer;
+            color: #8a96a8;
+            font-size: 12px;
+            font-weight: 600;
+            border-left: 3px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .menu-item:hover {
+            color: #ffffff;
+            background-color: #13171f;
+        }
+
+        .menu-item.active {
+            color: #ff5a1f;
+            background-color: #13171f;
+            border-left-color: #ff5a1f;
+        }
+
+        /* Central grid for vehicle cards */
+        .content-panel {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .category-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .category-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #1c222c;
+            padding-bottom: 6px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: #2d3748;
+            background-color: #151a24;
+            transform: translateY(-2px);
+        }
+
+        .card.selected {
+            border-color: #ff5a1f;
+            background-color: #181d29;
+            box-shadow: 0 0 10px rgba(255, 90, 31, 0.15);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #6c788a;
+            transition: fill 0.15s ease;
+        }
+
+        .card:hover .card-icon svg, .card.selected .card-icon svg {
+            fill: #ff5a1f;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .card-sub {
+            font-size: 10px;
+            color: #6c788a;
+            margin-bottom: 8px;
+        }
+
+        .card-badge {
+            background-color: #1c222c;
+            color: #8a96a8;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .card.selected .card-badge {
+            background-color: #ff5a1f;
+            color: #ffffff;
+        }
+
+        /* Bottom Info & Flash Action Panel */
+        .bottom-panel {
+            background-color: #080a0d;
+            border-top: 1px solid #1c222c;
+            padding: 20px 25px;
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            flex-shrink: 0;
+        }
+
+        .info-card {
+            flex: 1;
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .info-card-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ff5a1f15;
+            border-radius: 5px;
+            border: 1px solid #ff5a1f30;
+        }
+
+        .info-card-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: #ff5a1f;
+        }
+
+        .info-card-text h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+
+        .info-card-text p {
+            font-size: 11px;
+            color: #6c788a;
+            line-height: 1.4;
+        }
+
+        /* Board details status list */
+        .board-details-card {
+            width: 320px;
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .details-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            border-bottom: 1px solid #171d26;
+            padding-bottom: 4px;
+        }
+
+        .details-row span:first-child {
+            color: #6c788a;
+        }
+
+        .details-row span:last-child {
+            color: #ffffff;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        /* Action Column */
+        .action-column {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-self: center;
+        }
+
+        /* Modals & Dialogs */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal {
+            background-color: #11141a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            width: 420px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 1px solid #1c222c;
+            padding-bottom: 8px;
+        }
+
+        .modal-body {
+            font-size: 12px;
+            color: #a0aec0;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Progress Modal */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #1a202c;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #ff5a1f;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <div class="top-bar">
+        <div class="title-section">
+            <h1>Hardware & Firmware</h1>
+            <p>Firmware Management Center & Board Flash Utility</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="font-size: 11px; color: #6c788a; display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="chk-beta" onchange="toggleBeta(event)"> Include Beta Releases
+            </label>
+            <button class="btn" onclick="refreshFirmwareList()">Refresh</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <!-- Left Sub-menu Navigation -->
+        <div class="left-menu">
+            <div class="menu-item active" onclick="switchSidebarTab('install')">Install Firmware</div>
+            <div class="menu-item" onclick="switchSidebarTab('legacy')">Legacy Firmware</div>
+            <div class="menu-item" onclick="switchSidebarTab('secure')">Secure Flash</div>
+        </div>
+
+        <!-- Center Cards Grid -->
+        <div class="content-panel" id="main-content">
+            <!-- Multirotors Category -->
+            <div class="category-section">
+                <div class="category-title">Multirotor</div>
+                <div class="cards-grid" id="multirotor-grid">
+                    <!-- Quadcopter -->
+                    <div class="card" onclick="selectVehicleCard('copter', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="10" stroke="white" stroke-width="2" fill="none"/>
+                                <line x1="20" y1="20" x2="80" y2="80" stroke="white" stroke-width="2"/>
+                                <line x1="80" y1="20" x2="20" y2="80" stroke="white" stroke-width="2"/>
+                                <circle cx="20" cy="20" r="6" fill="#ff5a1f"/>
+                                <circle cx="80" cy="80" r="6" fill="#ff5a1f"/>
+                                <circle cx="80" cy="20" r="6" fill="#ff5a1f"/>
+                                <circle cx="20" cy="20" r="6" fill="#ff5a1f"/>
+                                <circle cx="20" cy="80" r="6" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Quadcopter</div>
+                        <div class="card-sub">ArduCopter</div>
+                        <div class="card-badge" id="badge-copter">Stable</div>
+                    </div>
+
+                    <!-- Hexacopter -->
+                    <div class="card" onclick="selectVehicleCard('copter', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="10" stroke="white" stroke-width="2" fill="none"/>
+                                <line x1="50" y1="15" x2="50" y2="85" stroke="white" stroke-width="2"/>
+                                <line x1="20" y1="32.5" x2="80" y2="67.5" stroke="white" stroke-width="2"/>
+                                <line x1="20" y1="67.5" x2="80" y2="32.5" stroke="white" stroke-width="2"/>
+                                <circle cx="50" cy="15" r="5" fill="#ff5a1f"/>
+                                <circle cx="50" cy="85" r="5" fill="#ff5a1f"/>
+                                <circle cx="20" cy="32.5" r="5" fill="#ff5a1f"/>
+                                <circle cx="80" cy="67.5" r="5" fill="#ff5a1f"/>
+                                <circle cx="20" cy="67.5" r="5" fill="#ff5a1f"/>
+                                <circle cx="80" cy="32.5" r="5" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Hexacopter</div>
+                        <div class="card-sub">ArduCopter</div>
+                        <div class="card-badge" id="badge-hexa">Stable</div>
+                    </div>
+
+                    <!-- Octocopter -->
+                    <div class="card" onclick="selectVehicleCard('copter', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="10" stroke="white" stroke-width="1.5" fill="none"/>
+                                <line x1="50" y1="15" x2="50" y2="85" stroke="white" stroke-width="1.5"/>
+                                <line x1="15" y1="50" x2="85" y2="50" stroke="white" stroke-width="1.5"/>
+                                <line x1="25" y1="25" x2="75" y2="75" stroke="white" stroke-width="1.5"/>
+                                <line x1="75" y1="25" x2="25" y2="75" stroke="white" stroke-width="1.5"/>
+                                <circle cx="50" cy="15" r="4" fill="#ff5a1f"/><circle cx="50" cy="85" r="4" fill="#ff5a1f"/>
+                                <circle cx="15" cy="50" r="4" fill="#ff5a1f"/><circle cx="85" cy="50" r="4" fill="#ff5a1f"/>
+                                <circle cx="25" cy="25" r="4" fill="#ff5a1f"/><circle cx="75" cy="75" r="4" fill="#ff5a1f"/>
+                                <circle cx="75" cy="25" r="4" fill="#ff5a1f"/><circle cx="25" cy="75" r="4" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Octocopter</div>
+                        <div class="card-sub">ArduCopter</div>
+                        <div class="card-badge" id="badge-octa">Stable</div>
+                    </div>
+
+                    <!-- Y6 Hexacopter -->
+                    <div class="card" onclick="selectVehicleCard('copter', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="8" stroke="white" stroke-width="2" fill="none"/>
+                                <line x1="50" y1="50" x2="50" y2="15" stroke="white" stroke-width="2"/>
+                                <line x1="50" y1="50" x2="20" y2="70" stroke="white" stroke-width="2"/>
+                                <line x1="50" y1="50" x2="80" y2="70" stroke="white" stroke-width="2"/>
+                                <circle cx="50" cy="15" r="6" fill="#ff5a1f"/>
+                                <circle cx="20" cy="70" r="6" fill="#ff5a1f"/>
+                                <circle cx="80" cy="70" r="6" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Y6 Hexacopter</div>
+                        <div class="card-sub">ArduCopter</div>
+                        <div class="card-badge" id="badge-y6">Stable</div>
+                    </div>
+
+                    <!-- Octa Quad -->
+                    <div class="card" onclick="selectVehicleCard('copter', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="10" stroke="white" stroke-width="2" fill="none"/>
+                                <line x1="15" y1="15" x2="85" y2="85" stroke="white" stroke-width="2"/>
+                                <line x1="85" y1="15" x2="15" y2="85" stroke="white" stroke-width="2"/>
+                                <circle cx="15" cy="15" r="6" fill="#ff5a1f"/><circle cx="85" cy="85" r="6" fill="#ff5a1f"/>
+                                <circle cx="85" cy="15" r="6" fill="#ff5a1f"/><circle cx="15" cy="85" r="6" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Octa Quad</div>
+                        <div class="card-sub">ArduCopter</div>
+                        <div class="card-badge" id="badge-octaquad">Stable</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Wings & Planes -->
+            <div class="category-section">
+                <div class="category-title">Fixed Wing & Planes</div>
+                <div class="cards-grid" id="plane-grid">
+                    <!-- Plane -->
+                    <div class="card" onclick="selectVehicleCard('plane', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="white" stroke-width="3"/>
+                                <line x1="15" y1="40" x2="85" y2="40" stroke="white" stroke-width="3"/>
+                                <line x1="30" y1="80" x2="70" y2="80" stroke="white" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Plane</div>
+                        <div class="card-sub">ArduPlane</div>
+                        <div class="card-badge" id="badge-plane">Stable</div>
+                    </div>
+
+                    <!-- Taildragger -->
+                    <div class="card" onclick="selectVehicleCard('plane', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <line x1="50" y1="10" x2="50" y2="85" stroke="white" stroke-width="3"/>
+                                <line x1="15" y1="45" x2="85" y2="45" stroke="white" stroke-width="3"/>
+                                <circle cx="35" cy="85" r="5" fill="#ff5a1f"/>
+                                <circle cx="65" cy="85" r="5" fill="#ff5a1f"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Taildragger</div>
+                        <div class="card-sub">ArduPlane</div>
+                        <div class="card-badge" id="badge-taildragger">Stable</div>
+                    </div>
+
+                    <!-- Flying Wing -->
+                    <div class="card" onclick="selectVehicleCard('plane', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <polygon points="50,15 15,75 85,75" stroke="white" stroke-width="2" fill="none"/>
+                                <line x1="50" y1="15" x2="50" y2="75" stroke="white" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Flying Wing</div>
+                        <div class="card-sub">ArduPlane</div>
+                        <div class="card-badge" id="badge-flyingwing">Stable</div>
+                    </div>
+
+                    <!-- VTOL -->
+                    <div class="card" onclick="selectVehicleCard('plane', this)">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 100 100">
+                                <line x1="50" y1="15" x2="50" y2="85" stroke="white" stroke-width="3"/>
+                                <line x1="15" y1="45" x2="85" y2="45" stroke="white" stroke-width="3"/>
+                                <line x1="30" y1="30" x2="30" y2="60" stroke="#ff5a1f" stroke-width="1.5"/>
+                                <line x1="70" y1="30" x2="70" y2="60" stroke="#ff5a1f" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">VTOL (Plane)</div>
+                        <div class="card-sub">ArduPlane</div>
+                        <div class="card-badge" id="badge-vtol">Stable</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Properties / Action Panel -->
+    <div class="bottom-panel">
+        <!-- Info Cards -->
+        <div class="info-card">
+            <div class="info-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+            <div class="info-card-text">
+                <h3>About Firmware</h3>
+                <p id="fw-info-text">Choose the correct firmware for your vehicle configuration. Connected boards are scanned automatically.</p>
+            </div>
+        </div>
+
+        <!-- Board Detection Card -->
+        <div class="board-details-card">
+            <div class="details-title">Detected Autopilot</div>
+            <div class="details-row">
+                <span>Board Type</span>
+                <span id="board-name">Scanning...</span>
+            </div>
+            <div class="details-row">
+                <span>COM Port</span>
+                <span id="board-port">-</span>
+            </div>
+            <div class="details-row">
+                <span>Processor</span>
+                <span id="board-proc">-</span>
+            </div>
+            <div class="details-row">
+                <span>Flash Limit</span>
+                <span id="board-flash">-</span>
+            </div>
+        </div>
+
+        <!-- Flash Action Center -->
+        <div class="action-column">
+            <button class="btn btn-primary" style="width: 100%; height: 40px; justify-content: center; font-size: 12px;" id="btn-flash" onclick="confirmFlashFirmware()" disabled>Install Firmware</button>
+            <button class="btn" style="width: 100%; justify-content: center;" onclick="detectAutopilotBoard()">Detect Autopilot</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal">
+            <div class="modal-title">Confirm Firmware Flash</div>
+            <div class="modal-body">
+                <p style="margin-bottom: 10px;">Are you sure you want to write the selected firmware to your flight controller?</p>
+                <div style="background-color: #0c0e12; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 11px;">
+                    Target: <span id="confirm-fw-name" style="color: #ff5a1f;">-</span><br>
+                    Board: <span id="confirm-board-name" style="color: #ffffff;">-</span><br>
+                    Port: <span id="confirm-port" style="color: #ffffff;">-</span><br>
+                    Type: <span id="confirm-rel-type" style="color: #00ff41;">-</span>
+                </div>
+                <p style="margin-top: 12px; color: #ff4d4d; font-weight: bold;">⚠️ Warning: This will disconnect MAVLink telemetry and erase the autopilot's flash sector.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="startFlashOperation()">Proceed & Flash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Dialog Modal -->
+    <div class="modal-overlay" id="progress-modal">
+        <div class="modal">
+            <div class="modal-title" id="progress-title">Installing Firmware</div>
+            <div class="modal-body">
+                <p id="progress-status">Initializing bootloader connection...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-indicator"></div>
+                </div>
+                <p style="margin-top: 8px; font-size: 10px; color: #6c788a;" id="progress-percent">0% Completed</p>
+            </div>
+            <div class="modal-buttons" id="progress-buttons" style="display: none;">
+                <button class="btn btn-primary" onclick="closeProgressModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        var softwares = [];
+        var selectedSoftware = null;
+        var detectedBoard = null;
+        var isBeta = false;
+
+        window.onload = function() {
+            // Initial boot list load
+            refreshFirmwareList();
+            detectAutopilotBoard();
+        };
+
+        function switchSidebarTab(tab) {
+            var items = document.querySelectorAll('.left-menu .menu-item');
+            for(var i=0; i<items.length; i++) {
+                items[i].classList.remove('active');
+            }
+            event.target.classList.add('active');
+            
+            if (tab === 'legacy') {
+                alert("Legacy releases list can be filtered using the Beta checkbox or loaded via custom firmware.");
+            } else if (tab === 'secure') {
+                alert("Secure Flash mode restricts downloads to signed official builds only.");
+            }
+        }
+
+        function toggleBeta(e) {
+            isBeta = e.target.checked;
+            refreshFirmwareList();
+        }
+
+        function refreshFirmwareList() {
+            if (window.external && window.external.GetFirmwareListJson) {
+                try {
+                    var jsonStr = window.external.GetFirmwareListJson(isBeta);
+                    softwares = JSON.parse(jsonStr);
+                    updateVehicleBadges();
+                } catch(e) {
+                    console.log("Error loading firmware list:", e);
+                    mockFirmwares();
+                }
+            } else {
+                mockFirmwares();
+            }
+        }
+
+        function mockFirmwares() {
+            softwares = [
+                { name: "ArduCopter V4.6.3 Stable", desc: "ArduCopter V4.6.3 Stable Build", vehicleType: "copter", releaseType: "stable", rawSoftware: "{}" },
+                { name: "ArduPlane V4.6.3 Stable", desc: "ArduPlane V4.6.3 Stable Build", vehicleType: "plane", releaseType: "stable", rawSoftware: "{}" },
+                { name: "ArduRover V4.6.3 Stable", desc: "ArduRover V4.6.3 Stable Build", vehicleType: "rover", releaseType: "stable", rawSoftware: "{}" }
+            ];
+            updateVehicleBadges();
+        }
+
+        function updateVehicleBadges() {
+            // Update labels in cards dynamically based on downloaded version list
+            var copter = softwares.filter(function(a){ return a.vehicleType === 'copter'; })[0];
+            var plane = softwares.filter(function(a){ return a.vehicleType === 'plane'; })[0];
+
+            var labelText = isBeta ? "Beta / Dev" : "Stable";
+            var versionText = copter ? copter.name.split(' ')[1] : "V4.6.3";
+
+            var badges = ['copter', 'hexa', 'octa', 'y6', 'octaquad'];
+            for(var i=0; i<badges.length; i++) {
+                var el = document.getElementById('badge-' + badges[i]);
+                if (el) {
+                    el.innerText = labelText;
+                    var card = el.parentElement;
+                    var sub = card.querySelector('.card-sub');
+                    if (sub) sub.innerText = "ArduCopter (" + versionText + ")";
+                }
+            }
+
+            var planeBadges = ['plane', 'taildragger', 'flyingwing', 'vtol'];
+            var planeVersionText = plane ? plane.name.split(' ')[1] : "V4.6.3";
+            for(var j=0; j<planeBadges.length; j++) {
+                var elp = document.getElementById('badge-' + planeBadges[j]);
+                if (elp) {
+                    elp.innerText = labelText;
+                    var cardp = elp.parentElement;
+                    var subp = cardp.querySelector('.card-sub');
+                    if (subp) subp.innerText = "ArduPlane (" + planeVersionText + ")";
+                }
+            }
+        }
+
+        function detectAutopilotBoard() {
+            document.getElementById('board-name').innerText = "Scanning ports...";
+            
+            if (window.external && window.external.DetectConnectedBoard) {
+                try {
+                    setTimeout(function() {
+                        var jsonStr = window.external.DetectConnectedBoard();
+                        var boardInfo = JSON.parse(jsonStr);
+                        onBoardDetected(boardInfo);
+                    }, 500);
+                } catch(e) {
+                    mockBoardDetection();
+                }
+            } else {
+                mockBoardDetection();
+            }
+        }
+
+        function mockBoardDetection() {
+            setTimeout(function() {
+                var mockBoard = {
+                    detected: true,
+                    connected: false,
+                    port: "COM7",
+                    boardType: "Cube Orange",
+                    chip: "STM32H743",
+                    flashSize: 2097152,
+                    chipDesc: "Cortex-M7 Processor"
+                };
+                onBoardDetected(mockBoard);
+            }, 800);
+        }
+
+        function onBoardDetected(boardInfo) {
+            if (boardInfo.detected) {
+                detectedBoard = boardInfo;
+                document.getElementById('board-name').innerText = boardInfo.boardType;
+                document.getElementById('board-port').innerText = boardInfo.port;
+                document.getElementById('board-proc').innerText = boardInfo.chip || "STM32";
+                document.getElementById('board-flash').innerText = boardInfo.flashSize ? (boardInfo.flashSize / 1024) + " KB" : "Unknown";
+                
+                // Enable flash button if software card is selected
+                if (selectedSoftware) {
+                    document.getElementById('btn-flash').disabled = false;
+                }
+            } else {
+                detectedBoard = null;
+                document.getElementById('board-name').innerText = "No Board Detected";
+                document.getElementById('board-port').innerText = "-";
+                document.getElementById('board-proc').innerText = "-";
+                document.getElementById('board-flash').innerText = "-";
+                document.getElementById('btn-flash').disabled = true;
+            }
+        }
+
+        function selectVehicleCard(type, cardEl) {
+            // Remove previous selections
+            var cards = document.querySelectorAll('.card');
+            for(var i=0; i<cards.length; i++) {
+                cards[i].classList.remove('selected');
+            }
+            cardEl.classList.add('selected');
+
+            // Find matching software config
+            selectedSoftware = softwares.filter(function(a){ return a.vehicleType === type; })[0];
+            if (selectedSoftware) {
+                document.getElementById('fw-info-text').innerText = selectedSoftware.desc;
+                if (detectedBoard) {
+                    document.getElementById('btn-flash').disabled = false;
+                }
+            }
+        }
+
+        // Flashing Workflow
+        function confirmFlashFirmware() {
+            if (!selectedSoftware || !detectedBoard) return;
+
+            document.getElementById('confirm-fw-name').innerText = selectedSoftware.name;
+            document.getElementById('confirm-board-name').innerText = detectedBoard.boardType;
+            document.getElementById('confirm-port').innerText = detectedBoard.port;
+            document.getElementById('confirm-rel-type').innerText = selectedSoftware.releaseType.toUpperCase();
+
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').style.display = 'none';
+        }
+
+        function startFlashOperation() {
+            closeConfirmModal();
+            
+            // Reset and show progress modal
+            document.getElementById('progress-indicator').style.width = '0%';
+            document.getElementById('progress-percent').innerText = "0% Completed";
+            document.getElementById('progress-status').innerText = "Downloading target binary file...";
+            document.getElementById('progress-buttons').style.display = 'none';
+            document.getElementById('progress-modal').style.display = 'flex';
+
+            if (window.external && window.external.FlashFirmware) {
+                window.external.FlashFirmware(selectedSoftware.rawSoftware);
+            } else {
+                // Mock progress sequence
+                var pct = 0;
+                var interval = setInterval(function() {
+                    pct += 10;
+                    if (pct <= 30) {
+                        onFlashProgress(pct, "Downloading binary file...");
+                    } else if (pct <= 80) {
+                        onFlashProgress(pct, "Writing flash sectors...");
+                    } else if (pct < 100) {
+                        onFlashProgress(pct, "Verifying checksum signatures...");
+                    } else {
+                        clearInterval(interval);
+                        onFlashProgress(100, "Flash completed successfully!");
+                        onFlashCompleted(true, "Flash finished successfully!");
+                    }
+                }, 400);
+            }
+        }
+
+        // C# Progress Hooks
+        window.onFlashProgress = function(percent, status) {
+            document.getElementById('progress-status').innerText = status;
+            if (percent >= 0) {
+                document.getElementById('progress-indicator').style.width = percent + '%';
+                document.getElementById('progress-percent').innerText = percent + "% Completed";
+            }
+        };
+
+        window.onFlashCompleted = function(success, message) {
+            document.getElementById('progress-title').innerText = success ? "Flash Succeeded" : "Flash Failed";
+            document.getElementById('progress-status').innerText = message;
+            document.getElementById('progress-buttons').style.display = 'flex';
+        };
+
+        function closeProgressModal() {
+            document.getElementById('progress-modal').style.display = 'none';
+            detectAutopilotBoard(); // Rescan board status
+        }
+    </script>
+</body>
+</html>

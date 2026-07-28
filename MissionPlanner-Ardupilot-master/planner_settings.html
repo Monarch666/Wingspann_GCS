@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS Planner Settings</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 12px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon-badge {
+            width: 42px;
+            height: 42px;
+            background-color: #1a202c;
+            border: 1px solid #ff5a1f40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon {
+            width: 20px;
+            height: 20px;
+            fill: #ff5a1f;
+        }
+
+        .header-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn:disabled {
+            background-color: #161a23;
+            color: #4a5568;
+            border-color: #232a36;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f1a;
+            color: #ff5a1f;
+            border: 1px solid #ff5a1f60;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border-color: #ff5a1f;
+        }
+
+        /* Search Settings Row */
+        .filter-row {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .search-input {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            color: #ffffff;
+            padding: 6px 15px 6px 36px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+            height: 38px;
+        }
+
+        .search-input:focus {
+            border-color: #ff5a1f;
+            background-color: #161a23;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            fill: #6c788a;
+        }
+
+        /* Main Workspace layout */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-right: 5px;
+        }
+
+        /* Sidebar info panel */
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Help panel usage guide */
+        .guide-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 11px;
+            color: #8a96a8;
+            line-height: 1.4;
+        }
+
+        .guide-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #ff5a1f;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        /* Action item */
+        .action-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #161a23;
+            border: 1px solid #1c222c;
+            border-radius: 4px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .action-item:hover {
+            border-color: #ff5a1f;
+            background-color: #1d222f;
+        }
+
+        .action-item span {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .action-arrow {
+            fill: #ff5a1f;
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Settings Card Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: border-color 0.15s ease;
+        }
+
+        .card:hover {
+            border-color: #2d3748;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #1c222c;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .card-icon {
+            width: 16px;
+            height: 16px;
+            fill: #ff5a1f;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Inputs & Switches */
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 28px;
+            gap: 15px;
+        }
+
+        .form-label {
+            color: #8a96a8;
+            font-weight: 600;
+        }
+
+        .form-label p {
+            font-size: 10px;
+            color: #6c788a;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .form-control {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            outline: none;
+            width: 140px;
+            height: 28px;
+        }
+
+        .form-control:focus {
+            border-color: #ff5a1f;
+        }
+
+        .form-control.btn-browse {
+            width: 80px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 700;
+            background-color: #ff5a1f10;
+            color: #ff5a1f;
+            border-color: #ff5a1f40;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-control.btn-browse:hover {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border-color: #ff5a1f;
+        }
+
+        .form-control-text {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            outline: none;
+            flex: 1;
+            height: 28px;
+        }
+
+        .form-control-text:focus {
+            border-color: #ff5a1f;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2d3748;
+            transition: .2s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ffffff;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #ff5a1f;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Telemetry rates card layout */
+        .telemetry-row {
+            display: flex;
+            gap: 8px;
+            width: 140px;
+            justify-content: space-between;
+        }
+
+        .telemetry-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .telemetry-col span {
+            font-size: 9px;
+            color: #6c788a;
+            font-weight: 700;
+        }
+
+        .telemetry-input {
+            width: 100%;
+            height: 26px;
+            text-align: center;
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            border-radius: 4px;
+            font-size: 10px;
+            outline: none;
+        }
+
+        .telemetry-input:focus {
+            border-color: #ff5a1f;
+        }
+
+        /* Bottom Status bar */
+        .bottom-bar {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .pending-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a96a8;
+        }
+
+        .pending-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6c788a;
+            border-radius: 50%;
+        }
+
+        .pending-dot.active {
+            background-color: #ff9f1c;
+            box-shadow: 0 0 8px #ff9f1c80;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="header-icon-badge">
+                <svg class="header-icon" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            </div>
+            <div class="header-text">
+                <h1>Planner Settings</h1>
+                <p>Configure Mission Planner compatible settings and application preferences.</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="restoreDefaults()">Restore Defaults</button>
+            <button class="btn" onclick="refreshDirectory()">Refresh</button>
+            <button class="btn btn-primary" id="btn-top-save" onclick="saveAllSettings()" disabled>Save & Apply</button>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="filter-row">
+        <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" class="search-input" id="search-field" placeholder="Search preferences (e.g., speech, theme, telemetry rates)..." onkeyup="filterSettings()">
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+        
+        <!-- Cards List -->
+        <div class="main-content" id="settings-content">
+            
+            <div class="settings-grid">
+                
+                <!-- Video & OSD -->
+                <div class="card" id="card-video">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                        <span class="card-title">Video & OSD</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Video Device</span>
+                        <select class="form-control" id="videoDevice" onchange="changeSetting('videoDevice', this.value)">
+                            <option value="0">Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">OSD Color</span>
+                        <select class="form-control" id="hudColor" onchange="changeSetting('hudColor', this.value)">
+                            <option value="White">White</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Enable HUD Overlay</span>
+                        <label class="switch">
+                            <input type="checkbox" id="hudShow" onchange="changeSetting('hudShow', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="card" id="card-controls">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 11.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <span class="card-title">Controls</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Joystick</span>
+                        <button class="form-control btn-browse" onclick="triggerJoystickSetup()" style="width: 140px;">Joystick Setup</button>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Dist Units</span>
+                        <select class="form-control" id="distUnits" onchange="changeSetting('distUnits', this.value)">
+                            <option value="Meters">Meters</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Alt Units</span>
+                        <select class="form-control" id="altUnits" onchange="changeSetting('altUnits', this.value)">
+                            <option value="Meters">Meters</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Speed Units</span>
+                        <select class="form-control" id="speedUnits" onchange="changeSetting('speedUnits', this.value)">
+                            <option value="meters_per_second">m/s</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Telemetry -->
+                <div class="card" id="card-telemetry">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 7.48 2 13c0 2.76 1.12 5.26 2.93 7.07l1.41-1.41C4.83 17.17 4 15.18 4 13c0-4.42 3.58-8 8-8s8 3.58 8 8c0 2.18-.83 4.17-2.34 5.66l1.41 1.41C20.88 18.26 22 15.76 22 13c0-5.52-4.48-10-10-10zm0 4c-3.31 0-6 2.69-6 6 0 1.66.67 3.16 1.76 4.24l1.41-1.41C8.42 15.13 8 14.11 8 13c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.11-.42 2.13-1.17 2.83l1.41 1.41C17.33 16.16 18 14.66 18 13c0-3.31-2.69-6-6-6zm0 4c-1.1 0-2 .9-2 2 0 .55.22 1.05.59 1.41l1.41-1.41V11z"/></svg>
+                        <span class="card-title">Telemetry Rates</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Telemetry Rates</span>
+                        <div class="telemetry-row">
+                            <div class="telemetry-col">
+                                <span>Attitude</span>
+                                <input type="number" class="telemetry-input" id="rateAttitude" onchange="changeSetting('rateAttitude', this.value)">
+                            </div>
+                            <div class="telemetry-col">
+                                <span>Position</span>
+                                <input type="number" class="telemetry-input" id="ratePosition" onchange="changeSetting('ratePosition', this.value)">
+                            </div>
+                            <div class="telemetry-col">
+                                <span>RC</span>
+                                <input type="number" class="telemetry-input" id="rateRc" onchange="changeSetting('rateRc', this.value)">
+                            </div>
+                            <div class="telemetry-col">
+                                <span>Status</span>
+                                <input type="number" class="telemetry-input" id="rateStatus" onchange="changeSetting('rateStatus', this.value)">
+                            </div>
+                            <div class="telemetry-col">
+                                <span>Sensor</span>
+                                <input type="number" class="telemetry-input" id="rateSensors" onchange="changeSetting('rateSensors', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Reset telemetry on USB connect</span>
+                        <label class="switch">
+                            <input type="checkbox" id="resetapmonconnect" onchange="changeSetting('resetapmonconnect', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Disable RTS reset on USB/ESP32</span>
+                        <label class="switch">
+                            <input type="checkbox" id="rtsresetesp32" onchange="changeSetting('rtsresetesp32', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Paths & Logging -->
+                <div class="card" id="card-paths">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 12H4v-2h8v2zm8-4H4v-2h16v2zm0-4H4V8h16v2z"/></svg>
+                        <span class="card-title">Paths & Logging</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Log Path</span>
+                        <div style="display: flex; gap: 8px; flex: 1; justify-content: flex-end;">
+                            <input type="text" class="form-control-text" id="logDir" readonly>
+                            <button class="form-control btn-browse" onclick="triggerBrowseLogDir()">Browse</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Theme</span>
+                        <select class="form-control" id="theme" onchange="changeSetting('theme', this.value)">
+                            <option value="Classic">Classic</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Layout Style</span>
+                        <select class="form-control" id="layout" onchange="changeSetting('layout', this.value)">
+                            <option value="Basic">Basic</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">GCS System ID</span>
+                        <input type="number" class="form-control" id="gcsId" onchange="changeSetting('gcsId', this.value)">
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Map Access Mode</span>
+                        <div style="display: flex; gap: 8px; flex: 1; justify-content: flex-end;">
+                            <select class="form-control" id="mapCache" onchange="changeSetting('mapCache', this.value)" style="flex: 1;">
+                                <option value="ServerAndCache">ServerAndCache</option>
+                            </select>
+                            <button class="form-control btn-browse" onclick="triggerOpenMapCacheDir()">Open Cache</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aircraft Icon & Display -->
+                <div class="card" id="card-aircraft">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/></svg>
+                        <span class="card-title">Aircraft Icon & Display</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Display COG</span>
+                        <label class="switch">
+                            <input type="checkbox" id="displayCog" onchange="changeSetting('displayCog', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Display Heading</span>
+                        <label class="switch">
+                            <input type="checkbox" id="displayHeading" onchange="changeSetting('displayHeading', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Display Nav Bearing</span>
+                        <label class="switch">
+                            <input type="checkbox" id="displayNavBearing" onchange="changeSetting('displayNavBearing', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Display Turn Radius</span>
+                        <label class="switch">
+                            <input type="checkbox" id="displayRadius" onchange="changeSetting('displayRadius', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Display Target Line</span>
+                        <label class="switch">
+                            <input type="checkbox" id="displayTarget" onchange="changeSetting('displayTarget', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Line Length (meters)</span>
+                        <input type="number" class="form-control" id="lineLength" onchange="changeSetting('lineLength', this.value)">
+                    </div>
+                </div>
+
+                <!-- Speech (TTS) Options -->
+                <div class="card" id="card-speech">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                        <span class="card-title">Speech Alerts (TTS)</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Speech Enabled</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechEnable" onchange="changeSetting('speechEnable', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Speech Armed Only</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechArmedOnly" onchange="changeSetting('speechArmedOnly', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Waypoint Alerts</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechWaypoint" onchange="changeSetting('speechWaypoint', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Flight Mode Alerts</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechMode" onchange="changeSetting('speechMode', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Battery Level Alerts</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechBattery" onchange="changeSetting('speechBattery', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Altitude Warnings</span>
+                        <label class="switch">
+                            <input type="checkbox" id="speechAlt" onchange="changeSetting('speechAlt', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title">About Planner Settings</div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span>These configurations adjust how the Ground Control Station renders information and controls vehicles.</span>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-dot"></div>
+                    <span>Some settings (like language and layouts) require restarting the application to take full effect.</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Quick Actions</div>
+                <div class="action-item" onclick="triggerJoystickSetup()">
+                    <span>Calibrate Joystick</span>
+                    <svg class="action-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                </div>
+                <div class="action-item" onclick="triggerVario()">
+                    <span>Toggle Audio Vario</span>
+                    <svg class="action-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                </div>
+                <div class="action-item" onclick="triggerOpenMapCacheDir()">
+                    <span>Browse Map Cache</span>
+                    <svg class="action-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Actions bar -->
+    <div class="bottom-bar">
+        <div class="pending-info">
+            <div class="pending-dot" id="pending-dot"></div>
+            <span id="pending-lbl">No unsaved changes</span>
+        </div>
+        <div class="pending-actions">
+            <button class="btn" onclick="discardChanges()">Discard</button>
+            <button class="btn btn-primary" id="btn-action-save" onclick="saveAllSettings()" disabled>Save & Apply</button>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        var originalSettings = {};
+        var currentSettings = {};
+        var connected = false;
+
+        window.onload = function() {
+            checkConnection();
+        };
+
+        function checkConnection() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetSystemStatus !== "undefined") {
+                    var status = JSON.parse(window.external.GetSystemStatus());
+                    connected = status.connected;
+                    refreshDirectory();
+                } else {
+                    console.log("Mockup mode");
+                    loadMockupSettings();
+                }
+            } catch (e) {
+                console.error(e);
+                loadMockupSettings();
+            }
+        }
+
+        function loadMockupSettings() {
+            originalSettings = {
+                layout: "Advanced",
+                language: "en-US",
+                theme: "Classic",
+                gcsId: 255,
+                severity: 4,
+                videoDevice: 0,
+                hudShow: true,
+                hudColor: "White",
+                distUnits: "Meters",
+                altUnits: "Meters",
+                speedUnits: "meters_per_second",
+                rateAttitude: 4,
+                ratePosition: 2,
+                rateRc: 2,
+                rateStatus: 2,
+                rateSensors: 2,
+                speechEnable: true,
+                speechArmedOnly: false,
+                speechWaypoint: true,
+                speechMode: true,
+                speechBattery: false,
+                speechAlt: true,
+                displayCog: true,
+                displayHeading: true,
+                displayNavBearing: true,
+                displayRadius: true,
+                displayTarget: true,
+                lineLength: 500,
+                logDir: "C:\\Users\\User\\Documents\\Mission Planner\\Logs",
+                mapCache: "ServerAndCache"
+            };
+            currentSettings = JSON.parse(JSON.stringify(originalSettings));
+            populateUI(currentSettings);
+        }
+
+        function refreshDirectory() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.GetPlannerSettings !== "undefined") {
+                    var settingsJson = window.external.GetPlannerSettings();
+                    originalSettings = JSON.parse(settingsJson);
+                    currentSettings = JSON.parse(JSON.stringify(originalSettings));
+
+                    populateUI(currentSettings);
+                    updatePendingToolbar();
+                }
+            } catch (e) {
+                console.error("Failed to read settings", e);
+            }
+        }
+
+        function populateUI(s) {
+            // Dropdown options populators
+            populateDropdown("theme", s.themes, s.theme);
+            var videoOptions = [];
+            if (s.videoDevices) {
+                for (var i = 0; i < s.videoDevices.length; i++) {
+                    videoOptions.push({ value: i, label: s.videoDevices[i] });
+                }
+            }
+            populateDropdown("videoDevice", videoOptions, s.videoDevice);
+            populateDropdown("hudColor", s.hudColors, s.hudColor);
+            populateDropdown("distUnits", s.distUnitsOptions, s.distUnits);
+            populateDropdown("altUnits", s.altUnitsOptions, s.altUnits);
+            populateDropdown("speedUnits", s.speedUnitsOptions, s.speedUnits);
+            populateDropdown("mapCache", s.mapCacheOptions, s.mapCache);
+
+            // Set simple inputs
+            document.getElementById("gcsId").value = s.gcsId;
+            document.getElementById("rateAttitude").value = s.rateAttitude;
+            document.getElementById("ratePosition").value = s.ratePosition;
+            document.getElementById("rateRc").value = s.rateRc;
+            document.getElementById("rateStatus").value = s.rateStatus;
+            document.getElementById("rateSensors").value = s.rateSensors;
+            document.getElementById("lineLength").value = s.lineLength;
+            document.getElementById("logDir").value = s.logDir;
+            document.getElementById("layout").value = s.layout;
+
+            // Set simple checkboxes
+            setCheckbox("hudShow", s.hudShow);
+            setCheckbox("speechEnable", s.speechEnable);
+            setCheckbox("speechArmedOnly", s.speechArmedOnly);
+            setCheckbox("speechWaypoint", s.speechWaypoint);
+            setCheckbox("speechMode", s.speechMode);
+            setCheckbox("speechBattery", s.speechBattery);
+            setCheckbox("speechAlt", s.speechAlt);
+            setCheckbox("displayCog", s.displayCog);
+            setCheckbox("displayHeading", s.displayHeading);
+            setCheckbox("displayNavBearing", s.displayNavBearing);
+            setCheckbox("displayRadius", s.displayRadius);
+            setCheckbox("displayTarget", s.displayTarget);
+        }
+
+        function populateDropdown(id, options, currentVal) {
+            var select = document.getElementById(id);
+            if (!select) return;
+            select.innerHTML = "";
+
+            if (!options) return;
+
+            options.forEach(function(opt) {
+                var val = typeof opt === "object" ? opt.value : opt;
+                var lbl = typeof opt === "object" ? opt.label : opt;
+                var el = document.createElement("option");
+                el.value = val;
+                el.textContent = lbl;
+                if (String(val) === String(currentVal)) {
+                    el.selected = true;
+                }
+                select.appendChild(el);
+            });
+        }
+
+        function setCheckbox(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.checked = (val === true || val === "true");
+        }
+
+        function changeSetting(key, val) {
+            currentSettings[key] = val;
+            updatePendingToolbar();
+        }
+
+        function updatePendingToolbar() {
+            var count = 0;
+            for (var key in currentSettings) {
+                if (String(currentSettings[key]) !== String(originalSettings[key])) {
+                    count++;
+                }
+            }
+
+            var lbl = document.getElementById("pending-lbl");
+            var dot = document.getElementById("pending-dot");
+
+            var btnTopSave = document.getElementById("btn-top-save");
+            var btnActionSave = document.getElementById("btn-action-save");
+
+            if (count > 0) {
+                lbl.textContent = count + " unsaved configuration change(s) detected.";
+                dot.className = "pending-dot active";
+                btnTopSave.disabled = false;
+                btnActionSave.disabled = false;
+            } else {
+                lbl.textContent = "No unsaved changes";
+                dot.className = "pending-dot";
+                btnTopSave.disabled = true;
+                btnActionSave.disabled = true;
+            }
+        }
+
+        function filterSettings() {
+            var query = document.getElementById("search-field").value.toLowerCase();
+            var cards = document.getElementsByClassName("card");
+
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                var text = card.textContent.toLowerCase();
+                if (text.indexOf(query) !== -1) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            }
+        }
+
+        function triggerJoystickSetup() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.ShowJoystickSetup !== "undefined") {
+                    window.external.ShowJoystickSetup();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function triggerVario() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.ToggleVario !== "undefined") {
+                    window.external.ToggleVario();
+                    alert("Acoustic Vertical Rate Audio Toggled.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function triggerOpenMapCacheDir() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.OpenMapCacheDir !== "undefined") {
+                    window.external.OpenMapCacheDir();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function triggerBrowseLogDir() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.BrowseLogDir !== "undefined") {
+                    var path = window.external.BrowseLogDir();
+                    if (path) {
+                        document.getElementById("logDir").value = path;
+                        changeSetting("logDir", path);
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function discardChanges() {
+            currentSettings = JSON.parse(JSON.stringify(originalSettings));
+            populateUI(currentSettings);
+            updatePendingToolbar();
+        }
+
+        function restoreDefaults() {
+            if (confirm("Are you sure you want to revert all changes to currently saved settings?")) {
+                discardChanges();
+            }
+        }
+
+        function saveAllSettings() {
+            try {
+                if (typeof window.external !== "undefined" && typeof window.external.SavePlannerSettings !== "undefined") {
+                    var jsonStr = JSON.stringify(currentSettings);
+                    var success = window.external.SavePlannerSettings(jsonStr);
+                    if (success) {
+                        alert("Planner preferences updated successfully!");
+                        refreshDirectory();
+                    } else {
+                        alert("Failed to write planner configuration.");
+                    }
+                }
+            } catch (e) {
+                console.error("Save failed", e);
+            }
+        }
+    </script>
+</body>
+</html>

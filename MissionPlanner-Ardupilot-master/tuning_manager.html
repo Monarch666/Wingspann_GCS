@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero-GCS Basic Tuning Module</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0c0e12;
+            color: #e2e2e5;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-size: 13px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: #6c788a;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Dropdowns & buttons */
+        .profile-select {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            outline: none;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: #1a202c;
+            color: #e2e2e5;
+            border: 1px solid #2d3748;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            outline: none;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #ff5a1f;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff723b;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2b333e;
+            color: #5b6575;
+            cursor: not-allowed;
+        }
+
+        /* Workspace Grid */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background-color: #11141a;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1.2;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            flex: 1;
+            position: relative;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff5a1f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        /* Sliders block */
+        .sliders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slider-info-icon {
+            color: #6c788a;
+            font-size: 10px;
+            cursor: help;
+        }
+
+        .slider-value {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
+            color: #ff5a1f;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            width: 70px;
+            text-align: center;
+        }
+
+        /* Custom Slider Styling */
+        .slider-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #2b3547;
+            outline: none;
+            transition: background 0.15s ease;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff5a1f;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-limits {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #6c788a;
+            margin-top: 2px;
+        }
+
+        /* Status Badge */
+        .recommendation-badge {
+            background-color: #ff5a1f0a;
+            border: 1px solid #ff5a1f20;
+            color: #ff5a1f;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .recommendation-badge.success {
+            background-color: #00ff410a;
+            border-color: #00ff4120;
+            color: #00ff41;
+        }
+
+        /* About Tuning Cards */
+        .about-section {
+            background-color: #161a23;
+            border: 1px solid #1c222c;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .about-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-row {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            align-items: flex-start;
+        }
+
+        .about-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .about-desc h5 {
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .about-desc p {
+            color: #8a96a8;
+            line-height: 1.4;
+        }
+
+        /* Right Panel tabs */
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tab-bar {
+            display: flex;
+            background-color: #161a23;
+            border-radius: 4px;
+            padding: 2px;
+            border: 1px solid #1c222c;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #8a96a8;
+            padding: 5px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active {
+            background-color: #ff5a1f;
+            color: #ffffff;
+        }
+
+        /* Canvas View */
+        .preview-container {
+            flex: 1;
+            background-color: #0c0e12;
+            border: 1px solid #1c222c;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #preview-canvas {
+            flex: 1;
+            width: 100%;
+            display: block;
+        }
+
+        /* Legend container Overlay */
+        .canvas-legends {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(12,14,18,0.85);
+            border: 1px solid #1c222c;
+            border-radius: 4px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 10px;
+            z-index: 10;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #8a96a8;
+        }
+
+        .legend-color {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Info tip */
+        .tip-box {
+            background-color: rgba(0, 168, 255, 0.05);
+            border: 1px solid rgba(0, 168, 255, 0.15);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #8a96a8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tip-box svg {
+            width: 16px;
+            height: 16px;
+            fill: #00a8ff;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        .footer {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px solid #1c222c;
+            padding-top: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-msg {
+            margin-right: auto;
+            font-size: 11px;
+            color: #8a96a8;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #8a96a8;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="header-title">
+            <h1>Basic Tuning</h1>
+            <p>Adjust the basic stabilization response of your vehicle.</p>
+        </div>
+        <div class="header-actions">
+            <select class="profile-select" id="profile-dropdown" onchange="loadProfileTemplate()">
+                <option value="default">Profile 1 (Default)</option>
+                <option value="aggressive">Profile 2 (Aggressive)</option>
+                <option value="smooth">Profile 3 (Smooth)</option>
+            </select>
+            <button class="btn" onclick="importProfile()">Import</button>
+            <button class="btn" onclick="exportProfile()">Export</button>
+            <button class="btn" style="width: 32px; padding: 0;">?</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <!-- Settings Sliders -->
+        <div class="panel left-panel">
+            <div class="panel-title">Tuning Controls</div>
+            
+            <div class="sliders-container">
+                <!-- Roll / Pitch Sensitivity (ATC_INPUT_TC) -->
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <div class="slider-label">
+                            Roll / Pitch Sensitivity
+                            <span class="slider-info-icon" title="Sensitivity time constant. Lower values make the control response faster.">ⓘ</span>
+                        </div>
+                        <div class="slider-value" id="val-input-tc">0.1500</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="custom-slider" id="slide-input-tc" min="0.01" max="0.50" step="0.005" oninput="updateSliderValue('input-tc', this.value)">
+                    </div>
+                    <div class="slider-limits">
+                        <span>0.01 (Fastest)</span>
+                        <span>0.50 (Smoothest)</span>
+                    </div>
+                    <div class="recommendation-badge success" id="badge-input-tc">
+                        Recommended range for your setup.
+                    </div>
+                </div>
+
+                <!-- Roll Rate P (ATC_RAT_RLL_P) -->
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <div class="slider-label">
+                            Roll Rate P
+                            <span class="slider-info-icon" title="Proportional response parameter for Roll stabilization loop.">ⓘ</span>
+                        </div>
+                        <div class="slider-value" id="val-rll-p">0.1350</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="custom-slider" id="slide-rll-p" min="0.05" max="0.25" step="0.005" oninput="updateSliderValue('rll-p', this.value)">
+                    </div>
+                    <div class="slider-limits">
+                        <span>0.05 (Low)</span>
+                        <span>0.25 (High)</span>
+                    </div>
+                </div>
+
+                <!-- Pitch Rate P (ATC_RAT_PIT_P) -->
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <div class="slider-label">
+                            Pitch Rate P
+                            <span class="slider-info-icon" title="Proportional response parameter for Pitch stabilization loop.">ⓘ</span>
+                        </div>
+                        <div class="slider-value" id="val-pit-p">0.1350</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="custom-slider" id="slide-pit-p" min="0.05" max="0.25" step="0.005" oninput="updateSliderValue('pit-p', this.value)">
+                    </div>
+                    <div class="slider-limits">
+                        <span>0.05 (Low)</span>
+                        <span>0.25 (High)</span>
+                    </div>
+                </div>
+
+                <!-- Yaw Rate P (ATC_RAT_YAW_P) -->
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <div class="slider-label">
+                            Yaw Rate P
+                            <span class="slider-info-icon" title="Proportional response parameter for Yaw rate stabilization loop.">ⓘ</span>
+                        </div>
+                        <div class="slider-value" id="val-yaw-p">0.2000</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="custom-slider" id="slide-yaw-p" min="0.05" max="0.40" step="0.01" oninput="updateSliderValue('yaw-p', this.value)">
+                    </div>
+                    <div class="slider-limits">
+                        <span>0.05 (Low)</span>
+                        <span>0.40 (High)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Panel -->
+            <div class="about-section">
+                <div class="about-title">
+                    <svg width="14" height="14" fill="#ff5a1f" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    About Basic Tuning
+                </div>
+                <div class="about-row">
+                    <div class="about-dot" style="background-color: #ffaa00;"></div>
+                    <div class="about-desc">
+                        <h5>Too Low</h5>
+                        <p>Sluggish response, slow stick recovery, risk of frame instability.</p>
+                    </div>
+                </div>
+                <div class="about-row">
+                    <div class="about-dot" style="background-color: #00ff41;"></div>
+                    <div class="about-desc">
+                        <h5>Recommended</h5>
+                        <p>Balanced responsiveness, solid hovering accuracy, and wind rejection.</p>
+                    </div>
+                </div>
+                <div class="about-row">
+                    <div class="about-dot" style="background-color: #ff4d4d;"></div>
+                    <div class="about-desc">
+                        <h5>Too High</h5>
+                        <p>Aggressive stick tracking, high motor wear, and potential high-frequency oscillation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Preview Canvas -->
+        <div class="panel right-panel">
+            <div class="preview-header">
+                <div class="panel-title" style="margin-bottom: 0;">Response Preview</div>
+                <div class="tab-bar">
+                    <button class="tab-btn active" id="tab-roll" onclick="switchPreviewTab('roll')">Roll</button>
+                    <button class="tab-btn" id="tab-pitch" onclick="switchPreviewTab('pitch')">Pitch</button>
+                    <button class="tab-btn" id="tab-yaw" onclick="switchPreviewTab('yaw')">Yaw</button>
+                </div>
+            </div>
+
+            <!-- Canvas view -->
+            <div class="preview-container">
+                <canvas id="preview-canvas"></canvas>
+                <!-- Legend Overlay -->
+                <div class="canvas-legends">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff5a1f;"></div>
+                        <span>Current Response (<span id="lbl-curr-val">0.1350</span>)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #00a8ff;"></div>
+                        <span>Lower (Slower)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #00ff41;"></div>
+                        <span>Higher (Faster)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tip bar -->
+            <div class="tip-box">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                <span>Higher values make the copter respond faster but may increase oscillations.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions & Status Footer -->
+    <div class="footer">
+        <div class="status-msg">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Synchronized</span>
+        </div>
+        <button class="btn" onclick="backupSettings()">Backup</button>
+        <button class="btn" style="margin-left: 0;" onclick="restoreDefaults()">Restore Defaults</button>
+        <button class="btn btn-primary" id="btn-apply" onclick="applyTuningSettings()" disabled>Apply & Save</button>
+    </div>
+
+    <script>
+        // Parameters cache
+        var params = {
+            connected: false,
+            ATC_INPUT_TC: 0.15,
+            ATC_RAT_RLL_P: 0.135,
+            ATC_RAT_PIT_P: 0.135,
+            ATC_RAT_YAW_P: 0.20,
+            vehicle: "ArduCopter"
+        };
+
+        var originalParams = {};
+        var modified = false;
+        var activeTab = "roll";
+
+        // Canvas state
+        var canvas = document.getElementById('preview-canvas');
+        var ctx = canvas.getContext('2d');
+        var animationFrame = null;
+        var t = 0;
+
+        window.onload = function() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            requestTuningParams();
+            startAnimationLoop();
+        };
+
+        function resizeCanvas() {
+            var rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function requestTuningParams() {
+            if (window.external && window.external.GetTuningParams) {
+                try {
+                    var jsonStr = window.external.GetTuningParams();
+                    onParamsLoaded(jsonStr);
+                } catch(e) {
+                    console.log("Error requesting params: " + e);
+                    mockParams();
+                }
+            } else {
+                mockParams();
+            }
+        }
+
+        function mockParams() {
+            var mockJson = {
+                connected: true,
+                ATC_INPUT_TC: 0.15,
+                ATC_RAT_RLL_P: 0.135,
+                ATC_RAT_PIT_P: 0.135,
+                ATC_RAT_YAW_P: 0.20,
+                vehicle: "ArduCopter"
+            };
+            onParamsLoaded(JSON.stringify(mockJson));
+        }
+
+        window.onParamsLoaded = function(jsonStr) {
+            params = JSON.parse(jsonStr);
+            originalParams = JSON.parse(jsonStr); // cache copy
+
+            // Sync inputs
+            document.getElementById('slide-input-tc').value = params.ATC_INPUT_TC;
+            document.getElementById('val-input-tc').innerText = params.ATC_INPUT_TC.toFixed(4);
+
+            document.getElementById('slide-rll-p').value = params.ATC_RAT_RLL_P;
+            document.getElementById('val-rll-p').innerText = params.ATC_RAT_RLL_P.toFixed(4);
+
+            document.getElementById('slide-pit-p').value = params.ATC_RAT_PIT_P;
+            document.getElementById('val-pit-p').innerText = params.ATC_RAT_PIT_P.toFixed(4);
+
+            document.getElementById('slide-yaw-p').value = params.ATC_RAT_YAW_P;
+            document.getElementById('val-yaw-p').innerText = params.ATC_RAT_YAW_P.toFixed(4);
+
+            // Sync badges
+            updateRecommendationBadge();
+
+            // Clear dirty
+            modified = false;
+            updateStatusText("Synchronized", "#00ff41");
+            document.getElementById('btn-apply').disabled = true;
+
+            // Sync active preview value label
+            syncLegendLabel();
+        };
+
+        function updateSliderValue(key, val) {
+            var valF = parseFloat(val);
+            if (key === 'input-tc') {
+                params.ATC_INPUT_TC = valF;
+                document.getElementById('val-input-tc').innerText = valF.toFixed(4);
+            } else if (key === 'rll-p') {
+                params.ATC_RAT_RLL_P = valF;
+                document.getElementById('val-rll-p').innerText = valF.toFixed(4);
+            } else if (key === 'pit-p') {
+                params.ATC_RAT_PIT_P = valF;
+                document.getElementById('val-pit-p').innerText = valF.toFixed(4);
+            } else if (key === 'yaw-p') {
+                params.ATC_RAT_YAW_P = valF;
+                document.getElementById('val-yaw-p').innerText = valF.toFixed(4);
+            }
+
+            markModified();
+            syncLegendLabel();
+        }
+
+        function syncLegendLabel() {
+            var activeVal = 0.1350;
+            if (activeTab === 'roll') activeVal = params.ATC_RAT_RLL_P;
+            else if (activeTab === 'pitch') activeVal = params.ATC_RAT_PIT_P;
+            else if (activeTab === 'yaw') activeVal = params.ATC_RAT_YAW_P;
+
+            document.getElementById('lbl-curr-val').innerText = activeVal.toFixed(4);
+        }
+
+        function updateRecommendationBadge() {
+            var tc = params.ATC_INPUT_TC;
+            var el = document.getElementById('badge-input-tc');
+            if (tc >= 0.10 && tc <= 0.22) {
+                el.innerText = "Recommended range for your setup.";
+                el.className = "recommendation-badge success";
+            } else if (tc < 0.10) {
+                el.innerText = "Fast response. Oscillations might occur on larger frames.";
+                el.className = "recommendation-badge";
+            } else {
+                el.innerText = "Smooth response. Recommended for heavy payload/payload stability.";
+                el.className = "recommendation-badge success";
+            }
+        }
+
+        function markModified() {
+            modified = true;
+            updateStatusText("Pending Changes", "#ff5a1f");
+            document.getElementById('btn-apply').disabled = false;
+            updateRecommendationBadge();
+        }
+
+        function updateStatusText(text, color) {
+            document.getElementById('status-text').innerText = text;
+            document.getElementById('status-dot').style.backgroundColor = color;
+        }
+
+        function switchPreviewTab(tab) {
+            var btns = document.querySelectorAll('.tab-bar .tab-btn');
+            for(var i=0; i<btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+            document.getElementById('tab-' + tab).classList.add('active');
+            activeTab = tab;
+            syncLegendLabel();
+        }
+
+        // Live visualization plotting PIDs response
+        function startAnimationLoop() {
+            function render() {
+                t += 0.04;
+                drawVisualization();
+                animationFrame = requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        function drawVisualization() {
+            if (!canvas.width || !canvas.height) return;
+
+            // Clear
+            ctx.fillStyle = '#0c0e12';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Coordinates setup
+            var cx = canvas.width / 2;
+            var cy = canvas.height * 0.45;
+
+            // Draw drone visual frame
+            ctx.strokeStyle = '#1d232e';
+            ctx.lineWidth = 3;
+            
+            // X frame arms
+            var arm = 45;
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // Animate listing rotation based on current active tab and parameter values
+            var pitchOffset = 0;
+            var rollOffset = 0;
+            var yawOffset = 0;
+
+            // Math simulations: higher P = faster oscillation frequency or tighter overshoot
+            var pVal = (activeTab === 'roll') ? params.ATC_RAT_RLL_P 
+                     : ((activeTab === 'pitch') ? params.ATC_RAT_PIT_P : params.ATC_RAT_YAW_P);
+            var tcVal = params.ATC_INPUT_TC;
+
+            // Frequency and damping factor calculations
+            var w = 1.0 / (tcVal + 0.05); // frequency
+            var damping = 4.0 * pVal; // damping factor
+            
+            // Simulating step response: theta(t) = 1 - e^(-d*t)*cos(w*t)
+            var pulse = Math.floor(t / 4) % 2 === 0 ? 0.3 : -0.3; // step input pulses
+            var stepT = t % 4;
+            var responseAngle = pulse * (1 - Math.exp(-damping * stepT) * Math.cos(w * stepT * 3));
+
+            if (activeTab === 'roll') {
+                ctx.rotate(responseAngle);
+            } else if (activeTab === 'pitch') {
+                // Pitch visual offset scale
+                ctx.scale(1, 1 - Math.abs(responseAngle)*0.3);
+            } else if (activeTab === 'yaw') {
+                ctx.rotate(responseAngle * 0.5);
+            }
+
+            // Draw Quad arms
+            ctx.beginPath();
+            ctx.moveTo(-arm, -arm); ctx.lineTo(arm, arm);
+            ctx.moveTo(arm, -arm); ctx.lineTo(-arm, arm);
+            ctx.stroke();
+
+            // Motors & props
+            ctx.fillStyle = '#222836';
+            ctx.strokeStyle = '#6c788a';
+            ctx.lineWidth = 1;
+
+            var motors = [
+                {x: -arm, y: -arm, color: '#ff5a1f'},
+                {x: arm, y: -arm, color: '#ff5a1f'},
+                {x: arm, y: arm, color: '#ffffff'},
+                {x: -arm, y: arm, color: '#ffffff'}
+            ];
+
+            for(var i=0; i<motors.length; i++) {
+                ctx.beginPath();
+                ctx.arc(motors[i].x, motors[i].y, 8, 0, 2*Math.PI);
+                ctx.fillStyle = motors[i].color;
+                ctx.fill();
+                
+                // spin props
+                ctx.beginPath();
+                ctx.ellipse(motors[i].x, motors[i].y, 16, 3, t * 10, 0, 2*Math.PI);
+                ctx.stroke();
+            }
+
+            // Central hub
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, 2*Math.PI);
+            ctx.fillStyle = '#161a23';
+            ctx.fill();
+            ctx.strokeStyle = '#2d3748';
+            ctx.stroke();
+
+            ctx.restore();
+
+            // --- Plot Response Curves at bottom of Canvas ---
+            var graphY = canvas.height - 35;
+            var graphH = 50;
+            var graphW = canvas.width - 60;
+            var graphX = 30;
+
+            // Plot base line grid
+            ctx.strokeStyle = '#181f2a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(graphX, graphY);
+            ctx.lineTo(graphX + graphW, graphY);
+            ctx.moveTo(graphX, graphY - graphH);
+            ctx.lineTo(graphX + graphW, graphY - graphH);
+            ctx.stroke();
+
+            // Plot target step line
+            ctx.strokeStyle = '#323c4a';
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(graphX, graphY - graphH * 0.7);
+            ctx.lineTo(graphX + graphW, graphY - graphH * 0.7);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Plot Current Response Curve (orange)
+            ctx.strokeStyle = '#ff5a1f';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for(var sx=0; sx<graphW; sx++) {
+                var simT = (sx / graphW) * 4;
+                var resY = (1 - Math.exp(-damping * simT) * Math.cos(w * simT * 3)) * 0.7; // normalized response
+                var plotY = graphY - (resY * graphH);
+
+                if (sx === 0) ctx.moveTo(graphX + sx, plotY);
+                else ctx.lineTo(graphX + sx, plotY);
+            }
+            ctx.stroke();
+
+            // Plot Damped reference line (blue)
+            ctx.strokeStyle = '#00a8ff50';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            var slowDamping = damping * 0.5;
+            var slowW = w * 0.8;
+            for(var sx=0; sx<graphW; sx++) {
+                var simT = (sx / graphW) * 4;
+                var resY = (1 - Math.exp(-slowDamping * simT) * Math.cos(slowW * simT * 3)) * 0.7;
+                var plotY = graphY - (resY * graphH);
+
+                if (sx === 0) ctx.moveTo(graphX + sx, plotY);
+                else ctx.lineTo(graphX + sx, plotY);
+            }
+            ctx.stroke();
+
+            // Plot Fast reference line (green)
+            ctx.strokeStyle = '#00ff4150';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            var fastDamping = damping * 1.8;
+            var fastW = w * 1.4;
+            for(var sx=0; sx<graphW; sx++) {
+                var simT = (sx / graphW) * 4;
+                var resY = (1 - Math.exp(-fastDamping * simT) * Math.cos(fastW * simT * 3)) * 0.7;
+                var plotY = graphY - (resY * graphH);
+
+                if (sx === 0) ctx.moveTo(graphX + sx, plotY);
+                else ctx.lineTo(graphX + sx, plotY);
+            }
+            ctx.stroke();
+        }
+
+        // Profile loading templates
+        function loadProfileTemplate() {
+            var dropdown = document.getElementById('profile-dropdown');
+            var val = dropdown.value;
+
+            if (val === 'aggressive') {
+                // Aggressive Profile
+                params.ATC_INPUT_TC = 0.1000;
+                params.ATC_RAT_RLL_P = 0.1800;
+                params.ATC_RAT_PIT_P = 0.1800;
+                params.ATC_RAT_YAW_P = 0.2800;
+            } else if (val === 'smooth') {
+                // Smooth Profile
+                params.ATC_INPUT_TC = 0.2200;
+                params.ATC_RAT_RLL_P = 0.1000;
+                params.ATC_RAT_PIT_P = 0.1000;
+                params.ATC_RAT_YAW_P = 0.1600;
+            } else {
+                // Default Profile
+                params.ATC_INPUT_TC = 0.1500;
+                params.ATC_RAT_RLL_P = 0.1350;
+                params.ATC_RAT_PIT_P = 0.1350;
+                params.ATC_RAT_YAW_P = 0.2000;
+            }
+
+            // Sync sliders
+            document.getElementById('slide-input-tc').value = params.ATC_INPUT_TC;
+            document.getElementById('val-input-tc').innerText = params.ATC_INPUT_TC.toFixed(4);
+
+            document.getElementById('slide-rll-p').value = params.ATC_RAT_RLL_P;
+            document.getElementById('val-rll-p').innerText = params.ATC_RAT_RLL_P.toFixed(4);
+
+            document.getElementById('slide-pit-p').value = params.ATC_RAT_PIT_P;
+            document.getElementById('val-pit-p').innerText = params.ATC_RAT_PIT_P.toFixed(4);
+
+            document.getElementById('slide-yaw-p').value = params.ATC_RAT_YAW_P;
+            document.getElementById('val-yaw-p').innerText = params.ATC_RAT_YAW_P.toFixed(4);
+
+            markModified();
+            syncLegendLabel();
+        }
+
+        function backupSettings() {
+            var paramsStr = JSON.stringify(params);
+            if (window.external && window.external.BackupParams) {
+                var success = window.external.BackupParams(paramsStr);
+                if (success) {
+                    alert("Backup file created successfully!");
+                }
+            } else {
+                alert("Backup file created successfully (Mock)!");
+            }
+        }
+
+        function importProfile() {
+            if (window.external && window.external.ImportProfile) {
+                var jsonStr = window.external.ImportProfile();
+                if (jsonStr) {
+                    try {
+                        onParamsLoaded(jsonStr);
+                        markModified();
+                    } catch(e) {
+                        alert("Invalid profile JSON format.");
+                    }
+                }
+            } else {
+                alert("Mock profile imported successfully.");
+                var mockImport = {
+                    connected: true,
+                    ATC_INPUT_TC: 0.1200,
+                    ATC_RAT_RLL_P: 0.1500,
+                    ATC_RAT_PIT_P: 0.1500,
+                    ATC_RAT_YAW_P: 0.2500,
+                    vehicle: "ArduCopter"
+                };
+                onParamsLoaded(JSON.stringify(mockImport));
+                markModified();
+            }
+        }
+
+        function exportProfile() {
+            backupSettings(); // trigger same Save file dialogue
+        }
+
+        function restoreDefaults() {
+            // Restore default cached values
+            onParamsLoaded(JSON.stringify(originalParams));
+        }
+
+        function applyTuningSettings() {
+            if (!modified) return;
+
+            updateStatusText("Saving Parameters...", "#ff5a1f");
+            document.getElementById('btn-apply').disabled = true;
+
+            var payload = {
+                ATC_INPUT_TC: params.ATC_INPUT_TC,
+                ATC_RAT_RLL_P: params.ATC_RAT_RLL_P,
+                ATC_RAT_PIT_P: params.ATC_RAT_PIT_P,
+                ATC_RAT_YAW_P: params.ATC_RAT_YAW_P
+            };
+
+            var payloadStr = JSON.stringify(payload);
+
+            if (window.external && window.external.SaveTuningParams) {
+                var success = window.external.SaveTuningParams(payloadStr);
+                if (success) {
+                    originalParams = JSON.parse(JSON.stringify(params));
+                    modified = false;
+                    updateStatusText("Updated", "#00ff41");
+                } else {
+                    updateStatusText("Failed to Save PIDs", "#ff4d4d");
+                    document.getElementById('btn-apply').disabled = false;
+                }
+            } else {
+                setTimeout(function() {
+                    originalParams = JSON.parse(JSON.stringify(params));
+                    modified = false;
+                    updateStatusText("Updated (Mock)", "#00ff41");
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>
