@@ -1840,7 +1840,7 @@ namespace MissionPlanner
         }
 
 
-        private void MenuConnect_Click(object sender, EventArgs e)
+        public void MenuConnect_Click(object sender, EventArgs e)
         {
             Connect();
 
@@ -4080,28 +4080,66 @@ namespace MissionPlanner
                 return true;
             }
 
+            if (keyData == Keys.F1)
+            {
+                _odinGlobalSelectedIdx = 0;
+                MyView.ShowScreen("FlightData");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
+                return true;
+            }
+
             if (keyData == Keys.F2)
             {
-                MenuFlightData_Click(null, null);
+                _odinGlobalSelectedIdx = 1;
+                MyView.ShowScreen("FlightPlanner");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
                 return true;
             }
 
             if (keyData == Keys.F3)
             {
-                MenuFlightPlanner_Click(null, null);
+                _odinGlobalSelectedIdx = 2;
+                MyView.ShowScreen("HWConfig");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
                 return true;
             }
 
             if (keyData == Keys.F4)
             {
-                MenuTuning_Click(null, null);
+                _odinGlobalSelectedIdx = 3;
+                MyView.ShowScreen("SWConfig");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
                 return true;
             }
 
             if (keyData == Keys.F5)
             {
-                comPort.getParamList();
-                MyView.ShowScreen(MyView.current.Name);
+                _odinGlobalSelectedIdx = 4;
+                MyView.ShowScreen("Simulation");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
+                return true;
+            }
+
+            if (keyData == Keys.F6)
+            {
+                _odinGlobalSelectedIdx = 5;
+                MyView.ShowScreen("Terminal");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
+                return true;
+            }
+
+            if (keyData == Keys.F7)
+            {
+                _odinGlobalSelectedIdx = 6;
+                MyView.ShowScreen("Help");
+                if (globalDrawerPanel != null) globalDrawerPanel.Visible = false;
+                if (globalHamburgerBtn != null) globalHamburgerBtn.BringToFront();
                 return true;
             }
 
@@ -4859,235 +4897,567 @@ namespace MissionPlanner
         private Label connectionStateLabel;
         private Button customConnectBtn;
 
-        private void SetupSidebarLayout()
-        {
-            // 1. Hide the top panel entirely
-            panel1.Visible = false;
-            menu.Visible = false;
-            MainMenu.Visible = false;
+        public Panel globalAppHeaderPanel;
+        public Panel globalContentHostPanel;
+        public Panel globalDrawerPanel;
+        public Panel globalHamburgerBtn;
+        private int _odinGlobalSelectedIdx = 0;
 
-            // 2. Create the sidebar panel
-            sidebar = new Panel();
-            sidebar.Name = "odinSidebar";
-            sidebar.Width = 270;
-            sidebar.Dock = DockStyle.Left;
-            sidebar.BackColor = Color.Transparent; // Needs to be transparent for map overlay
-            sidebar.Padding = new Padding(10);
-            
-            // Dynamically parent the sidebar so it can float over the map in FlightData
-            this.ControlAdded += (sender, e) => {
-                var ctl = e.Control;
-                if (ctl is GCSViews.FlightData fd) {
-                    var map = fd.Controls.OfType<GMap.NET.WindowsForms.GMapControl>().FirstOrDefault() ?? fd.Controls.Find("gMapControl1", true).FirstOrDefault() as Control;
-                    if (map != null) {
-                        sidebar.Parent = map;
-                        sidebar.Dock = DockStyle.None;
-                        sidebar.Location = new Point(0, 0);
-                        sidebar.Height = map.Height;
-                        sidebar.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-                        sidebar.BackColor = Color.Transparent;
-                        sidebar.BringToFront();
-                    }
-                } else {
-                    sidebar.Parent = this;
-                    sidebar.Dock = DockStyle.Left;
-                    sidebar.BackColor = Color.Transparent; // Paint event will draw opaque background for other screens
-                    sidebar.BringToFront();
-                }
-            };
-            
-            sidebar.Paint += (s, e) => {
+        public void SetupGlobalOdinHeaderAndLayout()
+        {
+            // Hide top panel and old sidebar entirely
+            if (panel1 != null) { panel1.Visible = false; panel1.Width = 0; }
+            if (menu != null) menu.Visible = false;
+            if (MainMenu != null) MainMenu.Visible = false;
+            if (sidebar != null) { sidebar.Visible = false; sidebar.Width = 0; }
+
+            if (globalHamburgerBtn != null) { try { this.Controls.Remove(globalHamburgerBtn); globalHamburgerBtn.Dispose(); } catch {} }
+            if (globalAppHeaderPanel != null) { try { this.Controls.Remove(globalAppHeaderPanel); globalAppHeaderPanel.Dispose(); } catch {} }
+            if (globalContentHostPanel != null) { try { this.Controls.Remove(globalContentHostPanel); globalContentHostPanel.Dispose(); } catch {} }
+            if (globalDrawerPanel != null) { try { this.Controls.Remove(globalDrawerPanel); globalDrawerPanel.Dispose(); } catch {} }
+
+            // 1. GLOBAL APP HEADER (75px Height, Dock: Top)
+            globalAppHeaderPanel = new Panel();
+            globalAppHeaderPanel.Height = 75;
+            globalAppHeaderPanel.Dock = DockStyle.Top;
+            globalAppHeaderPanel.BackColor = Color.FromArgb(10, 14, 20);
+
+            globalAppHeaderPanel.Paint += (s, e) => {
                 var g = e.Graphics;
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                int w = sidebar.Width;
-                int h = sidebar.Height;
-
-                // Translucent-style charcoal background (matching the telemetry bar)
-                using (var gp = RoundedRect(new Rectangle(5, 5, w - 10, h - 10), 20))
-                using (var bgBrush = new SolidBrush(Color.FromArgb(200, 20, 24, 30))) { 
-                    g.FillPath(bgBrush, gp);
-                    using (var pen = new Pen(Color.FromArgb(50, 255, 255, 255), 1.0f))
-                        g.DrawPath(pen, gp); 
-                }
                 
-                // Thin white line at the bottom
-                using (var penLine = new Pen(Color.FromArgb(100, 255, 255, 255), 1.5f)) {
-                    g.DrawLine(penLine, 25, h - 20, w - 25, h - 20);
+                // Dark glass header background
+                using (var bgBrush = new SolidBrush(Color.FromArgb(245, 8, 11, 16)))
+                    g.FillRectangle(bgBrush, 0, 0, globalAppHeaderPanel.Width, globalAppHeaderPanel.Height);
+
+                // Bottom neon green accent line
+                using (var accentPen = new Pen(Color.FromArgb(40, 124, 255, 0), 1.2f))
+                    g.DrawLine(accentPen, 0, globalAppHeaderPanel.Height - 1, globalAppHeaderPanel.Width, globalAppHeaderPanel.Height - 1);
+            };
+
+            // 1.1 EMBEDDED MENU BUTTON (Vertically centered inside header: Y = 15, X = 16, Size = 44x44)
+            globalHamburgerBtn = new Panel();
+            globalHamburgerBtn.Size = new Size(44, 44);
+            globalHamburgerBtn.Location = new Point(16, 15);
+            globalHamburgerBtn.Cursor = Cursors.Hand;
+            globalHamburgerBtn.BackColor = Color.FromArgb(15, 20, 27);
+            using (var gpRegion = RoundedRect(new Rectangle(0, 0, 44, 44), 12))
+            {
+                globalHamburgerBtn.Region = new Region(gpRegion);
+            }
+
+            bool isHambHovered = false;
+            globalHamburgerBtn.MouseEnter += (s, e) => { isHambHovered = true; globalHamburgerBtn.Invalidate(); };
+            globalHamburgerBtn.MouseLeave += (s, e) => { isHambHovered = false; globalHamburgerBtn.Invalidate(); };
+
+            globalHamburgerBtn.Paint += (s, e) => {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = new Rectangle(0, 0, globalHamburgerBtn.Width - 1, globalHamburgerBtn.Height - 1);
+                
+                bool isOpen = globalDrawerPanel != null && globalDrawerPanel.Visible;
+
+                using (var gp = RoundedRect(rect, 12))
+                using (var bgBrush = new SolidBrush(isHambHovered ? Color.FromArgb(28, 36, 45) : Color.FromArgb(15, 20, 27)))
+                using (var borderPen = new Pen(isHambHovered ? Color.FromArgb(120, 124, 255, 0) : Color.FromArgb(50, 124, 255, 0), 1.2f))
+                {
+                    g.FillPath(bgBrush, gp);
+                    g.DrawPath(borderPen, gp);
+                }
+
+                using (Pen linePen = new Pen(Color.FromArgb(124, 255, 0), 2.2f))
+                {
+                    linePen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                    linePen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+
+                    if (!isOpen)
+                    {
+                        // 3-Line Hamburger Icon
+                        g.DrawLine(linePen, 13, 14, 31, 14);
+                        g.DrawLine(linePen, 13, 22, 31, 22);
+                        g.DrawLine(linePen, 13, 30, 31, 30);
+                    }
+                    else
+                    {
+                        // Close Morph Icon
+                        g.DrawLine(linePen, 14, 14, 30, 30);
+                        g.DrawLine(linePen, 30, 14, 14, 30);
+                    }
+                }
+            };
+            globalAppHeaderPanel.Controls.Add(globalHamburgerBtn);
+
+            // 1.2 FIXED BRAND LOGO (Positioned immediately after menu button: X = 76, Y = 25)
+            System.Windows.Forms.Label lblLogoOdin = new System.Windows.Forms.Label();
+            lblLogoOdin.Text = "ODIN";
+            lblLogoOdin.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            lblLogoOdin.ForeColor = Color.White;
+            lblLogoOdin.Location = new Point(76, 25);
+            lblLogoOdin.AutoSize = true;
+            lblLogoOdin.BackColor = Color.Transparent;
+            globalAppHeaderPanel.Controls.Add(lblLogoOdin);
+
+            System.Windows.Forms.Label lblLogoGcs = new System.Windows.Forms.Label();
+            lblLogoGcs.Text = "GCS";
+            lblLogoGcs.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            lblLogoGcs.ForeColor = Color.FromArgb(124, 255, 0);
+            lblLogoGcs.Location = new Point(lblLogoOdin.Right + 4, 25);
+            lblLogoGcs.AutoSize = true;
+            lblLogoGcs.BackColor = Color.Transparent;
+            globalAppHeaderPanel.Controls.Add(lblLogoGcs);
+
+            // Divider line after logo
+            Panel pnlHeaderDivider = new Panel();
+            pnlHeaderDivider.Size = new Size(1, 28);
+            pnlHeaderDivider.Location = new Point(lblLogoGcs.Right + 16, 23);
+            pnlHeaderDivider.BackColor = Color.FromArgb(40, 255, 255, 255);
+            globalAppHeaderPanel.Controls.Add(pnlHeaderDivider);
+
+            // 1.3 GLOBAL HEADER NAVIGATION TABS
+            FlowLayoutPanel pnlHeaderTabs = new FlowLayoutPanel();
+            pnlHeaderTabs.FlowDirection = FlowDirection.LeftToRight;
+            pnlHeaderTabs.Location = new Point(pnlHeaderDivider.Right + 8, 7);
+            pnlHeaderTabs.Width = 680;
+            pnlHeaderTabs.Height = 60;
+            pnlHeaderTabs.BackColor = Color.Transparent;
+
+            string[] tabNames = { "FLIGHT", "ANALYTICS", "WEATHER", "RADAR", "ETA PLANNER", "SETTINGS" };
+            int[] tabWidths = { 85, 105, 95, 85, 115, 95 };
+            System.Windows.Forms.Label[] tabLabels = new System.Windows.Forms.Label[tabNames.Length];
+
+            for (int i = 0; i < tabNames.Length; i++)
+            {
+                int index = i;
+                System.Windows.Forms.Label lblTab = new System.Windows.Forms.Label();
+                lblTab.Text = tabNames[i];
+                lblTab.ForeColor = i == _odinGlobalSelectedIdx ? Color.White : Color.FromArgb(158, 168, 179);
+                lblTab.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+                lblTab.TextAlign = ContentAlignment.MiddleCenter;
+                lblTab.Height = 60;
+                lblTab.Width = tabWidths[i];
+                lblTab.Cursor = Cursors.Hand;
+                lblTab.BackColor = Color.Transparent;
+                lblTab.Paint += (s2, e2) => {
+                    if (lblTab.ForeColor == Color.White)
+                    {
+                        using (var greenPen = new Pen(Color.FromArgb(124, 255, 0), 3))
+                        {
+                            greenPen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                            greenPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                            int lx = 12;
+                            int rx = lblTab.Width - 12;
+                            e2.Graphics.DrawLine(greenPen, lx, lblTab.Height - 4, rx, lblTab.Height - 4);
+                        }
+                    }
+                };
+                lblTab.MouseEnter += (s2, e2) => {
+                    if (lblTab.ForeColor != Color.White)
+                        lblTab.ForeColor = Color.FromArgb(124, 255, 0);
+                };
+                lblTab.MouseLeave += (s2, e2) => {
+                    if (lblTab.ForeColor == Color.FromArgb(124, 255, 0) && _odinGlobalSelectedIdx != index)
+                        lblTab.ForeColor = Color.FromArgb(158, 168, 179);
+                };
+                lblTab.Click += (s2, e2) => {
+                    _odinGlobalSelectedIdx = index;
+                    for (int j = 0; j < tabLabels.Length; j++)
+                    {
+                        tabLabels[j].ForeColor = j == index ? Color.White : Color.FromArgb(158, 168, 179);
+                        tabLabels[j].Invalidate();
+                    }
+                    if (MyView != null)
+                        MyView.ShowScreen("FlightData");
+                    if (GCSViews.FlightData.instance != null)
+                        GCSViews.FlightData.instance.SwitchPage(index);
+                };
+                tabLabels[i] = lblTab;
+                pnlHeaderTabs.Controls.Add(lblTab);
+            }
+            globalAppHeaderPanel.Controls.Add(pnlHeaderTabs);
+
+            // 1.4 DRONE FLIGHT MODE SELECTION PILL (Top Right Header)
+            Panel pnlHeaderModePill = new Panel();
+            pnlHeaderModePill.Size = new Size(220, 38);
+            pnlHeaderModePill.Location = new Point(globalAppHeaderPanel.Width - 235, 18);
+            pnlHeaderModePill.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pnlHeaderModePill.Cursor = Cursors.Hand;
+            pnlHeaderModePill.BackColor = Color.Transparent;
+
+            string currentSelectedMode = "STABILIZE";
+
+            bool isHoveredPill = false;
+            pnlHeaderModePill.MouseEnter += (s, e) => { isHoveredPill = true; pnlHeaderModePill.Invalidate(); };
+            pnlHeaderModePill.MouseLeave += (s, e) => { isHoveredPill = false; pnlHeaderModePill.Invalidate(); };
+
+            pnlHeaderModePill.Paint += (s, e) => {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var r = new Rectangle(0, 0, pnlHeaderModePill.Width - 1, pnlHeaderModePill.Height - 1);
+
+                string activeMode = currentSelectedMode;
+                if (comPort != null && comPort.MAV != null && comPort.MAV.cs != null && !string.IsNullOrEmpty(comPort.MAV.cs.mode))
+                {
+                    string csMode = comPort.MAV.cs.mode.Trim();
+                    if (!string.Equals(csMode, "UNKNOWN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        activeMode = csMode;
+                    }
+                }
+
+                using (var gp = RoundedRect(r, 19))
+                using (var bg = new SolidBrush(isHoveredPill ? Color.FromArgb(40, 124, 255, 0) : Color.FromArgb(22, 28, 36)))
+                using (var border = new Pen(isHoveredPill ? Color.FromArgb(124, 255, 0) : Color.FromArgb(50, 124, 255, 0), 1.2f))
+                {
+                    g.FillPath(bg, gp);
+                    g.DrawPath(border, gp);
+                }
+
+                // Green indicator dot
+                bool isConn = comPort != null && comPort.BaseStream != null && comPort.BaseStream.IsOpen;
+                Color dotColor = isConn ? Color.FromArgb(124, 255, 0) : Color.FromArgb(255, 85, 85);
+                using (var dotBrush = new SolidBrush(dotColor))
+                    g.FillEllipse(dotBrush, 14, 14, 10, 10);
+
+                // Mode Title
+                using (var font = new Font("Segoe UI", 9.5F, FontStyle.Bold))
+                using (var textBrush = new SolidBrush(Color.White))
+                    g.DrawString(activeMode.ToUpper(), font, textBrush, 32, 9);
+
+                // Down arrow
+                using (var arrowBrush = new SolidBrush(Color.FromArgb(158, 168, 179)))
+                using (var arrowFont = new Font("Segoe UI", 7.5F, FontStyle.Bold))
+                    g.DrawString("▼", arrowFont, arrowBrush, pnlHeaderModePill.Width - 22, 12);
+            };
+
+            // Dark ContextMenu for Drone Flight Modes
+            ContextMenuStrip menuModes = new ContextMenuStrip();
+            menuModes.BackColor = Color.FromArgb(20, 26, 35);
+            menuModes.ForeColor = Color.White;
+            menuModes.ShowImageMargin = false;
+            menuModes.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+
+            Action populateModesMenu = () => {
+                menuModes.Items.Clear();
+                var firmwareType = (comPort != null && comPort.MAV != null && comPort.MAV.cs != null) 
+                    ? comPort.MAV.cs.firmware 
+                    : ArduPilot.Firmwares.ArduCopter2;
+                var modesList = ArduPilot.Common.getModesList(firmwareType);
+
+                if (modesList == null || modesList.Count == 0)
+                {
+                    var fallbackModes = new[] { "STABILIZE", "ALT_HOLD", "LOITER", "RTL", "AUTO", "LAND", "POSHOLD", "GUIDED", "ACRO", "BRAKE", "SMART_RTL", "DRIFT", "SPORT", "AUTOTUNE", "FLIP" };
+                    foreach (var m in fallbackModes)
+                    {
+                        var item = new ToolStripMenuItem("   " + m);
+                        item.BackColor = Color.FromArgb(20, 26, 35);
+                        item.ForeColor = Color.White;
+                        item.Click += (s, e) => {
+                            currentSelectedMode = m;
+                            try { if (comPort != null) comPort.setMode(m); } catch { }
+                            pnlHeaderModePill.Invalidate();
+                        };
+                        menuModes.Items.Add(item);
+                    }
+                }
+                else
+                {
+                    foreach (var kvp in modesList)
+                    {
+                        string modeName = kvp.Value;
+                        var item = new ToolStripMenuItem("   " + modeName);
+                        item.BackColor = Color.FromArgb(20, 26, 35);
+                        item.ForeColor = Color.White;
+                        item.Click += (s, e) => {
+                            currentSelectedMode = modeName;
+                            try { if (comPort != null) comPort.setMode(modeName); } catch { }
+                            pnlHeaderModePill.Invalidate();
+                        };
+                        menuModes.Items.Add(item);
+                    }
                 }
             };
 
-            // 3. Add to main form and send to back so docking splits nicely with MyView
-            this.Controls.Add(sidebar);
-            sidebar.SendToBack();
+            pnlHeaderModePill.Click += (s, e) => {
+                populateModesMenu();
+                menuModes.Show(pnlHeaderModePill, new Point(0, pnlHeaderModePill.Height + 4));
+            };
 
-            // ---------------------------------------------------------
-            // BOTTOM DOCKED ITEMS (added first -> pushed to bottom)
-            // ---------------------------------------------------------
+            globalAppHeaderPanel.Controls.Add(pnlHeaderModePill);
 
-            // 6. Bottom Toolbar (Settings, Theme, Min)
-            Panel bottomToolbar = new Panel();
-            bottomToolbar.Height = 50;
-            bottomToolbar.Dock = DockStyle.Bottom;
-            bottomToolbar.BackColor = Color.Transparent;
+            // 2. GLOBAL CONTENT HOST CONTAINER (Positioned strictly below AppHeader at Y = 75px)
+            globalContentHostPanel = new Panel();
+            globalContentHostPanel.Location = new Point(0, 75);
+            globalContentHostPanel.Size = new Size(this.ClientSize.Width, Math.Max(100, this.ClientSize.Height - 75));
+            globalContentHostPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            globalContentHostPanel.BackColor = Color.FromArgb(16, 20, 24);
 
-            Button btnSettings = CreateToolbarButton("\u2699", () => MyView.ShowScreen("SWConfig"));
-            Button btnDark = CreateToolbarButton("\u263E", () => {
-                ThemeManager.LoadTheme(Settings.Instance["theme"] == "BurntKermit.mpsystheme" ? "HighContrast.mpsystheme" : "BurntKermit.mpsystheme");
-                ThemeManager.ApplyThemeTo(this);
-            });
-            Button btnMinimize = CreateToolbarButton("\u26F6", () => fullScreenToolStripMenuItem.PerformClick());
-
-            btnSettings.Location = new Point(0, 5);
-            btnDark.Location = new Point(80, 5);
-            btnMinimize.Location = new Point(160, 5);
-
-            bottomToolbar.Controls.Add(btnSettings);
-            bottomToolbar.Controls.Add(btnDark);
-            bottomToolbar.Controls.Add(btnMinimize);
-            sidebar.Controls.Add(bottomToolbar);
-
-            Panel toolSpacer = new Panel { Height = 15, Dock = DockStyle.Bottom, BackColor = Color.Transparent };
-            sidebar.Controls.Add(toolSpacer);
-
-            // 5. Connection Card
-            Panel connectionCard = new Panel();
-            connectionCard.Height = 220;
-            connectionCard.Dock = DockStyle.Bottom;
-            connectionCard.BackColor = OdinTheme.Panel;
-            connectionCard.Padding = new Padding(15);
-            connectionCard.Resize += (s, ev) => ApplyRoundedCorners(connectionCard, 12);
-
-            connectionStateLabel = new Label();
-            connectionStateLabel.Text = "DISCONNECTED \u25CF";
-            connectionStateLabel.ForeColor = Color.Red;
-            connectionStateLabel.Font = new Font("Times New Roman", 10F, FontStyle.Bold);
-            connectionStateLabel.Dock = DockStyle.Top;
-            connectionStateLabel.Height = 25;
-            connectionStateLabel.TextAlign = ContentAlignment.TopCenter;
-            connectionCard.Controls.Add(connectionStateLabel);
-
-            var serialPortCombo = _connectionControl.CMB_serialport;
-            var baudRateCombo = _connectionControl.CMB_baudrate;
-            var sysIdCombo = _connectionControl.cmb_sysid;
-            serialPortCombo.Parent = null; baudRateCombo.Parent = null; sysIdCombo.Parent = null;
-            serialPortCombo.DropDown += (s, ev) => PopulateSerialportList();
-
-            Panel serialPanel = new Panel { Dock = DockStyle.Top, Height = 35, Padding = new Padding(0, 3, 0, 3) };
-            serialPortCombo.Dock = DockStyle.Fill; serialPortCombo.FlatStyle = FlatStyle.Flat;
-            serialPortCombo.BackColor = OdinTheme.Background; serialPortCombo.ForeColor = OdinTheme.White;
-            serialPortCombo.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            serialPanel.Controls.Add(serialPortCombo);
-
-            Panel baudPanel = new Panel { Dock = DockStyle.Top, Height = 35, Padding = new Padding(0, 3, 0, 3) };
-            baudRateCombo.Dock = DockStyle.Fill; baudRateCombo.FlatStyle = FlatStyle.Flat;
-            baudRateCombo.BackColor = OdinTheme.Background; baudRateCombo.ForeColor = OdinTheme.White;
-            baudRateCombo.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            baudPanel.Controls.Add(baudRateCombo);
-
-            Panel sysPanel = new Panel { Dock = DockStyle.Top, Height = 35, Padding = new Padding(0, 3, 0, 3) };
-            sysIdCombo.Dock = DockStyle.Fill; sysIdCombo.FlatStyle = FlatStyle.Flat;
-            sysIdCombo.BackColor = OdinTheme.Background; sysIdCombo.ForeColor = OdinTheme.White;
-            sysIdCombo.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            sysPanel.Controls.Add(sysIdCombo);
-
-            connectionCard.Controls.Add(sysPanel);
-            connectionCard.Controls.Add(baudPanel);
-            connectionCard.Controls.Add(serialPanel);
-
-            customConnectBtn = new Button();
-            customConnectBtn.Text = "CONNECT";
-            customConnectBtn.Height = 40;
-            customConnectBtn.Dock = DockStyle.Bottom;
-            customConnectBtn.FlatStyle = FlatStyle.Flat;
-            customConnectBtn.FlatAppearance.BorderSize = 0;
-            customConnectBtn.BackColor = OdinTheme.Background;
-            customConnectBtn.ForeColor = OdinTheme.White;
-            customConnectBtn.Font = new Font("Times New Roman", 10F, FontStyle.Bold);
-            customConnectBtn.Resize += (s, ev) => ApplyRoundedCorners(customConnectBtn, 8);
-            customConnectBtn.Click += (s, ev) => MenuConnect.PerformClick();
-
-            connectionCard.Controls.Add(customConnectBtn);
-            sidebar.Controls.Add(connectionCard);
-
-            Panel connSpacer = new Panel { Height = 15, Dock = DockStyle.Bottom, BackColor = Color.Transparent };
-            sidebar.Controls.Add(connSpacer);
-
-            // ---------------------------------------------------------
-            // TOP DOCKED ITEMS (added first -> pushed to bottom of top stack)
-            // ---------------------------------------------------------
-
-            // 4. Logo Panel (JAADU MANTAR) - below buttons!
-            Panel headerPanel = new Panel();
-            headerPanel.Height = 80;
-            headerPanel.Dock = DockStyle.Top;
-            headerPanel.BackColor = Color.Transparent;
-
-            PictureBox logoBox = new PictureBox();
-            logoBox.Width = 50; logoBox.Height = 50;
-            logoBox.Location = new Point(10, 15);
-            logoBox.SizeMode = PictureBoxSizeMode.Zoom;
-            try { logoBox.Image = Image.FromFile(@"C:\Users\ADARSHASINHA\.gemini\antigravity-ide\brain\fee89a26-d6f5-4692-8d20-07c18fe4c409\warrior_logo_1782967240723.png"); } catch {}
-            headerPanel.Controls.Add(logoBox);
-
-            Label titleLabel = new Label();
-            titleLabel.Text = "JAADU MANTAR";
-            titleLabel.Font = new Font("Times New Roman", 13F, FontStyle.Bold);
-            titleLabel.ForeColor = OdinTheme.White;
-            titleLabel.Location = new Point(70, 28);
-            titleLabel.AutoSize = true;
-            headerPanel.Controls.Add(titleLabel);
-
-            sidebar.Controls.Add(headerPanel);
-
-            // 7. Add View switcher cards (added bottom-to-top to dock correctly top-to-bottom)
-            Button btnOptions = null;
-            btnOptions = CreateSidebarButton("OPTIONS", "Options", () => {
-                CTX_mainmenu.Show(btnOptions, new Point(btnOptions.Width, 0));
-            });
-            CreateSidebarButton("HELP", "Help", () => MenuHelp_Click(null, null));
-            CreateSidebarButton("CONFIG", "Config/Tuning", () => MenuTuning_Click(null, null));
-            CreateSidebarButton("HARDWARE & FIRMWARE", "", () => MenuFirmware_Click(null, null));
-            CreateSidebarButton("CALIBRATION", "Calibration", () => MenuSetup_Click(null, null));
-            CreateSidebarButton("PLAN", "Flight Planner", () => MenuFlightPlanner_Click(null, null));
- 
-            // Set DATA active by default
-            Button btnData = CreateSidebarButton("DATA", "Flight Data", () => MenuFlightData_Click(null, null));
-            activeButton = btnData;
-            btnData.Invalidate();
-            
-            // 8. Top Spacer 
-            Panel topSpacer = new Panel();
-            topSpacer.Height = 20;
-            topSpacer.Dock = DockStyle.Top;
-            topSpacer.BackColor = Color.Transparent;
-            sidebar.Controls.Add(topSpacer);
- 
-            // 9. Start status update timer
-            sidebarTimer = new System.Windows.Forms.Timer();
-            sidebarTimer.Interval = 200;
-            sidebarTimer.Tick += (s, ev) =>
+            if (MyView != null && MyView.MainControl != null)
             {
-                try
+                if (this.Controls.Contains(MyView.MainControl))
+                    this.Controls.Remove(MyView.MainControl);
+                MyView.MainControl.Dock = DockStyle.Fill;
+                globalContentHostPanel.Controls.Add(MyView.MainControl);
+            }
+
+            // 3. GLOBAL FLOATING NAVIGATION DRAWER (Tightly fits content, Y = 83px below header)
+            globalDrawerPanel = new Panel();
+            globalDrawerPanel.Size = new Size(300, 424);
+            globalDrawerPanel.Location = new Point(12, 83);
+            globalDrawerPanel.BackColor = Color.Transparent;
+            globalDrawerPanel.Visible = false;
+
+            Action updateDrawerRegion = () => {
+                if (globalDrawerPanel.Width > 0 && globalDrawerPanel.Height > 0)
                 {
-                    if (MenuConnect != null)
+                    using (var gpDrawer = RoundedRect(new Rectangle(0, 0, globalDrawerPanel.Width, globalDrawerPanel.Height), 20))
                     {
-                        customConnectBtn.Text = MenuConnect.Text.ToUpper();
-                        if (MenuConnect.Text == Strings.DISCONNECTc)
+                        globalDrawerPanel.Region = new Region(gpDrawer);
+                    }
+                }
+            };
+            updateDrawerRegion();
+
+            globalDrawerPanel.Paint += (s, e) => {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = new Rectangle(0, 0, globalDrawerPanel.Width - 1, globalDrawerPanel.Height - 1);
+                using (var gp = RoundedRect(rect, 20))
+                using (var bgBrush = new SolidBrush(Color.FromArgb(235, 15, 20, 26)))
+                using (var borderPen = new Pen(Color.FromArgb(50, 124, 255, 0), 1.2f))
+                {
+                    g.FillPath(bgBrush, gp);
+                    g.DrawPath(borderPen, gp);
+                }
+            };
+
+            globalHamburgerBtn.Click += (s, e) => {
+                ToggleGlobalOdinDrawer();
+                globalHamburgerBtn.Invalidate();
+            };
+
+            // Pill-shaped Navigation Buttons inside Drawer
+            var menuItems = new[] {
+                ("DATA",       "F1", "✈"),
+                ("PLAN",       "F2", "🗺"),
+                ("SETUP",      "F3", "⚙"),
+                ("CONFIG",     "F4", "🛠"),
+                ("SIMULATION", "F5", "🎮"),
+                ("TOOLS",      "F6", "🔧"),
+                ("HELP",       "F7", "❓")
+            };
+
+            int yPos = 10;
+            List<Button> tabButtons = new List<Button>();
+
+            for (int i = 0; i < menuItems.Length; i++)
+            {
+                int index = i;
+                var (title, key, icon) = menuItems[i];
+
+                Button btnTab = new Button();
+                btnTab.Size = new Size(268, 36);
+                btnTab.Location = new Point(16, yPos);
+                btnTab.FlatStyle = FlatStyle.Flat;
+                btnTab.FlatAppearance.BorderSize = 0;
+                btnTab.Cursor = Cursors.Hand;
+
+                bool isHovered = false;
+                btnTab.MouseEnter += (s, e) => { isHovered = true; btnTab.Invalidate(); };
+                btnTab.MouseLeave += (s, e) => { isHovered = false; btnTab.Invalidate(); };
+
+                btnTab.Paint += (s, e) => {
+                    var g = e.Graphics;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    bool isSelected = (_odinGlobalSelectedIdx == index);
+                    var rect = new Rectangle(0, 0, btnTab.Width - 1, btnTab.Height - 1);
+
+                    using (var gp = RoundedRect(rect, 14))
+                    {
+                        if (isSelected)
                         {
-                            connectionStateLabel.Text = "CONNECTED \u25CF";
-                            connectionStateLabel.ForeColor = OdinTheme.Green;
+                            using (var bgBrush = new SolidBrush(Color.FromArgb(25, 124, 255, 0)))
+                                g.FillPath(bgBrush, gp);
+                            using (var borderPen = new Pen(Color.FromArgb(70, 124, 255, 0), 1f))
+                                g.DrawPath(borderPen, gp);
                         }
                         else
                         {
-                            connectionStateLabel.Text = "DISCONNECTED \u25CF";
-                            connectionStateLabel.ForeColor = Color.Red;
+                            using (var bgBrush = new SolidBrush(Color.FromArgb(25, 255, 255, 255)))
+                                g.FillPath(bgBrush, gp);
+                            using (var borderPen = new Pen(Color.FromArgb(15, 255, 255, 255), 1f))
+                                g.DrawPath(borderPen, gp);
+                        }
+                    }
+
+                    using (var fontIcon = new Font("Segoe UI Symbol", 10F))
+                    using (var iconBrush = new SolidBrush(isSelected ? Color.FromArgb(124, 255, 0) : (isHovered ? Color.White : Color.FromArgb(180, 195, 210))))
+                        g.DrawString(icon, fontIcon, iconBrush, 16, 9);
+
+                    using (var fontTitle = new Font("Segoe UI", 9F, FontStyle.Bold))
+                    using (var titleBrush = new SolidBrush(isSelected ? Color.White : (isHovered ? Color.White : Color.FromArgb(200, 210, 225))))
+                        g.DrawString(title, fontTitle, titleBrush, 46, 9);
+
+                    using (var fontKey = new Font("Segoe UI", 8F, FontStyle.Bold))
+                    using (var keyBrush = new SolidBrush(isSelected ? Color.FromArgb(124, 255, 0) : Color.FromArgb(130, 145, 160)))
+                        g.DrawString(key, fontKey, keyBrush, btnTab.Width - 34, 10);
+                };
+
+                btnTab.Click += (s, e) => {
+                    _odinGlobalSelectedIdx = index;
+                    foreach (var b in tabButtons) b.Invalidate();
+
+                    if (index == 0) MyView.ShowScreen("FlightData");
+                    else if (index == 1) MyView.ShowScreen("FlightPlanner");
+                    else if (index == 2) MyView.ShowScreen("HWConfig");
+                    else if (index == 3) MyView.ShowScreen("SWConfig");
+                    else if (index == 4) MyView.ShowScreen("Simulation");
+                    else if (index == 5) MyView.ShowScreen("Terminal");
+                    else if (index == 6) MyView.ShowScreen("Help");
+
+                    globalDrawerPanel.Visible = false;
+                };
+
+                tabButtons.Add(btnTab);
+                globalDrawerPanel.Controls.Add(btnTab);
+                yPos += 40;
+            }
+
+            // Connection Card Sub-Panel inside Drawer (Compact layout fitting CONNECT button)
+            Panel pnlConnBox = new Panel();
+            pnlConnBox.Size = new Size(268, 128);
+            pnlConnBox.Location = new Point(16, yPos + 6);
+            pnlConnBox.BackColor = Color.Transparent;
+            pnlConnBox.Paint += (s, e) => {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = new Rectangle(0, 0, pnlConnBox.Width - 1, pnlConnBox.Height - 1);
+                using (var gp = RoundedRect(rect, 14))
+                using (var bgBrush = new SolidBrush(Color.FromArgb(230, 13, 18, 24)))
+                using (var borderPen = new Pen(Color.FromArgb(40, 124, 255, 0), 1))
+                {
+                    g.FillPath(bgBrush, gp);
+                    g.DrawPath(borderPen, gp);
+                }
+
+                using (var dotBg = new SolidBrush(Color.FromArgb(124, 255, 0)))
+                    g.FillEllipse(dotBg, pnlConnBox.Width - 24, 10, 8, 8);
+            };
+
+            System.Windows.Forms.Label lblConnStatus = new System.Windows.Forms.Label();
+            lblConnStatus.Text = "📡  CONNECTED";
+            lblConnStatus.Font = new Font("Segoe UI", 7.5F, FontStyle.Bold);
+            lblConnStatus.ForeColor = Color.FromArgb(124, 255, 0);
+            lblConnStatus.Location = new Point(12, 7);
+            lblConnStatus.AutoSize = true;
+            pnlConnBox.Controls.Add(lblConnStatus);
+
+            ComboBox cmbPort = _connectionControl.CMB_serialport;
+            cmbPort.Parent = pnlConnBox;
+            cmbPort.Location = new Point(12, 24);
+            cmbPort.Width = 244;
+            cmbPort.FlatStyle = FlatStyle.Flat;
+            cmbPort.BackColor = Color.FromArgb(20, 26, 35);
+            cmbPort.ForeColor = Color.White;
+
+            ComboBox cmbBaud = _connectionControl.CMB_baudrate;
+            cmbBaud.Parent = pnlConnBox;
+            cmbBaud.Location = new Point(12, 52);
+            cmbBaud.Width = 244;
+            cmbBaud.FlatStyle = FlatStyle.Flat;
+            cmbBaud.BackColor = Color.FromArgb(20, 26, 35);
+            cmbBaud.ForeColor = Color.White;
+
+            Button btnDisconnect = new Button();
+            btnDisconnect.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            btnDisconnect.ForeColor = Color.Transparent;
+            btnDisconnect.BackColor = Color.Transparent;
+            btnDisconnect.FlatStyle = FlatStyle.Flat;
+            btnDisconnect.FlatAppearance.BorderSize = 0;
+            btnDisconnect.Size = new Size(244, 34);
+            btnDisconnect.Location = new Point(12, 82);
+            btnDisconnect.Cursor = Cursors.Hand;
+            btnDisconnect.Text = "";
+
+            bool isDiscHovered = false;
+            btnDisconnect.MouseEnter += (s, e) => { isDiscHovered = true; btnDisconnect.Invalidate(); };
+            btnDisconnect.MouseLeave += (s, e) => { isDiscHovered = false; btnDisconnect.Invalidate(); };
+
+            btnDisconnect.Paint += (s, e) => {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = new Rectangle(0, 0, btnDisconnect.Width - 1, btnDisconnect.Height - 1);
+                bool isConn = comPort != null && comPort.BaseStream != null && comPort.BaseStream.IsOpen;
+                Color accentColor = isConn ? Color.FromArgb(255, 85, 85) : Color.FromArgb(124, 255, 0);
+                string btnText = isConn ? "⏻  DISCONNECT" : "⏻  CONNECT";
+                
+                using (var gp = RoundedRect(rect, 10))
+                {
+                    if (isDiscHovered)
+                    {
+                        using (var bgBrush = new SolidBrush(accentColor))
+                            g.FillPath(bgBrush, gp);
+                        using (var fontText = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                        using (var textBrush = new SolidBrush(Color.FromArgb(8, 11, 15)))
+                        {
+                            var sz = g.MeasureString(btnText, fontText);
+                            g.DrawString(btnText, fontText, textBrush, (btnDisconnect.Width - sz.Width) / 2, (btnDisconnect.Height - sz.Height) / 2);
+                        }
+                    }
+                    else
+                    {
+                        using (var bgBrush = new SolidBrush(Color.FromArgb(20, accentColor.R, accentColor.G, accentColor.B)))
+                            g.FillPath(bgBrush, gp);
+                        using (var borderPen = new Pen(accentColor, 1.5f))
+                            g.DrawPath(borderPen, gp);
+                        using (var fontText = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                        using (var textBrush = new SolidBrush(accentColor))
+                        {
+                            var sz = g.MeasureString(btnText, fontText);
+                            g.DrawString(btnText, fontText, textBrush, (btnDisconnect.Width - sz.Width) / 2, (btnDisconnect.Height - sz.Height) / 2);
                         }
                     }
                 }
-                catch {}
             };
-            sidebarTimer.Start();
+
+            btnDisconnect.Click += (s, e) => {
+                if (MenuConnect != null) MenuConnect.PerformClick();
+                btnDisconnect.Invalidate();
+            };
+            pnlConnBox.Controls.Add(btnDisconnect);
+            globalDrawerPanel.Controls.Add(pnlConnBox);
+
+            // Dynamically set exact height of drawer container right after connection box
+            globalDrawerPanel.Height = pnlConnBox.Bottom + 12;
+            updateDrawerRegion();
+
+            // Add controls to Form (Content Host first, then App Header above it, then Drawer on top)
+            this.Controls.Add(globalContentHostPanel);
+            this.Controls.Add(globalAppHeaderPanel);
+            this.Controls.Add(globalDrawerPanel);
+
+            globalAppHeaderPanel.BringToFront();
+            globalHamburgerBtn.BringToFront();
         }
+
+        private void SetupSidebarLayout()
+        {
+            SetupGlobalOdinHeaderAndLayout();
+        }
+
+        public void ToggleGlobalOdinDrawer()
+        {
+            if (globalDrawerPanel != null && globalHamburgerBtn != null)
+            {
+                globalDrawerPanel.Visible = !globalDrawerPanel.Visible;
+                if (globalDrawerPanel.Visible)
+                {
+                    globalDrawerPanel.BringToFront();
+                    globalHamburgerBtn.BringToFront();
+                }
+            }
+        }
+
+
  
         private Button CreateToolbarButton(string symbol, Action onClick)
         {

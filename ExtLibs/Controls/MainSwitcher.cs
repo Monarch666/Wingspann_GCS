@@ -21,7 +21,7 @@ namespace MissionPlanner.Controls
 
         public List<Screen> screens = new List<Screen>();
         public Screen current;
-        UserControl MainControl = new UserControl();
+        public UserControl MainControl = new UserControl();
 
         public int Width
         {
@@ -47,7 +47,7 @@ namespace MissionPlanner.Controls
         public MainSwitcher(Control Parent)
         {
             MainControl.Dock = DockStyle.Fill;
-            MainControl.Padding = new Padding(0, 45, 0, 0);
+            MainControl.Padding = new Padding(0, 0, 0, 0);
             MainControl.BackColor = Color.FromArgb(17, 18, 22);
  
             Parent.Controls.Add(MainControl);

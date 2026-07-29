@@ -167,13 +167,13 @@ namespace MissionPlanner.Utilities
         public static Color BGColor = Color.FromArgb(0x0A, 0x0C, 0x0E);           // #0A0C0E
         public static Color ControlBGColor = Color.FromArgb(0x1E, 0x20, 0x22);    // #1E2022
         public static Color TextColor = Color.FromArgb(0xE2, 0xE2, 0xE5);         // #E2E2E5
-        public static Color BGColorTextBox;
-        public static Color ButBG;
-        public static Color ButBGBot;
-        public static Color ButBorder;
-        public static Color ProgressBarColorTop;
-        public static Color ProgressBarColorBot;
-        public static Color ProgressBarOutlineColor;
+        public static Color BGColorTextBox = Color.FromArgb(0x33, 0x35, 0x37);
+        public static Color ButBG = Color.FromArgb(124, 255, 0);
+        public static Color ButBGBot = Color.FromArgb(90, 210, 0);
+        public static Color ButBorder = Color.FromArgb(124, 255, 0);
+        public static Color ProgressBarColorTop = Color.FromArgb(124, 255, 0);
+        public static Color ProgressBarColorBot = Color.FromArgb(90, 210, 0);
+        public static Color ProgressBarOutlineColor = Color.FromArgb(124, 255, 0);
         public static Color ColorNotEnabled;
         public static Color ColorMouseOver;
         public static Color ColorMouseDown;
@@ -319,7 +319,53 @@ namespace MissionPlanner.Utilities
             if (control.GetType().IsDefined(typeof(PreventThemingAttribute)))
                 return;
 
+            if (control != null && (control.GetType().Name == "ProgressReporterDialogue" || control.GetType().Name.Contains("ProgressReporter")))
+            {
+                ApplyProgressReporterTheme(control);
+                return;
+            }
+
             ApplyTheme(control, 0);
+        }
+
+        public static void ApplyProgressReporterTheme(Control control)
+        {
+            try
+            {
+                control.BackColor = Color.FromArgb(16, 20, 24);
+                control.ForeColor = Color.White;
+
+                foreach (Control ctl in control.Controls)
+                {
+                    if (ctl.GetType() == typeof(Label) || ctl.GetType() == typeof(MyLabel))
+                    {
+                        ctl.ForeColor = Color.White;
+                        ctl.BackColor = Color.Transparent;
+                    }
+                    else if (ctl.GetType() == typeof(MyProgressBar))
+                    {
+                        var pb = (MyProgressBar)ctl;
+                        pb.BGGradTop = Color.FromArgb(124, 255, 0);
+                        pb.BGGradBot = Color.FromArgb(90, 210, 0);
+                        pb.Outline = Color.FromArgb(124, 255, 0);
+                        pb.TextColor = Color.Black;
+                        pb.BackColor = Color.FromArgb(24, 30, 36);
+                    }
+                    else if (ctl.GetType() == typeof(Button) || ctl.GetType() == typeof(MyButton))
+                    {
+                        ctl.ForeColor = Color.Black;
+                        ctl.BackColor = Color.FromArgb(124, 255, 0);
+                        if (ctl is MyButton mb)
+                        {
+                            mb.BGGradTop = Color.FromArgb(124, 255, 0);
+                            mb.BGGradBot = Color.FromArgb(90, 210, 0);
+                            mb.Outline = Color.FromArgb(124, 255, 0);
+                            mb.TextColor = Color.Black;
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
 

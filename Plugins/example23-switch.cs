@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using MissionPlanner.Controls;
@@ -456,9 +456,7 @@ namespace MissionPlanner.plugins
 
             public override bool Loaded()
             {
-                // Register the ConfigPayload view on the Config tab
-                SoftwareConfig.AddPluginViewPage(typeof(ConfigSwitch), Name, SoftwareConfig.pageOptions.isConnected);
-
+                // Disabled per user request - do not register CubeLan 8 port Switch menu page
                 return true;
             }
 

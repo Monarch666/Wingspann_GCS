@@ -1,0 +1,519 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN GCS - Military Drone Ground Control Station</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS for Satellite Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --bg-window: #06080b;
+      --bg-header: rgba(8, 11, 15, 0.94);
+      --bg-glass: rgba(15, 20, 27, 0.85);
+      --bg-glass-hover: rgba(28, 36, 45, 0.9);
+      --color-green: #7cff00;
+      --color-white: #ffffff;
+      --color-secondary: #9ea8b3;
+      --color-divider: rgba(255, 255, 255, 0.08);
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: var(--font-family);
+      background-color: var(--bg-window);
+      color: var(--color-white);
+    }
+
+    /* FULLSCREEN SATELLITE MAP BACKGROUND */
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      background-color: #06080b;
+    }
+
+    .leaflet-control-container {
+      display: none !important;
+    }
+
+    /* TOP HEADER CONTAINER (70px Height) */
+    .top-header-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: var(--bg-header);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 500;
+    }
+
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Embedded Hamburger Button */
+    .hamburger-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: rgba(15, 19, 24, 0.8);
+      border: 1px solid rgba(124, 255, 0, 0.2);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 200ms ease;
+    }
+    .hamburger-btn:hover {
+      background: rgba(28, 36, 45, 0.9);
+      border-color: rgba(124, 255, 0, 0.5);
+      box-shadow: 0 0 12px rgba(124, 255, 0, 0.2);
+    }
+    .hamb-line {
+      width: 20px;
+      height: 2px;
+      background-color: var(--color-green);
+      border-radius: 2px;
+    }
+
+    /* Logo Text */
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-logo .brand-white {
+      color: #ffffff;
+    }
+    .brand-logo .brand-green {
+      color: var(--color-green);
+      text-shadow: 0 0 10px rgba(124, 255, 0, 0.4);
+    }
+
+    .header-divider {
+      width: 1px;
+      height: 28px;
+      background-color: var(--color-divider);
+      margin: 0 4px;
+    }
+
+    /* Middle Navigation Menu */
+    .header-nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--color-secondary);
+      cursor: pointer;
+      border-radius: 8px;
+      position: relative;
+      transition: all 200ms ease;
+    }
+    .nav-link:hover {
+      color: var(--color-green);
+    }
+    .nav-link:hover::after, .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 18px;
+      right: 18px;
+      height: 3px;
+      background: var(--color-green);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--color-green);
+    }
+    .nav-link.active {
+      color: #ffffff;
+    }
+
+    /* Connection Status Panel (Top Right) */
+    .conn-status-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      position: relative;
+      transition: all 200ms ease;
+    }
+    .conn-status-pill:hover {
+      background: rgba(124, 255, 0, 0.08);
+      border-color: rgba(124, 255, 0, 0.3);
+    }
+
+    .conn-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--color-green);
+      box-shadow: 0 0 10px var(--color-green);
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .conn-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .conn-arrow {
+      font-size: 10px;
+      color: var(--color-secondary);
+      margin-left: 2px;
+    }
+
+    /* Connection Dropdown Popup Card */
+    .conn-popup-card {
+      position: absolute;
+      top: 76px;
+      right: 24px;
+      width: 260px;
+      background: rgba(15, 20, 27, 0.95);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(124, 255, 0, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+      z-index: 600;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .conn-popup-card.show {
+      display: flex;
+    }
+
+    .popup-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .popup-label {
+      color: var(--color-secondary);
+      font-weight: 600;
+    }
+    .popup-val {
+      color: #ffffff;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .btn-disconnect-pop {
+      width: 100%;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255, 77, 77, 0.15);
+      border: 1px solid #ff4d4d;
+      color: #ff4d4d;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: all 200ms ease;
+    }
+    .btn-disconnect-pop:hover {
+      background: #ff4d4d;
+      color: #000000;
+    }
+
+    /* RIGHT FLOATING GLASS MAP TOOLBAR (Right Center) */
+    .right-glass-toolbar {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+
+    .map-tool-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .map-tool-btn:hover {
+      background: var(--bg-glass-hover);
+      border-color: rgba(124, 255, 0, 0.4);
+      color: var(--color-green);
+      box-shadow: 0 0 14px rgba(124, 255, 0, 0.25);
+    }
+
+    .map-tool-btn.highlight-target {
+      border: 1.5px solid var(--color-green);
+      color: var(--color-green);
+      background: rgba(124, 255, 0, 0.12);
+      box-shadow: 0 0 16px rgba(124, 255, 0, 0.3);
+    }
+    .map-tool-btn.highlight-target:hover {
+      background: var(--color-green);
+      color: #06080b;
+    }
+
+    /* BOTTOM TELEMETRY STRIP OVERLAY */
+    .bottom-telemetry-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      z-index: 100;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+
+    .telem-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .telem-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--color-secondary);
+      letter-spacing: 0.8px;
+    }
+    .telem-val {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: monospace;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FULLSCREEN SATELLITE MAP -->
+  <div id="map"></div>
+
+  <!-- TOP HEADER CONTAINER (70px) -->
+  <div class="top-header-bar">
+    <div class="header-left-group" style="padding-left: 54px;">
+      <!-- Logo -->
+      <div class="brand-logo">
+        <span class="brand-white">ODIN</span>
+        <span class="brand-green">GCS</span>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Middle Navigation Menu -->
+      <div class="header-nav-menu">
+        <div class="nav-link active" onclick="switchNav('FlightData')">FLIGHT</div>
+        <div class="nav-link" onclick="switchNav('Analytics')">ANALYTICS</div>
+        <div class="nav-link" onclick="switchNav('Weather')">WEATHER</div>
+        <div class="nav-link" onclick="switchNav('Radar')">RADAR</div>
+        <div class="nav-link" onclick="switchNav('FlightPlanner')">ETA PLANNER</div>
+        <div class="nav-link" onclick="switchNav('SWConfig')">SETTINGS</div>
+      </div>
+    </div>
+
+    <!-- Connection Status Panel (Top Right) -->
+    <div class="conn-status-pill" onclick="toggleConnPopup()">
+      <div class="conn-dot"></div>
+      <span id="headerConnText" class="conn-text">Connected</span>
+      <span class="conn-arrow">&#9660;</span>
+    </div>
+  </div>
+
+  <!-- Connection Dropdown Popup Card -->
+  <div id="connPopupCard" class="conn-popup-card">
+    <div class="popup-row">
+      <span class="popup-label">Vehicle</span>
+      <span id="popVehicle" class="popup-val">ArduCopter</span>
+    </div>
+    <div class="popup-row">
+      <span class="popup-label">COM Port</span>
+      <span id="popPort" class="popup-val">COM7</span>
+    </div>
+    <div class="popup-row">
+      <span class="popup-label">Baud Rate</span>
+      <span id="popBaud" class="popup-val">115200</span>
+    </div>
+    <button class="btn-disconnect-pop" onclick="performDisconnect()">DISCONNECT</button>
+  </div>
+
+  <!-- RIGHT FLOATING GLASS MAP TOOLBAR (Right Center) -->
+  <div class="right-glass-toolbar">
+    <div class="map-tool-btn highlight-target" onclick="recenterVehicle()" title="Locate Vehicle">
+      🎯
+    </div>
+    <div class="map-tool-btn" onclick="map.zoomIn()" title="Zoom In">
+      +
+    </div>
+    <div class="map-tool-btn" onclick="map.zoomOut()" title="Zoom Out">
+      -
+    </div>
+    <div class="map-tool-btn" onclick="recenterVehicle()" title="Center Vehicle">
+      ⌖
+    </div>
+    <div class="map-tool-btn" onclick="toggleLayer()" title="Change Map Layer">
+      🥞
+    </div>
+  </div>
+
+  <!-- BOTTOM TELEMETRY STRIP -->
+  <div class="bottom-telemetry-bar">
+    <div class="telem-col">
+      <span class="telem-label">ALTITUDE</span>
+      <span id="valAlt" class="telem-val">0.0 m</span>
+    </div>
+    <div class="telem-col">
+      <span class="telem-label">GROUND SPEED</span>
+      <span id="valSpeed" class="telem-val">0.0 m/s</span>
+    </div>
+    <div class="telem-col">
+      <span class="telem-label">HEADING</span>
+      <span id="valHeading" class="telem-val">0&deg;</span>
+    </div>
+    <div class="telem-col">
+      <span class="telem-label">BATTERY</span>
+      <span id="valBattery" class="telem-val" style="color: var(--color-green)">85%</span>
+    </div>
+    <div class="telem-col">
+      <span class="telem-label">SATELLITES</span>
+      <span id="valSats" class="telem-val">12</span>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    var map = null;
+    var homeLocation = { lat: 19.8762, lng: 75.3433 };
+    var homeMarker = null;
+
+    window.onload = function() {
+      initMap();
+    };
+
+    function initMap() {
+      map = L.map('map', {
+        center: [homeLocation.lat, homeLocation.lng],
+        zoom: 12,
+        zoomControl: false
+      });
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Esri Satellite'
+      }).addTo(map);
+
+      homeMarker = L.marker([homeLocation.lat, homeLocation.lng]).addTo(map);
+    }
+
+    function toggleGlobalDrawer() {
+      if (window.external && window.external.ToggleGlobalDrawer) {
+        window.external.ToggleGlobalDrawer();
+      }
+    }
+
+    function switchNav(screenName) {
+      if (window.external && window.external.ShowScreen) {
+        window.external.ShowScreen(screenName);
+      }
+    }
+
+    function toggleConnPopup() {
+      var pop = document.getElementById('connPopupCard');
+      pop.classList.toggle('show');
+    }
+
+    function performDisconnect() {
+      if (window.external && window.external.PerformConnect) {
+        window.external.PerformConnect();
+      }
+      toggleConnPopup();
+    }
+
+    function recenterVehicle() {
+      if (map) {
+        map.setView([homeLocation.lat, homeLocation.lng], 14);
+      }
+    }
+
+    function toggleLayer() {
+      alert("Toggled map layer view.");
+    }
+  </script>
+</body>
+</html>
