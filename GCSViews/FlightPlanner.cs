@@ -8865,6 +8865,51 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
             }
         }
 
+        public void ShowScreen(string screenName)
+        {
+            try
+            {
+                this.Invoke((Action)delegate
+                {
+                    MainV2.instance.MyView.ShowScreen(screenName);
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
+        }
+
+        public void ToggleGlobalDrawer()
+        {
+            try
+            {
+                this.Invoke((Action)delegate
+                {
+                    MainV2.instance.ToggleGlobalOdinDrawer();
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
+        }
+
+        public void PerformConnect()
+        {
+            try
+            {
+                this.Invoke((Action)delegate
+                {
+                    MainV2.instance.MenuConnect_Click(null, null);
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+            }
+        }
+
         private void SetBrowserFeatureControl()
         {
             try

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Forms;
@@ -40,7 +40,57 @@ namespace MissionPlanner.Controls
             doWorkArgs = new ProgressWorkerEventArgs();
             
             this.btnClose.Visible = false;
+            ApplyGreenTheme();
+        }
 
+        public void ApplyGreenTheme()
+        {
+            try
+            {
+                this.BackColor = System.Drawing.Color.FromArgb(16, 20, 24);
+                this.ForeColor = System.Drawing.Color.White;
+
+                if (this.lblProgressMessage != null)
+                {
+                    this.lblProgressMessage.ForeColor = System.Drawing.Color.White;
+                }
+
+                if (this.progressBar1 != null)
+                {
+                    this.progressBar1.BGGradTop = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.progressBar1.BGGradBot = System.Drawing.Color.FromArgb(90, 210, 0);
+                    this.progressBar1.Outline = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.progressBar1.TextColor = System.Drawing.Color.Black;
+                    this.progressBar1.BackColor = System.Drawing.Color.FromArgb(24, 30, 36);
+                }
+
+                if (this.btnCancel != null)
+                {
+                    this.btnCancel.BGGradTop = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.btnCancel.BGGradBot = System.Drawing.Color.FromArgb(90, 210, 0);
+                    this.btnCancel.Outline = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.btnCancel.TextColor = System.Drawing.Color.Black;
+                    this.btnCancel.ForeColor = System.Drawing.Color.Black;
+                    this.btnCancel.BackColor = System.Drawing.Color.FromArgb(124, 255, 0);
+                }
+
+                if (this.btnClose != null)
+                {
+                    this.btnClose.BGGradTop = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.btnClose.BGGradBot = System.Drawing.Color.FromArgb(90, 210, 0);
+                    this.btnClose.Outline = System.Drawing.Color.FromArgb(124, 255, 0);
+                    this.btnClose.TextColor = System.Drawing.Color.Black;
+                    this.btnClose.ForeColor = System.Drawing.Color.Black;
+                    this.btnClose.BackColor = System.Drawing.Color.FromArgb(124, 255, 0);
+                }
+            }
+            catch { }
+        }
+
+        private void ProgressReporterDialogue_Load(object sender, EventArgs e)
+        {
+            this.Focus();
+            ApplyGreenTheme();
         }
 
         /// <summary>
@@ -345,11 +395,6 @@ namespace MissionPlanner.Controls
                     } catch { }
                 }
             }
-        }
-
-        private void ProgressReporterDialogue_Load(object sender, EventArgs e)
-        {
-            this.Focus();
         }
 
         void IProgressReporterDialogue.BeginInvoke(Delegate method)

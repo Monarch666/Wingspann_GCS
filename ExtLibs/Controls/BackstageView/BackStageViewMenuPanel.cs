@@ -6,14 +6,13 @@ namespace MissionPlanner.Controls.BackstageView
 {
     public class BackStageViewMenuPanel : Panel
     {
-        internal Color GradColor = Color.White;
-        internal Color PencilBorderColor = Color.White;
-
-        private const int GradientWidth = 20;
+        internal Color GradColor = Color.FromArgb(18, 24, 32);
+        internal Color PencilBorderColor = Color.FromArgb(30, 255, 255, 255);
 
         public BackStageViewMenuPanel()
         {
-            this.SetStyle(ControlStyles.UserPaint, true);
+            this.SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            this.BackColor = Color.FromArgb(18, 24, 32);
 
             HorizontalScroll.Enabled = false;
             HorizontalScroll.Visible = false;
@@ -24,14 +23,17 @@ namespace MissionPlanner.Controls.BackstageView
 
         protected override void OnPaintBackground(PaintEventArgs pevent)
         {
-            // Fill with solid background color (dark theme compatible)
-            using (var bgBrush = new SolidBrush(BackColor))
+            var g = pevent.Graphics;
+            using (var bgBrush = new SolidBrush(Color.FromArgb(18, 24, 32)))
             {
-                pevent.Graphics.FillRectangle(bgBrush, this.ClientRectangle);
+                g.FillRectangle(bgBrush, this.ClientRectangle);
             }
 
             // Subtle right-edge separator line
-            pevent.Graphics.DrawLine(new Pen(PencilBorderColor), Width - 1, 0, Width - 1, Height);
+            using (var pen = new Pen(Color.FromArgb(25, 255, 255, 255)))
+            {
+                g.DrawLine(pen, Width - 1, 0, Width - 1, Height);
+            }
         }
 
         protected override void OnResize(System.EventArgs eventargs)

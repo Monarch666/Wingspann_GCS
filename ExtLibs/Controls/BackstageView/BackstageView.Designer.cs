@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Controls.BackstageView
+namespace MissionPlanner.Controls.BackstageView
 {
     partial class BackstageView
     {

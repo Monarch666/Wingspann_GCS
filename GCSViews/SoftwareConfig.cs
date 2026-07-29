@@ -223,11 +223,8 @@ namespace MissionPlanner.GCSViews
                     }
                 }
 
-                if (MainV2.DisplayConfiguration.displayFullParamList)
-                {
-                    if(!MainV2.comPort.BaseStream.IsOpen || gotAllParams)
-                        start = AddBackstageViewPage(typeof(ConfigRawParams), Strings.FullParameterList, null, false);
-                }
+                // Always add Full Parameter List as primary page
+                start = AddBackstageViewPage(typeof(ConfigRawParams), Strings.FullParameterList, null, false);
                 if (MainV2.comPort.BaseStream.IsOpen)
                 {
                     if (MainV2.comPort.MAV.cs.firmware == Firmwares.Ateryx)
@@ -290,29 +287,25 @@ namespace MissionPlanner.GCSViews
                 // apply theme before trying to display it
                 ThemeManager.ApplyThemeTo(this);
 
-                // remeber last page accessed
+                // Activate Full Parameter List by default
+                BackstageViewPage fullParamPage = null;
                 foreach (BackstageViewPage page in backstageView.Pages)
                 {
-                    if (page.LinkText == lastpagename)
+                    if (page.LinkText == Strings.FullParameterList || page.LinkText == "Full Parameter List" || page.PageType == typeof(ConfigRawParams))
                     {
-                        backstageView.ActivatePage(page);
+                        fullParamPage = page;
                         break;
                     }
                 }
 
-
-                if (backstageView.SelectedPage == null && start != null)
-                    this.BeginInvoke((Action) delegate
-                    {
-                        try
-                        {
-                            backstageView.ActivatePage(start);
-                        }
-                        catch (Exception ex)
-                        {
-                            log.Error(ex);
-                        }
-                    });
+                if (fullParamPage != null)
+                {
+                    backstageView.ActivatePage(fullParamPage);
+                }
+                else if (start != null)
+                {
+                    backstageView.ActivatePage(start);
+                }
             }
             catch (Exception ex)
             {

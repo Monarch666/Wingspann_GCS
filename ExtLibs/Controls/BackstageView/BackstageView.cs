@@ -29,7 +29,7 @@ namespace MissionPlanner.Controls.BackstageView
         private readonly BackstageViewCollection _items = new BackstageViewCollection();
         private BackstageViewPage _activePage;
 
-        private const int ButtonHeight = 30;
+        private const int ButtonHeight = 36;
 
         private List<BackstageViewPage> expanded = new List<BackstageViewPage>();
 

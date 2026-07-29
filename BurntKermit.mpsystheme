@@ -3,62 +3,62 @@
   <colors>
     <ThemeColor>
       <strColorItemName>Background</strColorItemName>
-      <clrColor Web="#F0E9E6" />
+      <clrColor Web="#101418" />
       <strVariableName>BGColor</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>Control Background</strColorItemName>
-      <clrColor Web="#cc0000" />
+      <clrColor Web="#181E24" />
       <strVariableName>ControlBGColor</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>Text</strColorItemName>
-      <clrColor Web="Black" />
+      <clrColor Web="White" />
       <strVariableName>TextColor</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>TextBox Background</strColorItemName>
-      <clrColor Web="#e68a00" />
+      <clrColor Web="#222A32" />
       <strVariableName>BGColorTextBox</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>Button Text</strColorItemName>
-      <clrColor Web="White" />
+      <clrColor Web="Black" />
       <strVariableName>ButtonTextColor</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>Button Background top</strColorItemName>
-      <clrColor Web="#cc0000" />
+      <clrColor Web="#7CFF00" />
       <strVariableName>ButBG</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>Button Background bottom</strColorItemName>
-      <clrColor Web="#e68a00" />
+      <clrColor Web="#5AD200" />
       <strVariableName>ButBGBot</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>ProgressBar Top</strColorItemName>
-      <clrColor Web="#cc0000" />
+      <clrColor Web="#7CFF00" />
       <strVariableName>ProgressBarColorTop</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>ProgressBar Bottom</strColorItemName>
-      <clrColor Web="#e68a00" />
+      <clrColor Web="#5AD200" />
       <strVariableName>ProgressBarColorBot</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>ProgressBar Outline</strColorItemName>
-      <clrColor Web="#e68a00" />
+      <clrColor Web="#7CFF00" />
       <strVariableName>ProgressBarOutlineColor</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>BannerColor1</strColorItemName>
-      <clrColor Web="#cc0000" />
+      <clrColor Web="#7CFF00" />
       <strVariableName>BannerColor1</strVariableName>
     </ThemeColor>
     <ThemeColor>
       <strColorItemName>BannerColor2</strColorItemName>
-      <clrColor Web="#e68a00" />
+      <clrColor Web="#5AD200" />
       <strVariableName>BannerColor2</strVariableName>
     </ThemeColor>
     <ThemeColor>
