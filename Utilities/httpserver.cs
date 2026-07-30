@@ -1,4 +1,4 @@
-﻿using log4net;
+using log4net;
 using MissionPlanner.GCSViews;
 using Newtonsoft.Json;
 using SharpKml.Base;

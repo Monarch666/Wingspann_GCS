@@ -359,6 +359,356 @@
       color: #ffffff;
       margin-top: 2px;
     }
+
+    /* WEATHER OVERLAY STYLES */
+    .weather-dashboard-container {
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #06080b;
+      z-index: 450;
+      display: none;
+      overflow-y: auto;
+      padding: 0;
+    }
+    .weather-dashboard-container.show {
+      display: block;
+    }
+    .wx-status-bar {
+      height: 44px;
+      background: rgba(14, 18, 24, 0.95);
+      border-bottom: 1px solid rgba(124, 255, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    .wx-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #7cff00;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .wx-right-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .wx-status-text {
+      font-size: 11px;
+      color: #9ea8b3;
+    }
+    .wx-refresh-btn {
+      background: rgba(124, 255, 0, 0.12);
+      border: 1px solid rgba(124, 255, 0, 0.3);
+      color: #7cff00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+    .wx-refresh-btn:hover {
+      background: #7cff00;
+      color: #06080b;
+    }
+
+    .wx-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      padding: 20px 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .wx-card {
+      background: rgba(15, 20, 27, 0.9);
+      border: 1px solid rgba(124, 255, 0, 0.15);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .wx-card-header {
+      font-size: 12px;
+      font-weight: 800;
+      color: #7cff00;
+      letter-spacing: 1px;
+    }
+    .wx-loc-text {
+      font-size: 12px;
+      color: #9ea8b3;
+    }
+    .wx-temp-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .wx-temp {
+      font-size: 48px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+    .wx-unit {
+      font-size: 16px;
+      font-weight: 800;
+      color: #7cff00;
+    }
+    .wx-cond-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .wx-feels-text {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .wx-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 4px 0;
+    }
+    .wx-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+    }
+    .wx-metric-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wx-m-icon {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+    .wx-m-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+    .wx-m-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .wx-compass-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .wx-compass-svg {
+      width: 140px;
+      height: 140px;
+    }
+    .wx-wind-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .wx-wind-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .wx-sub-label {
+      color: #64748b;
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .wx-sub-val {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .wx-sun-container {
+      display: flex;
+      justify-content: center;
+    }
+    .wx-sun-svg {
+      width: 240px;
+      height: 130px;
+    }
+    .wx-moon-row {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    .wx-forecast-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .wx-fc-row {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .wx-fc-day {
+      font-size: 12px;
+      font-weight: 800;
+      color: #7cff00;
+      width: 80px;
+    }
+    .wx-fc-cond {
+      font-size: 11px;
+      color: #9ea8b3;
+      flex: 1;
+    }
+    .wx-fc-temp {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .wx-gauges-flex {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .wx-gauge-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90px;
+    }
+    .wx-gauge-svg {
+      width: 80px;
+      height: 80px;
+    }
+    .wx-gauge-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .wx-bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .wx-bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .wx-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .wx-bar-fill {
+      height: 100%;
+      background: #60a5fa;
+      border-radius: 4px;
+      transition: width 400ms ease;
+    }
+    .wx-bar-fill.vis {
+      background: #10b981;
+    }
+
+    .wx-risk-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin: 4px 0;
+    }
+    .wx-risk-svg {
+      width: 110px;
+      height: 110px;
+    }
+    .wx-risk-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+    .wx-risk-badge.low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+    .wx-risk-badge.mod { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+    .wx-risk-badge.high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+
+    .wx-risk-factors {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .wx-rf-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #9ea8b3;
+    }
+    .wx-rf-pill {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .wx-rf-pill.ok { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .wx-rf-pill.high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+    .wx-uv-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .wx-uv-num {
+      font-size: 36px;
+      font-weight: 800;
+      color: #10b981;
+    }
+    .wx-uv-level {
+      font-size: 10px;
+      font-weight: 800;
+      color: #9ea8b3;
+    }
+    .wx-uv-bar-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .wx-uv-bar-bg {
+      width: 14px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 7px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .wx-uv-bar-fill {
+      width: 100%;
+      background: linear-gradient(to top, #10b981, #f59e0b, #ef4444);
+      border-radius: 7px;
+      transition: height 400ms ease;
+    }
   </style>
 </head>
 <body>
@@ -393,6 +743,159 @@
       <div class="conn-dot"></div>
       <span id="headerConnText" class="conn-text">Connected</span>
       <span class="conn-arrow">&#9660;</span>
+    </div>
+  </div>
+
+  <!-- WEATHER DASHBOARD OVERLAY VIEW -->
+  <div id="weatherOverlayView" class="weather-dashboard-container">
+    <div class="wx-status-bar">
+      <div class="wx-title-group">
+        <span class="wx-icon">☁</span>
+        <span class="wx-title">WEATHER INTELLIGENCE DASHBOARD</span>
+      </div>
+      <div class="wx-right-group">
+        <span id="wxStatusText" class="wx-status-text">Fetching live weather...</span>
+        <button class="wx-refresh-btn" onclick="fetchWeatherData()">⚡ REFRESH</button>
+      </div>
+    </div>
+
+    <div class="wx-grid">
+      <!-- Card 1: Current Conditions -->
+      <div class="wx-card">
+        <div class="wx-card-header">☁ CURRENT CONDITIONS</div>
+        <div id="wxLocText" class="wx-loc-text">📍 Locating...</div>
+        <div class="wx-temp-row">
+          <span id="wxTemp" class="wx-temp">--°</span>
+          <span class="wx-unit">C</span>
+        </div>
+        <div id="wxCondText" class="wx-cond-text">--</div>
+        <div id="wxFeelsLike" class="wx-feels-text">Feels like --°C</div>
+        <div class="wx-divider"></div>
+        <div class="wx-metrics-grid">
+          <div class="wx-metric-item"><span class="wx-m-icon">💧</span><div><div class="wx-m-label">HUMIDITY</div><div id="wxHumidity" class="wx-m-val">--%</div></div></div>
+          <div class="wx-metric-item"><span class="wx-m-icon">🌡</span><div><div class="wx-m-label">PRESSURE</div><div id="wxPressure" class="wx-m-val">-- hPa</div></div></div>
+          <div class="wx-metric-item"><span class="wx-m-icon">👁</span><div><div class="wx-m-label">VISIBILITY</div><div id="wxVis" class="wx-m-val">-- km</div></div></div>
+          <div class="wx-metric-item"><span class="wx-m-icon">☁</span><div><div class="wx-m-label">CLOUD COVER</div><div id="wxCloud" class="wx-m-val">--%</div></div></div>
+          <div class="wx-metric-item"><span class="wx-m-icon">🌧</span><div><div class="wx-m-label">PRECIPITATION</div><div id="wxPrecip" class="wx-m-val">-- mm</div></div></div>
+          <div class="wx-metric-item"><span class="wx-m-icon">💦</span><div><div class="wx-m-label">DEW POINT</div><div id="wxDew" class="wx-m-val">--°C</div></div></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Wind Analysis -->
+      <div class="wx-card">
+        <div class="wx-card-header">🌬 WIND ANALYSIS</div>
+        <div class="wx-compass-container">
+          <svg class="wx-compass-svg" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="65" stroke="rgba(124, 255, 0, 0.3)" stroke-width="2" fill="none" />
+            <circle cx="80" cy="80" r="50" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" fill="none" />
+            <text x="80" y="24" text-anchor="middle" fill="#9ea8b3" font-size="11" font-weight="bold">N</text>
+            <text x="142" y="84" text-anchor="middle" fill="#9ea8b3" font-size="11" font-weight="bold">E</text>
+            <text x="80" y="144" text-anchor="middle" fill="#9ea8b3" font-size="11" font-weight="bold">S</text>
+            <text x="18" y="84" text-anchor="middle" fill="#9ea8b3" font-size="11" font-weight="bold">W</text>
+            <g id="wxWindPointer" transform="rotate(0, 80, 80)">
+              <line x1="80" y1="80" x2="80" y2="28" stroke="#7cff00" stroke-width="3" stroke-linecap="round" />
+              <polygon points="80,20 74,32 86,32" fill="#7cff00" />
+            </g>
+            <circle cx="80" cy="80" r="5" fill="#7cff00" />
+          </svg>
+        </div>
+        <div class="wx-wind-details">
+          <div class="wx-wind-row"><span class="wx-sub-label">SPEED</span><span id="wxWindSpeed" class="wx-sub-val">-- km/h</span></div>
+          <div class="wx-wind-row"><span class="wx-sub-label">DIRECTION</span><span id="wxWindDir" class="wx-sub-val">-- (0°)</span></div>
+          <div class="wx-wind-row"><span class="wx-sub-label">GUSTS</span><span id="wxWindGust" class="wx-sub-val">-- km/h</span></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Daylight & Moon Arc -->
+      <div class="wx-card">
+        <div class="wx-card-header">☀ DAYLIGHT & MOON TRACKER</div>
+        <div class="wx-sun-container">
+          <svg class="wx-sun-svg" viewBox="0 0 280 150">
+            <line x1="20" y1="120" x2="260" y2="120" stroke="rgba(255,255,255,0.15)" stroke-width="2" />
+            <path d="M 30,120 A 110,80 0 0,1 250,120" stroke="rgba(124, 255, 0, 0.4)" stroke-width="2" stroke-dasharray="6,4" fill="none" />
+            <circle id="wxSunDot" cx="140" cy="40" r="9" fill="#ffb800" />
+            <text x="30" y="140" text-anchor="start" fill="#9ea8b3" font-size="10" font-weight="bold">SUNRISE</text>
+            <text id="wxSunriseText" x="30" y="110" text-anchor="start" fill="#ffffff" font-size="11" font-weight="bold">--:--</text>
+            <text x="250" y="140" text-anchor="end" fill="#9ea8b3" font-size="10" font-weight="bold">SUNSET</text>
+            <text id="wxSunsetText" x="250" y="110" text-anchor="end" fill="#ffffff" font-size="11" font-weight="bold">--:--</text>
+          </svg>
+        </div>
+        <div class="wx-divider"></div>
+        <div class="wx-moon-row">
+          <div><div class="wx-m-label">MOON PHASE</div><div id="wxMoonPhase" class="wx-sub-val">--</div></div>
+          <div><div class="wx-m-label">ILLUMINATION</div><div id="wxMoonIllum" class="wx-sub-val">--%</div></div>
+        </div>
+      </div>
+
+      <!-- Card 4: 3-Day Forecast -->
+      <div class="wx-card">
+        <div class="wx-card-header">📅 3-DAY FORECAST</div>
+        <div id="wxForecastList" class="wx-forecast-list"></div>
+      </div>
+
+      <!-- Card 5: Atmospheric Gauges -->
+      <div class="wx-card">
+        <div class="wx-card-header">📊 ATMOSPHERIC GAUGES</div>
+        <div class="wx-gauges-flex">
+          <div class="wx-gauge-box">
+            <svg viewBox="0 0 100 100" class="wx-gauge-svg">
+              <path d="M 20,80 A 40,40 0 1,1 80,80" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="none" stroke-linecap="round" />
+              <path id="wxHumArc" d="M 20,80 A 40,40 0 1,1 80,80" stroke="#3b82f6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188" />
+              <text id="wxGaugeHumVal" x="50" y="55" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">--%</text>
+            </svg>
+            <div class="wx-gauge-label">HUMIDITY</div>
+          </div>
+          <div class="wx-gauge-box">
+            <svg viewBox="0 0 100 100" class="wx-gauge-svg">
+              <path d="M 20,80 A 40,40 0 1,1 80,80" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="none" stroke-linecap="round" />
+              <path id="wxPressArc" d="M 20,80 A 40,40 0 1,1 80,80" stroke="#ffb800" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188" />
+              <text id="wxGaugePressVal" x="50" y="55" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">----</text>
+            </svg>
+            <div class="wx-gauge-label">PRESSURE</div>
+          </div>
+        </div>
+        <div class="wx-bar-group">
+          <div class="wx-bar-label-row"><span>CLOUD COVERAGE</span><span id="wxBarCloudVal">--%</span></div>
+          <div class="wx-bar-bg"><div id="wxBarCloudFill" class="wx-bar-fill" style="width:0%"></div></div>
+        </div>
+        <div class="wx-bar-group">
+          <div class="wx-bar-label-row"><span>VISIBILITY</span><span id="wxBarVisVal">-- km</span></div>
+          <div class="wx-bar-bg"><div id="wxBarVisFill" class="wx-bar-fill vis" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Card 6: Flight Risk Assessment -->
+      <div class="wx-card">
+        <div class="wx-card-header">⚠ FLIGHT RISK ASSESSMENT</div>
+        <div class="wx-risk-center">
+          <svg viewBox="0 0 120 120" class="wx-risk-svg">
+            <circle cx="60" cy="60" r="48" stroke="rgba(255,255,255,0.08)" stroke-width="10" fill="none" />
+            <circle id="wxRiskArc" cx="60" cy="60" r="48" stroke="#10b981" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="301" stroke-dashoffset="301" transform="rotate(-90 60 60)" />
+            <text id="wxRiskScoreText" x="60" y="66" text-anchor="middle" fill="#10b981" font-size="22" font-weight="800">0</text>
+          </svg>
+          <div id="wxRiskBadge" class="wx-risk-badge low">LOW RISK</div>
+        </div>
+        <div class="wx-risk-factors">
+          <div class="wx-rf-row"><span>Wind</span><span id="rfWind" class="wx-rf-pill ok">OK</span></div>
+          <div class="wx-rf-row"><span>Visibility</span><span id="rfVis" class="wx-rf-pill ok">OK</span></div>
+          <div class="wx-rf-row"><span>Rain</span><span id="rfRain" class="wx-rf-pill ok">OK</span></div>
+          <div class="wx-rf-row"><span>Gusts</span><span id="rfGust" class="wx-rf-pill ok">OK</span></div>
+        </div>
+      </div>
+
+      <!-- Card 7: UV Index -->
+      <div class="wx-card">
+        <div class="wx-card-header">☀️ UV INDEX</div>
+        <div class="wx-uv-center">
+          <div id="wxUvNum" class="wx-uv-num">0</div>
+          <div id="wxUvLabel" class="wx-uv-level">LOW</div>
+        </div>
+        <div class="wx-uv-bar-container">
+          <div class="wx-uv-bar-bg">
+            <div id="wxUvBarFill" class="wx-uv-bar-fill" style="height:0%"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -461,6 +964,7 @@
     var map = null;
     var homeLocation = { lat: 19.8762, lng: 75.3433 };
     var homeMarker = null;
+    var weatherFetched = false;
 
     window.onload = function() {
       initMap();
@@ -481,16 +985,154 @@
       homeMarker = L.marker([homeLocation.lat, homeLocation.lng]).addTo(map);
     }
 
-    function toggleGlobalDrawer() {
-      if (window.external && window.external.ToggleGlobalDrawer) {
-        window.external.ToggleGlobalDrawer();
+    function switchNav(screenName) {
+      // Highlight active nav link
+      var links = document.querySelectorAll('.nav-link');
+      links.forEach(function(l) {
+        if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + screenName + "'")) {
+          l.classList.add('active');
+        } else {
+          l.classList.remove('active');
+        }
+      });
+
+      var wxOverlay = document.getElementById('weatherOverlayView');
+      var mapDiv = document.getElementById('map');
+      var rightToolbar = document.querySelector('.right-glass-toolbar');
+      var bottomTelem = document.querySelector('.bottom-telemetry-bar');
+
+      if (screenName === 'Weather') {
+        if (wxOverlay) wxOverlay.classList.add('show');
+        if (mapDiv) mapDiv.style.display = 'none';
+        if (rightToolbar) rightToolbar.style.display = 'none';
+        if (bottomTelem) bottomTelem.style.display = 'none';
+        if (!weatherFetched) fetchWeatherData();
+      } else {
+        if (wxOverlay) wxOverlay.classList.remove('show');
+        if (mapDiv) mapDiv.style.display = 'block';
+        if (rightToolbar) rightToolbar.style.display = 'flex';
+        if (bottomTelem) bottomTelem.style.display = 'flex';
+      }
+
+      if (window.external && window.external.ShowScreen) {
+        try { window.external.ShowScreen(screenName); } catch(e){}
       }
     }
 
-    function switchNav(screenName) {
-      if (window.external && window.external.ShowScreen) {
-        window.external.ShowScreen(screenName);
+    function fetchWeatherData() {
+      var statusEl = document.getElementById('wxStatusText');
+      if (statusEl) statusEl.innerText = "Fetching weather...";
+
+      var apiKey = "6d63264e221c40aca85101427262401";
+      var url = "https://api.weatherapi.com/v1/forecast.json?key=" + apiKey + "&q=auto:ip&days=3&aqi=no&alerts=no";
+
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          weatherFetched = true;
+          renderWeatherData(data);
+          if (statusEl) statusEl.innerText = "Last updated: " + new Date().toLocaleTimeString() + " • " + (data.location ? data.location.name : "");
+        })
+        .catch(function(err) {
+          console.error(err);
+          if (statusEl) statusEl.innerText = "Failed to load live weather.";
+        });
+    }
+
+    function renderWeatherData(data) {
+      if (!data || !data.current) return;
+      var c = data.current;
+      var loc = data.location || {};
+
+      document.getElementById('wxLocText').innerText = "📍 " + (loc.name || "") + ", " + (loc.region || loc.country || "");
+      document.getElementById('wxTemp').innerText = Math.round(c.temp_c) + "°";
+      document.getElementById('wxCondText').innerText = c.condition ? c.condition.text : "--";
+      document.getElementById('wxFeelsLike').innerText = "Feels like " + c.feelslike_c + "°C";
+
+      document.getElementById('wxHumidity').innerText = c.humidity + "%";
+      document.getElementById('wxPressure').innerText = c.pressure_mb + " hPa";
+      document.getElementById('wxVis').innerText = c.vis_km + " km";
+      document.getElementById('wxCloud').innerText = c.cloud + "%";
+      document.getElementById('wxPrecip').innerText = c.precip_mm + " mm";
+      document.getElementById('wxDew').innerText = c.dewpoint_c + "°C";
+
+      // Wind Analysis
+      document.getElementById('wxWindSpeed').innerText = c.wind_kph + " km/h";
+      document.getElementById('wxWindDir').innerText = (c.wind_dir || "") + " (" + c.wind_degree + "°)";
+      document.getElementById('wxWindGust').innerText = (c.gust_kph || c.wind_kph) + " km/h";
+      var ptr = document.getElementById('wxWindPointer');
+      if (ptr) ptr.setAttribute('transform', 'rotate(' + (c.wind_degree || 0) + ', 80, 80)');
+
+      // Astro / Sun
+      if (data.forecast && data.forecast.forecastday && data.forecast.forecastday.length > 0) {
+        var astro = data.forecast.forecastday[0].astro || {};
+        document.getElementById('wxSunriseText').innerText = astro.sunrise || "--";
+        document.getElementById('wxSunsetText').innerText = astro.sunset || "--";
+        document.getElementById('wxMoonPhase').innerText = astro.moon_phase || "--";
+        document.getElementById('wxMoonIllum').innerText = (astro.moon_illumination || 0) + "%";
+
+        // Forecast List
+        var fList = document.getElementById('wxForecastList');
+        fList.innerHTML = "";
+        data.forecast.forecastday.forEach(function(fd, i) {
+          var d = fd.day || {};
+          var dayName = i === 0 ? "TODAY" : (i === 1 ? "TOMORROW" : new Date(fd.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase());
+          var row = document.createElement('div');
+          row.className = "wx-fc-row";
+          row.innerHTML = '<span class="wx-fc-day">' + dayName + '</span>' +
+                          '<span class="wx-fc-cond">' + (d.condition ? d.condition.text : "") + '</span>' +
+                          '<span class="wx-fc-temp">' + Math.round(d.maxtemp_c) + '° / ' + Math.round(d.mintemp_c) + '°</span>';
+          fList.appendChild(row);
+        });
       }
+
+      // Gauges & Bars
+      var humOffset = 188 - (188 * (c.humidity / 100));
+      document.getElementById('wxHumArc').setAttribute('stroke-dashoffset', humOffset);
+      document.getElementById('wxGaugeHumVal').innerText = c.humidity + "%";
+
+      var pressVal = Math.max(0, Math.min(100, (c.pressure_mb - 980) / 60 * 100));
+      var pressOffset = 188 - (188 * (pressVal / 100));
+      document.getElementById('wxPressArc').setAttribute('stroke-dashoffset', pressOffset);
+      document.getElementById('wxGaugePressVal').innerText = Math.round(c.pressure_mb);
+
+      document.getElementById('wxBarCloudVal').innerText = c.cloud + "%";
+      document.getElementById('wxBarCloudFill').style.width = c.cloud + "%";
+
+      var visVal = Math.min(100, (c.vis_km / 20) * 100);
+      document.getElementById('wxBarVisVal').innerText = c.vis_km + " km";
+      document.getElementById('wxBarVisFill').style.width = visVal + "%";
+
+      // Risk score calculation
+      var risk = 0;
+      if (c.wind_kph > 40) risk += 35; else if (c.wind_kph > 20) risk += 15;
+      if ((c.gust_kph || 0) > 45) risk += 25; else if ((c.gust_kph || 0) > 25) risk += 10;
+      if (c.vis_km < 3) risk += 25; else if (c.vis_km < 8) risk += 10;
+      if (c.precip_mm > 5) risk += 15; else if (c.precip_mm > 1) risk += 5;
+      risk = Math.min(100, risk);
+
+      document.getElementById('wxRiskScoreText').innerText = risk;
+      var riskArc = document.getElementById('wxRiskArc');
+      var riskOffset = 301 - (301 * (risk / 100));
+      riskArc.setAttribute('stroke-dashoffset', riskOffset);
+
+      var badge = document.getElementById('wxRiskBadge');
+      if (risk <= 25) { badge.className = "wx-risk-badge low"; badge.innerText = "LOW RISK"; }
+      else if (risk <= 50) { badge.className = "wx-risk-badge mod"; badge.innerText = "MODERATE RISK"; }
+      else { badge.className = "wx-risk-badge high"; badge.innerText = "HIGH RISK"; }
+
+      document.getElementById('rfWind').className = c.wind_kph > 35 ? "wx-rf-pill high" : "wx-rf-pill ok";
+      document.getElementById('rfVis').className = c.vis_km < 3 ? "wx-rf-pill high" : "wx-rf-pill ok";
+      document.getElementById('rfRain').className = c.precip_mm > 5 ? "wx-rf-pill high" : "wx-rf-pill ok";
+      document.getElementById('rfGust').className = (c.gust_kph || 0) > 40 ? "wx-rf-pill high" : "wx-rf-pill ok";
+
+      // UV
+      var uv = c.uv || 0;
+      document.getElementById('wxUvNum').innerText = Math.round(uv);
+      var uvTxt = uv <= 2 ? "LOW" : uv <= 5 ? "MODERATE" : uv <= 7 ? "HIGH" : "VERY HIGH";
+      document.getElementById('wxUvLabel').innerText = uvTxt;
+      var uvFill = Math.min(100, (uv / 11) * 100);
+      document.getElementById('wxUvBarFill').style.height = uvFill + "%";
     }
 
     function toggleConnPopup() {

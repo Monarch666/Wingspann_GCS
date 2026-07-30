@@ -5067,8 +5067,9 @@ namespace MissionPlanner
                     }
                     if (MyView != null)
                         MyView.ShowScreen("FlightData");
-                    if (GCSViews.FlightData.instance != null)
-                        GCSViews.FlightData.instance.SwitchPage(index);
+                    var fd = GCSViews.FlightData.instance ?? (MyView != null ? MyView.MainControl as GCSViews.FlightData : null);
+                    if (fd != null)
+                        fd.SwitchPage(index);
                 };
                 tabLabels[i] = lblTab;
                 pnlHeaderTabs.Controls.Add(lblTab);

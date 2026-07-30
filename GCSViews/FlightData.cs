@@ -3358,6 +3358,17 @@ namespace MissionPlanner.GCSViews
         private Panel pnlMapToolbar;
         private Panel pnlBotOverlay;
 
+        // ETA Planner Native Controls
+        private System.Windows.Forms.Label lblEtaTimerHUD;
+        private System.Windows.Forms.Label lblTakeoffMass;
+        private System.Windows.Forms.Label lblRange;
+        private System.Windows.Forms.Label lblHoverCurrentHUD;
+        private System.Windows.Forms.TrackBar tbWeight;
+        private System.Windows.Forms.TrackBar tbBatteryCapacity;
+        private System.Windows.Forms.TrackBar tbHoverCurrent;
+        private System.Windows.Forms.TrackBar tbWindSpeed;
+        private System.Windows.Forms.TrackBar tbTemperature;
+
         // Top Telemetry Strip Labels
         private System.Windows.Forms.Label lblTopAlt;
         private System.Windows.Forms.Label lblTopGS;
@@ -7326,6 +7337,7 @@ namespace MissionPlanner.GCSViews
 
             pnlWeatherPage = new Panel { Dock = DockStyle.Fill, Visible = false, BackColor = Color.FromArgb(16, 20, 24) };
             pnlContent.Controls.Add(pnlWeatherPage);
+            SetupWeatherPage();
             pnlRadarPage = new Panel { Dock = DockStyle.Fill, Visible = false, BackColor = Color.FromArgb(16, 20, 24) };
             pnlContent.Controls.Add(pnlRadarPage);
             SetupRadarPage();
@@ -7341,6 +7353,20 @@ namespace MissionPlanner.GCSViews
             pnlSettingsPage = new Panel { Dock = DockStyle.Fill, Visible = false, BackColor = Color.FromArgb(16, 20, 24) };
             pnlContent.Controls.Add(pnlSettingsPage);
             SetupSettingsPage();
+
+            // PRE-WARM ALL TABS TO PREVENT UI THREAD HANG ON FIRST SWITCH
+            Action<Control> forceHandle = null;
+            forceHandle = (c) => {
+                if (c == null) return;
+                var _ = c.Handle; // Forces Win32 HWND creation
+                foreach (Control child in c.Controls)
+                    forceHandle(child);
+            };
+            forceHandle(pnlWeatherPage);
+            forceHandle(pnlRadarPage);
+            forceHandle(pnlAnalyticsPage);
+            forceHandle(pnlEtaPlannerPage);
+            forceHandle(pnlSettingsPage);
         }
 
         private Button CreateToolbarButton(string text, int y, Action onClick)
@@ -7384,7 +7410,25 @@ namespace MissionPlanner.GCSViews
         {
             if (pnlFlightPage != null) pnlFlightPage.Visible = (index == 0);
             if (pnlAnalyticsPage != null) pnlAnalyticsPage.Visible = (index == 1);
-            if (pnlWeatherPage != null) pnlWeatherPage.Visible = (index == 2);
+            if (pnlWeatherPage != null) 
+            {
+                pnlWeatherPage.Visible = (index == 2);
+                if (index == 2)
+                {
+                    pnlWeatherPage.BringToFront();
+                    if (pnlContent != null && pnlContent.Width > 100 && pnlContent.Height > 100)
+                    {
+                        pnlWeatherPage.Bounds = pnlContent.ClientRectangle;
+                    }
+                    pnlWeatherPage.PerformLayout();
+                    if (weatherDashboard == null)
+                    {
+                        SetupWeatherPage();
+                    }
+                    pnlWeatherPage.Invalidate(true);
+                    pnlWeatherPage.Update();
+                }
+            }
             if (pnlRadarPage != null) pnlRadarPage.Visible = (index == 3);
             if (pnlEtaPlannerPage != null) pnlEtaPlannerPage.Visible = (index == 4);
             if (pnlSettingsPage != null) pnlSettingsPage.Visible = (index == 5);
@@ -7409,85 +7453,24 @@ namespace MissionPlanner.GCSViews
             }
         }
 
+        // ══════════════════════════════════════════════════════════════════════════════
+        // WEATHER DASHBOARD — Zoom Earth Desktop Application Integration
+        // ══════════════════════════════════════════════════════════════════════════════
+
+        private WeatherDashboard weatherDashboard;
+
         private void SetupWeatherPage()
         {
-            Panel card = new Panel { Width = 300, Height = 360, Location = new Point(30, 80), BackColor = Color.FromArgb(20, 25, 31) };
-            card.Paint += (s, e) => ApplyPanelPaint(card, e, Color.FromArgb(20, 25, 31), Color.FromArgb(38, 45, 54), 12);
+            pnlWeatherPage.Controls.Clear();
+            pnlWeatherPage.BackColor = Color.FromArgb(10, 14, 20);
 
-            System.Windows.Forms.Label title = new System.Windows.Forms.Label {
-                Text = "WEATHER METRICS",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(255, 90, 31),
-                Location = new Point(20, 20),
-                AutoSize = true
-            };
-            card.Controls.Add(title);
-
-            string[,] fields = {
-                { "TEMPERATURE", "23.8 C" },
-                { "WIND SPEED", "4.2 m/s" },
-                { "WIND DIRECTION", "60 deg (ENE)" },
-                { "HUMIDITY", "62%" },
-                { "BARO PRESSURE", "1012 hPa" },
-                { "VISIBILITY", "10.0 km" },
-                { "FLIGHT RISK", "LOW RISK (GOOD)" }
-            };
-
-            for (int i = 0; i < 7; i++)
+            if (weatherDashboard == null)
             {
-                System.Windows.Forms.Label lblName = new System.Windows.Forms.Label {
-                    Text = fields[i, 0],
-                    Font = new Font("Segoe UI", 7.5F, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(124, 135, 150),
-                    Location = new Point(20, 60 + i * 40),
-                    AutoSize = true
-                };
-                System.Windows.Forms.Label lblVal = new System.Windows.Forms.Label {
-                    Text = fields[i, 1],
-                    Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-                    ForeColor = i == 6 ? Color.FromArgb(16, 185, 129) : Color.White,
-                    Location = new Point(20, 75 + i * 40),
-                    AutoSize = true
-                };
-                card.Controls.Add(lblName);
-                card.Controls.Add(lblVal);
+                weatherDashboard = new WeatherDashboard();
+                weatherDashboard.Dock = DockStyle.Fill;
             }
-            pnlWeatherPage.Controls.Add(card);
-
-            PictureBox picSunPath = new PictureBox { Size = new Size(400, 360), Location = new Point(360, 80), BackColor = Color.Transparent };
-            picSunPath.Paint += (s, e) => {
-                Graphics g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                using (Pen pen = new Pen(Color.FromArgb(124, 135, 150), 2) { DashStyle = DashStyle.Dash })
-                {
-                    g.DrawArc(pen, 50, 80, 300, 200, 180, 180);
-                }
-
-                using (Pen linePen = new Pen(Color.FromArgb(32, 38, 46), 2))
-                {
-                    g.DrawLine(linePen, 20, 280, 380, 280);
-                }
-
-                g.DrawString("SUNRISE: 06:12", new Font("Segoe UI", 8F, FontStyle.Bold), Brushes.White, 30, 290);
-                g.DrawString("SUNSET: 18:45", new Font("Segoe UI", 8F, FontStyle.Bold), Brushes.White, 270, 290);
-
-                double angle = 45.0;
-                double rAngle = angle * Math.PI / 180.0;
-                int cx = 200;
-                int cy = 280;
-                int rx = 150;
-                int ry = 100;
-                int sx = cx - (int)(rx * Math.Cos(rAngle));
-                int sy = cy - (int)(ry * Math.Sin(rAngle));
-
-                using (SolidBrush sunBrush = new SolidBrush(Color.FromArgb(255, 90, 31)))
-                {
-                    g.FillEllipse(sunBrush, sx - 10, sy - 10, 20, 20);
-                }
-                g.DrawString("10:30 AM", new Font("Segoe UI", 8F, FontStyle.Bold), Brushes.OrangeRed, sx - 22, sy - 25);
-            };
-            pnlWeatherPage.Controls.Add(picSunPath);
+            
+            pnlWeatherPage.Controls.Add(weatherDashboard);
         }
 
         private void SetupRadarPage()
@@ -7583,105 +7566,180 @@ namespace MissionPlanner.GCSViews
             g.DrawString(alt, new Font("Segoe UI", 6F), Brushes.Gray, tx + 8, ty + 2);
         }
 
+        private MissionPlanner.Log.LogBrowse embeddedLogBrowser;
+
         private void SetupAnalyticsPage()
         {
-            Panel card = new Panel { Width = 680, Height = 360, Location = new Point(30, 80), BackColor = Color.FromArgb(20, 25, 31) };
-            card.Paint += (s, e) => ApplyPanelPaint(card, e, Color.FromArgb(20, 25, 31), Color.FromArgb(38, 45, 54), 12);
+            pnlAnalyticsPage.Controls.Clear();
+            pnlAnalyticsPage.AllowDrop = true;
+            pnlAnalyticsPage.DragEnter += PnlAnalyticsPage_DragEnter;
+            pnlAnalyticsPage.DragDrop += PnlAnalyticsPage_DragDrop;
 
-            System.Windows.Forms.Label title = new System.Windows.Forms.Label {
-                Text = "FLIGHT PROFILE ANALYTICS",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(255, 90, 31),
-                Location = new Point(20, 20),
-                AutoSize = true
-            };
-            card.Controls.Add(title);
 
-            PictureBox picGraph = new PictureBox { Size = new Size(640, 270), Location = new Point(20, 60), BackColor = Color.Transparent };
-            picGraph.Paint += (s, e) => {
-                Graphics g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
+            // Embed LogBrowse
+            embeddedLogBrowser = new MissionPlanner.Log.LogBrowse();
+            embeddedLogBrowser.TopLevel = false;
+            embeddedLogBrowser.FormBorderStyle = FormBorderStyle.None;
+            embeddedLogBrowser.Dock = DockStyle.Fill;
+            
+            pnlAnalyticsPage.Controls.Add(embeddedLogBrowser);
+            embeddedLogBrowser.Show();
+        }
 
-                using (Pen gridPen = new Pen(Color.FromArgb(32, 38, 46), 1))
+        private void PnlAnalyticsPage_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void PnlAnalyticsPage_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null && files.Length > 0 && embeddedLogBrowser != null)
+            {
+                string ext = Path.GetExtension(files[0]).ToLower();
+                if (ext == ".bin" || ext == ".log")
                 {
-                    for (int x = 0; x < picGraph.Width; x += 50)
-                        g.DrawLine(gridPen, x, 0, x, picGraph.Height);
-                    for (int y = 0; y < picGraph.Height; y += 40)
-                        g.DrawLine(gridPen, 0, y, picGraph.Width, y);
+                    embeddedLogBrowser.LoadLogDirect(files[0]);
                 }
+            }
+        }
 
-                using (Pen wavePen = new Pen(Color.FromArgb(255, 90, 31), 2.5F))
-                using (Pen wave2Pen = new Pen(Color.FromArgb(16, 185, 129), 1.8F))
+        private void CalculateEstimatedEndurance(object sender, EventArgs e)
+        {
+            if (lblEtaTimerHUD == null) return;
+            
+            try 
+            {
+                // Inputs
+                double weightKg = tbWeight.Value; 
+                double batteryAh = tbBatteryCapacity.Value; 
+                double hoverCurrentA = tbHoverCurrent.Value; 
+                double windSpeedKmH = tbWindSpeed.Value; 
+                double tempC = tbTemperature.Value; 
+
+                // Base endurance
+                double usableAh = batteryAh * 0.8; // 20% reserve
+                
+                // Weight penalty (Assuming baseline is 10kg, linear scaling)
+                double adjustedHoverCurrent = hoverCurrentA * (weightKg / 10.0);
+                if (adjustedHoverCurrent < 1) adjustedHoverCurrent = 1;
+
+                double baseEnduranceHours = usableAh / adjustedHoverCurrent;
+
+                // Wind penalty (1% penalty per km/h over 15km/h)
+                double windPenalty = 1.0;
+                if (windSpeedKmH > 15)
                 {
-                    Point[] pts1 = new Point[60];
-                    Point[] pts2 = new Point[60];
-                    for (int i = 0; i < 60; i++)
-                    {
-                        int x = i * 10;
-                        int y1 = 180 - (int)(50 * Math.Sin(i * 0.15) + 30 * Math.Sin(i * 0.35) + 50);
-                        int y2 = 140 - (int)(40 * Math.Cos(i * 0.2) + 40);
-                        pts1[i] = new Point(x, y1);
-                        pts2[i] = new Point(x, y2);
-                    }
-                    g.DrawLines(wavePen, pts1);
-                    g.DrawLines(wave2Pen, pts2);
+                    windPenalty = 1.0 - ((windSpeedKmH - 15) * 0.01);
                 }
+                if (windPenalty < 0.2) windPenalty = 0.2;
 
-                g.DrawString("ALTITUDE PROFILE", new Font("Segoe UI", 7.5F, FontStyle.Bold), Brushes.OrangeRed, 10, 10);
-                g.DrawString("SPEED PROFILE", new Font("Segoe UI", 7.5F, FontStyle.Bold), Brushes.LimeGreen, 10, 25);
-            };
-            card.Controls.Add(picGraph);
-            pnlAnalyticsPage.Controls.Add(card);
+                // Temp penalty (Loss of efficiency below 15C)
+                double tempPenalty = 1.0;
+                if (tempC < 15)
+                {
+                    tempPenalty = 1.0 - ((15 - tempC) * 0.005);
+                }
+                if (tempPenalty < 0.4) tempPenalty = 0.4;
+
+                double finalEnduranceHours = baseEnduranceHours * windPenalty * tempPenalty;
+                if (finalEnduranceHours < 0) finalEnduranceHours = 0;
+
+                int totalMinutes = (int)(finalEnduranceHours * 60);
+                int hours = totalMinutes / 60;
+                int mins = totalMinutes % 60;
+                int secs = (int)((finalEnduranceHours * 3600) % 60);
+
+                if (hours > 0)
+                    lblEtaTimerHUD.Text = $"{hours:D2}:{mins:D2}:{secs:D2}";
+                else
+                    lblEtaTimerHUD.Text = $"{mins:D2}:{secs:D2}";
+                    
+                lblTakeoffMass.Text = $"{weightKg:F1} kg";
+                lblHoverCurrentHUD.Text = $"{adjustedHoverCurrent:F1} A";
+                lblRange.Text = $"{(finalEnduranceHours * 45):F1} km"; // Assuming 45km/h cruise
+            }
+            catch { }
+        }
+
+        private TrackBar CreateTrackBar(Panel parent, string labelText, int min, int max, int def, int y, EventHandler onValueChanged)
+        {
+            System.Windows.Forms.Label lbl = new System.Windows.Forms.Label { Text = labelText, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(183, 192, 202), Location = new Point(20, y), AutoSize = true };
+            
+            TrackBar tb = new TrackBar { Minimum = min, Maximum = max, Value = def, TickFrequency = (max - min) / 10, Location = new Point(15, y + 20), Width = 340, AutoSize = false, Height = 30 };
+            tb.ValueChanged += onValueChanged;
+            
+            System.Windows.Forms.Label val = new System.Windows.Forms.Label { Text = def.ToString(), Font = new Font("Courier New", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(118, 255, 3), Location = new Point(280, y), AutoSize = true, TextAlign = ContentAlignment.TopRight };
+            tb.ValueChanged += (s, e) => val.Text = tb.Value.ToString();
+
+            parent.Controls.Add(lbl);
+            parent.Controls.Add(tb);
+            parent.Controls.Add(val);
+
+            return tb;
         }
 
         private void SetupEtaPlannerPage()
         {
-            Panel card = new Panel { Width = 680, Height = 360, Location = new Point(30, 80), BackColor = Color.FromArgb(20, 25, 31) };
-            card.Paint += (s, e) => ApplyPanelPaint(card, e, Color.FromArgb(20, 25, 31), Color.FromArgb(38, 45, 54), 12);
+            pnlEtaPlannerPage.Controls.Clear();
+            pnlEtaPlannerPage.BackColor = Color.FromArgb(12, 16, 21); // #0C1015
 
-            System.Windows.Forms.Label title = new System.Windows.Forms.Label {
-                Text = "MISSION LEG & ETA PLANNER",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(255, 90, 31),
-                Location = new Point(20, 20),
-                AutoSize = true
-            };
-            card.Controls.Add(title);
+            // Main Dashboard Container
+            Panel dash = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.FromArgb(12, 16, 21), Padding = new Padding(20) };
 
-            string[] headers = { "LEG", "TARGET WP", "LEG DIST", "AIRSPEED", "ETE", "EST. FUEL" };
-            for (int i = 0; i < 6; i++)
-            {
-                System.Windows.Forms.Label lblHeader = new System.Windows.Forms.Label {
-                    Text = headers[i],
-                    Font = new Font("Segoe UI", 7.5F, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(124, 135, 150),
-                    Location = new Point(20 + i * 110, 60),
-                    AutoSize = true
-                };
-                card.Controls.Add(lblHeader);
-            }
+            // 1. HUD Card
+            Panel cardHud = new Panel { Width = 380, Height = 200, Location = new Point(20, 20), BackColor = Color.FromArgb(20, 26, 32) };
+            cardHud.Paint += (s, e) => ApplyPanelPaint(cardHud, e, Color.FromArgb(20, 26, 32), Color.FromArgb(118, 255, 3), 14); // #141A20 with neon green border #76FF03
+            
+            System.Windows.Forms.Label titleHud = new System.Windows.Forms.Label { Text = "HUD TELEMETRY CENTER", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
+            System.Windows.Forms.Label lblEtaLabel = new System.Windows.Forms.Label { Text = "ESTIMATED FLIGHT ENDURANCE", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(183, 192, 202), Location = new Point(20, 45), AutoSize = true };
+            lblEtaTimerHUD = new System.Windows.Forms.Label { Text = "00:00", Font = new Font("Courier New", 36F, FontStyle.Bold), ForeColor = Color.FromArgb(118, 255, 3), Location = new Point(15, 65), AutoSize = true };
+            
+            // Right-side metrics with proper spacing so sub-labels don't overlap
+            lblTakeoffMass = new System.Windows.Forms.Label { Text = "0.0 kg", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 42), AutoSize = true };
+            System.Windows.Forms.Label l1 = new System.Windows.Forms.Label { Text = "TAKEOFF MASS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 62), AutoSize = true };
 
-            string[,] data = {
-                { "1", "WP 01 (Home -> Turn)", "420 m", "12.0 m/s", "00:35", "1.2%" },
-                { "2", "WP 02 (Turn -> Loop)", "680 m", "15.0 m/s", "00:45", "1.8%" },
-                { "3", "WP 03 (Loop -> Land)", "510 m", "10.0 m/s", "00:51", "1.4%" }
-            };
+            lblHoverCurrentHUD = new System.Windows.Forms.Label { Text = "0.0 A", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 90), AutoSize = true };
+            System.Windows.Forms.Label l2 = new System.Windows.Forms.Label { Text = "HOVER CURRENT", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 110), AutoSize = true };
 
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 6; j++)
-                {
-                    System.Windows.Forms.Label lblCell = new System.Windows.Forms.Label {
-                        Text = data[i, j],
-                        Font = new Font("Segoe UI", 8.5F),
-                        ForeColor = Color.White,
-                        Location = new Point(20 + j * 110, 95 + i * 40),
-                        AutoSize = true
-                    };
-                    card.Controls.Add(lblCell);
-                }
-            }
-            pnlEtaPlannerPage.Controls.Add(card);
+            lblRange = new System.Windows.Forms.Label { Text = "0.0 km", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 138), AutoSize = true };
+            System.Windows.Forms.Label l3 = new System.Windows.Forms.Label { Text = "MAX CRUISE RANGE", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 158), AutoSize = true };
+
+            cardHud.Controls.AddRange(new Control[] { titleHud, lblEtaLabel, lblEtaTimerHUD, lblTakeoffMass, l1, lblHoverCurrentHUD, l2, lblRange, l3 });
+            
+            // 2. Aircraft Tuning Card
+            Panel cardTune = new Panel { Width = 380, Height = 250, Location = new Point(20, 240), BackColor = Color.FromArgb(20, 26, 32) };
+            cardTune.Paint += (s, e) => ApplyPanelPaint(cardTune, e, Color.FromArgb(20, 26, 32), Color.FromArgb(41, 49, 58), 14); 
+
+            System.Windows.Forms.Label titleTune = new System.Windows.Forms.Label { Text = "AIRCRAFT PARAMETERS", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
+            cardTune.Controls.Add(titleTune);
+
+            // Helpers for trackbars
+            int yPos = 50;
+            EventHandler recalc = new EventHandler(CalculateEstimatedEndurance);
+
+            tbWeight = CreateTrackBar(cardTune, "TAKEOFF WEIGHT (KG)", 1, 20, 10, yPos, recalc); yPos += 60;
+            tbBatteryCapacity = CreateTrackBar(cardTune, "BATTERY CAPACITY (Ah)", 5, 50, 16, yPos, recalc); yPos += 60;
+            tbHoverCurrent = CreateTrackBar(cardTune, "BASE HOVER CURRENT @ 10KG (A)", 10, 80, 25, yPos, recalc); yPos += 60;
+
+            // 3. Environmental Card
+            Panel cardEnv = new Panel { Width = 380, Height = 190, Location = new Point(420, 20), BackColor = Color.FromArgb(20, 26, 32) };
+            cardEnv.Paint += (s, e) => ApplyPanelPaint(cardEnv, e, Color.FromArgb(20, 26, 32), Color.FromArgb(41, 49, 58), 14);
+            
+            System.Windows.Forms.Label titleEnv = new System.Windows.Forms.Label { Text = "ENVIRONMENTAL DERATING", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
+            cardEnv.Controls.Add(titleEnv);
+
+            int eyPos = 50;
+            tbWindSpeed = CreateTrackBar(cardEnv, "WIND VELOCITY (KM/H)", 0, 60, 5, eyPos, recalc); eyPos += 60;
+            tbTemperature = CreateTrackBar(cardEnv, "AMBIENT TEMPERATURE (°C)", -10, 45, 20, eyPos, recalc); eyPos += 60;
+
+            // Add all
+            dash.Controls.AddRange(new Control[] { cardHud, cardTune, cardEnv });
+            pnlEtaPlannerPage.Controls.Add(dash);
+
+            // Initial calc
+            CalculateEstimatedEndurance(null, null);
         }
 
         private void SetupSettingsPage()

@@ -1,0 +1,66 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{Document Control}{1}{Doc-Start}\protected@file@percent }
+\gdef \LT@i {\LT@entry 
+    {1}{48.67912pt}\LT@entry 
+    {1}{83.13188pt}\LT@entry 
+    {1}{111.58464pt}\LT@entry 
+    {1}{176.71652pt}}
+\@writefile{toc}{\contentsline {section}{Revision History}{2}{table.caption.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{Abstract}{5}{table.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{6}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Problem Statement}{6}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Design Goals}{6}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}System Architecture}{7}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Technology Stack}{7}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}System Architecture Diagram}{7}{subsection.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces AERO-GCS Flight Endurance Estimator --- System Architecture}}{7}{figure.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Directory Structure}{8}{subsection.2.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Project File Structure}}{8}{table.caption.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Database Schema}{9}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Aircraft Table}{9}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Aircraft Profile Table Schema}}{9}{table.caption.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}FlightLog Table}{9}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}WeatherCache Table}{9}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Physics Model --- Flight Endurance Calculation}{10}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Stage 1: Payload Current Scaling}{10}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Stage 2: Nameplate Hover Time}{10}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Stage 3: Usable Capacity Limit}{10}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Stage 4: LiPo Temperature Derating}{10}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Stage 5: Wind Current Penalty}{11}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Stage 6: Density Altitude Penalty}{11}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Range Estimation}{11}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Safety Advisories}{11}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Weather Integration}{12}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Open-Meteo API}{12}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Offline Caching Strategy}{12}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}User Interface}{13}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Dashboard Overview}{13}{subsection.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces AERO-GCS Flight Endurance Estimator --- Main Dashboard View. The left column contains the aircraft profile configuration and environmental controls. The right column displays the HUD timer, advisories, waterfall diagnostics, and model tuning panels.}}{13}{figure.caption.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}HUD Flight Timer}{13}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Derating Waterfall Diagnostics}{14}{subsection.6.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Endurance Derating Diagnostics --- Horizontal step-bar waterfall showing progressive capacity reduction through each derating stage. Cyan bars represent remaining capacity; hatched sections indicate losses.}}{14}{figure.caption.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Model Tuning \& Coefficient Regression}{15}{subsection.6.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Model Tuning Panel --- Sensitivity coefficient sliders (left) and predicted-vs-actual scatter regression plot (right). Dots are color-coded by prediction accuracy: cyan ($<$15\% error), amber (15--30\%), red ($>$30\%).}}{15}{figure.caption.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Flight Logs \& Validation Table}{16}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}API Reference}{17}{section.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces REST API Endpoint Summary}}{17}{table.caption.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Testing \& Validation}{18}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Unit Tests --- Physics Engine}{18}{subsection.8.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Physics test execution output}}{18}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Integration Tests --- API Endpoints}{18}{subsection.8.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces API integration test execution output}}{18}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Deployment \& Usage}{19}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Prerequisites}{19}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Installation}{19}{subsection.9.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Virtual environment setup}}{19}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Running the Application}{19}{subsection.9.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces Application startup output}}{19}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Typical Workflow}{19}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Security Considerations}{20}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Operational Constraints}{20}{subsection.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A}Appendix A: Glossary}{21}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Appendix B: References}{21}{appendix.B}\protected@file@percent }
+\gdef \@abspage@last{22}

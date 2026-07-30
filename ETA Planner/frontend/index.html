@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AERO-GCS // Flight Endurance Estimator</title>
+    <!-- Polyfills for older engines -->
+    <script>if(!window.Promise){document.write('<script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"><\/script>')}</script>
+    <script>if(!window.fetch){document.write('<script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3/dist/fetch.umd.js"><\/script>')}</script>
+    <script>if(!window.URLSearchParams){document.write('<script src="https://cdn.jsdelivr.net/npm/url-search-params-polyfill@8/index.js"><\/script>')}</script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=20260729_v3">
+</head>
+<body>
+    <div class="gcs-app-container">
+        <!-- HEADER BAR -->
+        <header class="gcs-header">
+            <div class="header-brand">
+                <svg class="icon-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <span class="brand-title">AERO-GCS</span>
+                <span class="brand-sub">// FLIGHT ENDURANCE & MISSION ESTIMATOR</span>
+            </div>
+            <div class="header-pills">
+                <div class="status-pill" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">SYS_ONLINE</span>
+                </div>
+                <div class="clock-pill" id="system-time">00:00:00 UTC</div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD GRID -->
+        <main class="gcs-dashboard">
+            <!-- ROW 1: PROFILE, HUD, MISSION STATUS -->
+            <div class="grid-row row-1">
+                <!-- CARD 1.1: AIRCRAFT PROFILE -->
+                <section class="card card-profile">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                            <span>Aircraft Profile</span>
+                        </div>
+                        <span class="badge-status">ArduCopter 4.7</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="aircraft-select">SAVED PROFILE SELECTOR</label>
+                            <select id="aircraft-select" class="gcs-select">
+                                <option value="">-- Manual Calculation (Unsaved) --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ac-name">AIRCRAFT ID / NAME</label>
+                            <input type="text" id="ac-name" class="gcs-input" value="DJI-M300-RTK" placeholder="e.g. DJI-M300-RTK">
+                        </div>
+                        <div class="meta-row">
+                            <div class="meta-item">
+                                <span class="meta-label">LAST MODIFIED</span>
+                                <span class="meta-val">Today, 12:45 UTC</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">EST. FLIGHT TIME</span>
+                                <span class="meta-val highlight-green" id="profile-est-time">20:24 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CARD 1.2: HUD CARD (VISUAL CENTER) -->
+                <section class="card card-hud">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+                            <span>HUD Telemetry Center</span>
+                        </div>
+                        <span class="badge-accent">LIVE CALCULATION</span>
+                    </div>
+                    <div class="hud-center-content">
+                        <div class="hud-main-display">
+                            <span class="hud-label">ESTIMATED FLIGHT ENDURANCE</span>
+                            <div class="hud-timer-digits" id="hud-timer">20:24</div>
+                            <span class="hud-unit">MINUTES : SECONDS</span>
+                        </div>
+                        <div class="hud-metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">TAKEOFF MASS</span>
+                                <span class="metric-val" id="hud-weight">2.00 <span class="unit">kg</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">CRUISE RANGE</span>
+                                <span class="metric-val" id="hud-range">15.3 <span class="unit">km</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">HOVER CURRENT</span>
+                                <span class="metric-val" id="hud-current">5.00 <span class="unit">A/mtr</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">ALTITUDE MSL</span>
+                                <span class="metric-val" id="hud-alt">0 <span class="unit">m</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">WIND VELOCITY</span>
+                                <span class="metric-val" id="hud-wind">0.0 <span class="unit">km/h</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">TEMP DERATE</span>
+                                <span class="metric-val" id="hud-temp-derate">100 <span class="unit">%</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CARD 1.3: MISSION STATUS -->
+                <section class="card card-mission">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Mission Status</span>
+                        </div>
+                        <span class="badge-status">READY</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mission-item">
+                            <span class="m-label">ACTIVE LEG</span>
+                            <span class="m-val">WP 01 &rarr; WP 02</span>
+                        </div>
+                        <div class="mission-item">
+                            <span class="m-label">LEG DISTANCE</span>
+                            <span class="m-val">680 m</span>
+                        </div>
+                        <div class="mission-item">
+                            <span class="m-label">CRUISE SPEED</span>
+                            <span class="m-val">15.0 m/s</span>
+                        </div>
+                        <div class="mission-item">
+                            <span class="m-label">EST. BATTERY DRAW</span>
+                            <span class="m-val highlight-green">1.8% / leg</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ROW 2: CONFIGURATION, BATTERY, ENVIRONMENT -->
+            <div class="grid-row row-2">
+                <!-- CARD 2.1: AIRCRAFT CONFIGURATION (2-COLUMN GRID) -->
+                <section class="card card-config">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                            <span>Aircraft Parameters (2-Column Grid)</span>
+                        </div>
+                    </div>
+                    <form id="aircraft-form" autocomplete="off" class="card-body">
+                        <div class="config-grid">
+                            <div class="form-group">
+                                <label for="ac-empty-weight">AIRFRAME WEIGHT (KG)</label>
+                                <input type="number" id="ac-empty-weight" class="gcs-input" required step="0.01" min="0.05" value="2.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-motors">MOTOR COUNT</label>
+                                <input type="number" id="ac-motors" class="gcs-input" required min="1" max="16" value="4">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ac-hover-current">HOVER CURRENT / MOTOR (A)</label>
+                                <input type="number" id="ac-hover-current" class="gcs-input" required step="0.1" min="0.1" value="5.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-prop-size">PROPELLER SIZE</label>
+                                <input type="text" id="ac-prop-size" class="gcs-input" value="15x5.2" placeholder="e.g., 15x5.2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ac-battery-capacity">BATTERY CAPACITY (MAH)</label>
+                                <input type="number" id="ac-battery-capacity" class="gcs-input" required step="100" min="100" value="10000">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-battery-cells">CELL COUNT (S)</label>
+                                <input type="number" id="ac-battery-cells" class="gcs-input" required min="1" max="24" value="6">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ac-cruise-speed">CRUISE SPEED (KM/H)</label>
+                                <input type="number" id="ac-cruise-speed" class="gcs-input" step="0.5" min="0" value="45.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-payload">ACTIVE PAYLOAD (KG)</label>
+                                <input type="number" id="ac-payload" class="gcs-input" step="0.01" min="0" value="0.00">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ac-battery-reserve">LAND RESERVE (%)</label>
+                                <input type="number" id="ac-battery-reserve" class="gcs-input" required min="5" max="50" value="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-battery-efficiency">DISCHARGE EFFICIENCY (%)</label>
+                                <input type="number" id="ac-battery-efficiency" class="gcs-input" required min="50" max="100" value="85">
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- CARD 2.2: BATTERY ANALYSIS CARD -->
+                <section class="card card-battery">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2"/><path d="M23 10v4"/></svg>
+                            <span>Battery Analysis</span>
+                        </div>
+                    </div>
+                    <div class="card-body battery-body">
+                        <!-- Circular Gauge -->
+                        <div class="circle-gauge-box">
+                            <svg class="circle-svg" viewBox="0 0 120 120">
+                                <circle class="circle-bg" cx="60" cy="60" r="50"/>
+                                <circle class="circle-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="62"/>
+                            </svg>
+                            <div class="circle-text">
+                                <span class="c-val">80%</span>
+                                <span class="c-sub">USABLE</span>
+                            </div>
+                        </div>
+                        <div class="battery-stats">
+                            <div class="b-stat">
+                                <span class="b-label">TOTAL CAPACITY</span>
+                                <span class="b-val" id="bat-cap-val">10000 mAh</span>
+                            </div>
+                            <div class="b-stat">
+                                <span class="b-label">PACK HEALTH</span>
+                                <span class="b-val highlight-green">98% (GOOD)</span>
+                            </div>
+                            <div class="b-stat">
+                                <span class="b-label">EST. HOVER TIME</span>
+                                <span class="b-val" id="bat-hover-time">24.0 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CARD 2.3: ENVIRONMENT CARD -->
+                <section class="card card-environment">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/></svg>
+                            <span>Environmental Logging</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="sync-row">
+                            <input type="text" id="weather-search" class="gcs-input" placeholder="e.g. San Francisco, CA" value="San Francisco, CA">
+                            <button type="button" id="btn-sync-weather" class="btn-outline-green">SYNC</button>
+                        </div>
+                        <div id="weather-sync-indicator" class="sync-status">Telemetry online. Ready for input.</div>
+
+                        <div class="sliders-list">
+                            <!-- Temp -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Ambient Temperature</span>
+                                    <span class="s-val" id="val-temp">20.0 °C</span>
+                                </div>
+                                <input type="range" id="env-temp" class="gcs-slider" min="-25" max="60" step="0.5" value="20.0">
+                                <div class="slider-ticks"><span>-25°C</span><span>60°C</span></div>
+                            </div>
+                            <!-- Wind -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Wind Velocity</span>
+                                    <span class="s-val" id="val-wind">0.0 km/h</span>
+                                </div>
+                                <input type="range" id="env-wind" class="gcs-slider" min="0" max="60" step="0.5" value="0.0">
+                                <div class="slider-ticks"><span>0 km/h</span><span>60 km/h</span></div>
+                            </div>
+                            <!-- Altitude -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Takeoff Site Altitude (MSL)</span>
+                                    <span class="s-val" id="val-altitude">0 m</span>
+                                </div>
+                                <input type="range" id="env-altitude" class="gcs-slider" min="0" max="4000" step="10" value="0">
+                                <div class="slider-ticks"><span>0m</span><span>4000m</span></div>
+                            </div>
+                            <!-- Humidity -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Relative Humidity</span>
+                                    <span class="s-val" id="val-humidity">50 %</span>
+                                </div>
+                                <input type="range" id="env-humidity" class="gcs-slider" min="0" max="100" step="1" value="50">
+                                <div class="slider-ticks"><span>0%</span><span>100%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ROW 3: WATERFALL DIAGNOSTICS & TUNING -->
+            <div class="grid-row row-3">
+                <!-- CARD 3.1: ENDURANCE WATERFALL DIAGNOSTICS -->
+                <section class="card card-waterfall">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            <span>Endurance Derating Diagnostics</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="waterfall-display" class="waterfall-container"></div>
+                    </div>
+                </section>
+
+                <!-- CARD 3.2: MODEL TUNING & REGRESSION PLOT -->
+                <section class="card card-tuning">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            <span>Model Sensitivity Tuning</span>
+                        </div>
+                    </div>
+                    <div class="card-body tuning-layout">
+                        <div class="tuning-controls">
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Temp Derate Sensitivity</span>
+                                    <span class="s-val" id="val-coeff-temp">1.00x</span>
+                                </div>
+                                <input type="range" id="coeff-temp" class="gcs-slider coeff-slider" min="0.0" max="2.0" step="0.05" value="1.00">
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Wind Penalty Sensitivity</span>
+                                    <span class="s-val" id="val-coeff-wind">1.00x</span>
+                                </div>
+                                <input type="range" id="coeff-wind" class="gcs-slider coeff-slider" min="0.0" max="2.0" step="0.05" value="1.00">
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span class="s-label">Altitude Lift Sensitivity</span>
+                                    <span class="s-val" id="val-coeff-alt">1.00x</span>
+                                </div>
+                                <input type="range" id="coeff-alt" class="gcs-slider coeff-slider" min="0.0" max="2.0" step="0.05" value="1.00">
+                            </div>
+                        </div>
+                        <div class="plot-box">
+                            <svg id="scatter-svg" viewBox="0 0 320 220" width="100%" height="100%"></svg>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ADVISORY BANNER AREA -->
+            <div id="advisory-feed" class="advisory-container"></div>
+        </main>
+
+        <!-- FOOTER ACTION BAR -->
+        <footer class="gcs-footer-actions">
+            <button type="submit" form="aircraft-form" id="btn-save-profile" class="btn-large-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>SAVE AIRCRAFT PROFILE</span>
+            </button>
+            <div class="secondary-btn-row">
+                <button type="button" id="btn-export-session-csv" class="btn-outline">Export Profile (CSV)</button>
+                <button type="button" id="btn-export-pdf" class="btn-outline">Print Flight Ops Report (PDF)</button>
+                <button type="button" id="btn-delete-profile" class="btn-outline-danger btn-disabled" disabled>Delete Profile</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js?v=20260729_v3"></script>
+    <script src="js/charts.js?v=20260729_v3"></script>
+    <script src="js/app.js?v=20260729_v3"></script>
+</body>
+</html>

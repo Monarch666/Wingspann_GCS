@@ -1106,7 +1106,7 @@
         // Prefix-based dynamic category tree
         var categoryMap = {
             "Flight Configuration": {
-                icon: "✈️",
+                icon: "",
                 desc: "Airframe, motors, ESC, servos, flight modes, and RC channel mapping.",
                 subcategories: {
                     "Airframe": ["FRAME_CLASS", "FRAME_TYPE", "Q_FRAME_CLASS", "Q_FRAME_TYPE"],
@@ -1118,7 +1118,7 @@
                 }
             },
             "Sensors & Calibration": {
-                icon: "📡",
+                icon: "",
                 desc: "Compass, accelerometer, gyroscope, GPS, barometer, and rangefinder setup.",
                 subcategories: {
                     "Compass": ["COMPASS_"],
@@ -1132,7 +1132,7 @@
                 }
             },
             "Navigation": {
-                icon: "🧭",
+                icon: "",
                 desc: "RTL, Waypoint, Loiter, Terrain and Rally parameters.",
                 subcategories: {
                     "RTL": ["RTL_", "Q_RTL_"],
@@ -1143,7 +1143,7 @@
                 }
             },
             "EKF & State Estimation": {
-                icon: "🧮",
+                icon: "",
                 desc: "Extended Kalman Filters, sensor fusion, attitude and heading reference systems.",
                 subcategories: {
                     "EKF2": ["EK2_"],
@@ -1154,7 +1154,7 @@
                 }
             },
             "Flight Control": {
-                icon: "🕹️",
+                icon: "",
                 desc: "PID loops, rate control, position controller, and hover stabilization.",
                 subcategories: {
                     "Roll PID": ["ATC_RAT_RLL_", "RATE_RLL_"],
@@ -1166,7 +1166,7 @@
                 }
             },
             "Safety & Failsafes": {
-                icon: "🛡️",
+                icon: "",
                 desc: "Geofence boundary control, battery fail-safes, GCS connection loss triggers.",
                 subcategories: {
                     "Failsafes": ["FS_", "BATT_FS_"],
@@ -1177,7 +1177,7 @@
                 }
             },
             "Power System": {
-                icon: "🔋",
+                icon: "",
                 desc: "Battery monitoring calibration, generator controls, ESC telemetry config.",
                 subcategories: {
                     "Battery": ["BATT_"],
@@ -1187,7 +1187,7 @@
                 }
             },
             "Radio & Communication": {
-                icon: "📻",
+                icon: "",
                 desc: "Telemetry stream rates, MAVLink configuration, RC radio calibration, antenna tracking.",
                 subcategories: {
                     "Telemetry": ["SR0_", "SR1_", "SR2_", "SR3_", "TELEM_"],
@@ -1197,7 +1197,7 @@
                 }
             },
             "Payload": {
-                icon: "📦",
+                icon: "",
                 desc: "Camera triggers, servos, robotic grabbers, parachutes, and ADSB-In receivers.",
                 subcategories: {
                     "Camera": ["CAM_", "TRIG_"],
@@ -1209,7 +1209,7 @@
                 }
             },
             "Mission Planning": {
-                icon: "🗺️",
+                icon: "",
                 desc: "Automatic mission commands, georeferencing, pre-flight checklists, and rally boundaries.",
                 subcategories: {
                     "Auto": ["AUTO_", "WP_"],
@@ -1219,7 +1219,7 @@
                 }
             },
             "Video & Imaging": {
-                icon: "🎥",
+                icon: "",
                 desc: "Video camera codecs, OSD display elements, goggles and FPV camera feeds.",
                 subcategories: {
                     "Camera": ["CAM_"],
@@ -1229,7 +1229,7 @@
                 }
             },
             "Obstacle Avoidance": {
-                icon: "🛑",
+                icon: "",
                 desc: "Proximity sensors, LiDAR height/distance parameters, radar and path planning.",
                 subcategories: {
                     "Proximity": ["PRX_"],
@@ -1240,7 +1240,7 @@
                 }
             },
             "Logging & Diagnostics": {
-                icon: "📝",
+                icon: "",
                 desc: "Onboard flash data logging, telemetry logs, runtime statistics and diagnostic tools.",
                 subcategories: {
                     "Dataflash": ["LOG_"],
@@ -1250,7 +1250,7 @@
                 }
             },
             "Performance": {
-                icon: "⚡",
+                icon: "",
                 desc: "Main CPU task scheduler loop rates, memory checks, and multitasking config.",
                 subcategories: {
                     "CPU": ["SCHED_"],
@@ -1260,7 +1260,7 @@
                 }
             },
             "Advanced": {
-                icon: "⚙️",
+                icon: "",
                 desc: "General parameter list, custom firmware scripting, plugins, and raw settings.",
                 subcategories: {
                     "Parameters": ["_"],
@@ -1270,7 +1270,7 @@
                 }
             },
             "Firmware": {
-                icon: "💾",
+                icon: "",
                 desc: "Bootloader parameters, internal board setup, and hardware descriptors.",
                 subcategories: {
                     "Bootloader": ["BOOT_"],
@@ -1279,7 +1279,7 @@
                 }
             },
             "System": {
-                icon: "🖥️",
+                icon: "",
                 desc: "Universal system date & time parameters, theme layouts, and user preferences.",
                 subcategories: {
                     "Date & Time": ["TIME_"],
@@ -1484,7 +1484,7 @@
             // Dashboard Item
             var dbItem = document.createElement('div');
             dbItem.className = 'sidebar-menu-item ' + (activeLevel === 1 ? 'active' : '');
-            dbItem.innerHTML = '<span class="sidebar-menu-icon">📊</span><span>Dashboard</span>';
+            dbItem.innerHTML = '<span>Dashboard</span>';
             dbItem.onclick = function() {
                 navigateToLevel(1);
             };
@@ -1502,8 +1502,7 @@
                 
                 var item = document.createElement('div');
                 item.className = 'sidebar-menu-item ' + (selectedCategory === catName && activeLevel !== 1 ? 'active' : '');
-                item.innerHTML = '<span class="sidebar-menu-icon">' + categoryMap[catName].icon + '</span>' +
-                                 '<span style="flex: 1;">' + catName + '</span>' +
+                item.innerHTML = '<span style="flex: 1;">' + catName + '</span>' +
                                  '<span style="font-size: 9px; color: #5b6575; font-weight: 700;">' + count + '</span>';
                 
                 (function(cName) {
@@ -1537,8 +1536,7 @@
 
                 var card = document.createElement('div');
                 card.className = "category-card";
-                card.innerHTML = '<span class="card-header-icon">' + categoryMap[catName].icon + '</span>' +
-                                 '<div class="card-title">' + catName + '</div>' +
+                card.innerHTML = '<div class="card-title">' + catName + '</div>' +
                                  '<div class="card-desc">' + categoryMap[catName].desc + '</div>' +
                                  '<div class="card-footer">' +
                                  '  <span>Params: <span class="hl">' + total + '</span></span>' +

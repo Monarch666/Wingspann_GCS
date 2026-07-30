@@ -1,4 +1,4 @@
-﻿using GMap.NET;
+using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using IronPython.Hosting;
@@ -225,6 +225,44 @@ namespace MissionPlanner.Log
             dataGridView1.RowUnshared += dataGridView1_RowUnshared;
 
             MissionPlanner.Utilities.Tracking.AddPage(this.GetType().ToString(), this.Text);
+
+            EnableDragDrop(this);
+            
+            // Rebuild UI with modern ODIN GCS theme
+            BuildOdinUI();
+        }
+
+        private void EnableDragDrop(Control control)
+        {
+            control.AllowDrop = true;
+            control.DragEnter -= LogBrowse_DragEnter;
+            control.DragDrop -= LogBrowse_DragDrop;
+            control.DragEnter += LogBrowse_DragEnter;
+            control.DragDrop += LogBrowse_DragDrop;
+
+            foreach (Control child in control.Controls)
+            {
+                EnableDragDrop(child);
+            }
+        }
+
+        private void LogBrowse_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void LogBrowse_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null && files.Length > 0)
+            {
+                string ext = Path.GetExtension(files[0]).ToLower();
+                if (ext == ".bin" || ext == ".log")
+                {
+                    LoadLogDirect(files[0]);
+                }
+            }
         }
 
 
@@ -757,6 +795,8 @@ namespace MissionPlanner.Log
                     treeView1.Nodes.Add(msgNode);
                 }
             }
+            
+            PopulateOdinTelemetryBrowser();
         }
 
         private void dataGridView1_RowEnter(object sender, DataGridViewCellEventArgs e)
@@ -2803,6 +2843,19 @@ main()
             UntickTreeView();
         }
 
+        public void LoadLogDirect(string filepath)
+        {
+            if (System.IO.File.Exists(filepath))
+            {
+                // clear existing lists
+                zg1.GraphPane.CurveList.Clear();
+                // set logname directly
+                logfilename = filepath;
+                // reload
+                LogBrowse_Load(null, null);
+            }
+        }
+
         private void BUT_loadlog_Click(object sender, EventArgs e)
         {
             // clear existing lists
@@ -3760,10 +3813,18 @@ main()
 
         private void LogBrowse_Resize(object sender, EventArgs e)
         {
-            if (chk_datagrid.Checked)
-                splitContainerZgGrid.SplitterDistance = this.Height / 2;
-            if (!chk_datagrid.Checked)
-                splitContainerZgGrid.SplitterDistance = this.Height - splitContainerButGrid.Panel2.Height;
+            try
+            {
+                if (chk_datagrid.Checked)
+                    splitContainerZgGrid.SplitterDistance = this.Height / 2;
+                if (!chk_datagrid.Checked)
+                {
+                    int distance = this.Height - splitContainerButGrid.Panel2.Height;
+                    if (distance > 0 && distance < splitContainerZgGrid.Height)
+                        splitContainerZgGrid.SplitterDistance = distance;
+                }
+            }
+            catch { }
         }
 
         private void chk_events_CheckedChanged(object sender, EventArgs e)
