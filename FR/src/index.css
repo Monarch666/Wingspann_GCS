@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  /* Colors */
+  --bg-primary: #0A0A0A;
+  --bg-panel: rgba(15, 15, 15, 0.85);
+  --accent-primary: #39FF6A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B5B8B5;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  
+  /* Status Colors */
+  --status-live: #39FF6A;
+  --status-warning: #FFA500;
+  --status-danger: #FF3B30;
+
+  /* Typography */
+  --font-main: 'Inter', sans-serif;
+  
+  /* Panel / Glassmorphism */
+  --panel-blur: blur(12px);
+  --panel-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base Panel Class */
+.glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--panel-radius);
+  color: var(--text-primary);
+}
+
+/* Utilities */
+.text-accent { color: var(--accent-primary); }
+.text-secondary { color: var(--text-secondary); }
+
+.text-small-caps {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Interactive elements */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+}
+
+.hover-brighten:hover {
+  filter: brightness(1.2);
+}
+
+.active-border-left {
+  border-left: 2px solid var(--accent-primary);
+}
+
+.active-glow {
+  box-shadow: 0 0 8px rgba(57, 255, 106, 0.4);
+}
+
+/* Leaflet Map Overrides */
+.leaflet-container {
+  background: var(--bg-primary);
+  font-family: var(--font-main);
+}
+
+.leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: var(--text-secondary) !important;
+}
+.leaflet-control-attribution a {
+  color: var(--text-secondary) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}

@@ -1,0 +1,223 @@
+.flight-radar-card {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  width: 320px;
+  height: calc(100vh - 120px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #1a1b1d; /* Slightly lighter than the absolute black map bg */
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-icon-box {
+  width: 32px;
+  height: 32px;
+  background: #2ECC71;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.card-subtitle {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.hero-section {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.hero-sub {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+}
+
+.hero-metrics-container {
+  display: flex;
+  align-items: center;
+}
+
+.main-metric {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-main-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.metric-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-value {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.hero-desc {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.hero-sub-stats {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.forecast-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.strip-section {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.horizontal-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.horizontal-strip::-webkit-scrollbar {
+  height: 4px;
+}
+
+.strip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 60px;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.strip-item:hover, .strip-item.active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.strip-item.active {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.strip-time {
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.strip-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.list-section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.list-day {
+  font-size: 0.75rem;
+  width: 40px;
+}
+
+.list-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 2px;
+}
+
+.list-vals {
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: 60px;
+  text-align: right;
+}
+
+.unit {
+  font-size: 1rem;
+}

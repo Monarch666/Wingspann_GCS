@@ -233,6 +233,9 @@ namespace MissionPlanner.GCSViews
             if (MainV2.DisplayConfiguration.displayADSB)
                 AddBackstageViewPage(typeof(ConfigADSB), "ADSB", isConnected && gotAllParams, mand);
 
+            if (MainV2.DisplayConfiguration.displayMotorTest)
+                AddBackstageViewPage(typeof(ConfigMotorTest), "Motor Test", isConnected && gotAllParams, mand);
+
             // Optional hardware and advanced options sections are removed from Calibration (InitialSetup) and moved to Hardware & Firmware (FirmwareSetup) view.
 
 

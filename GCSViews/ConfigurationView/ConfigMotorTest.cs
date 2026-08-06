@@ -86,6 +86,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
             ComboBox cmbClass = new ComboBox();
             cmbClass.Name = "custom_cmbClass";
+            cmbClass.Items.Add("Class: Undefined");
             cmbClass.Items.Add("Class: Quad");
             cmbClass.Items.Add("Class: Hexa");
             cmbClass.Items.Add("Class: Octa");
@@ -492,18 +493,24 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         {
             try
             {
+                int mc = motorcount == 0 ? 1 : motorcount; // Default to 1 motor if 0 is passed
                 if (!MainV2.comPort.doCommand((byte)MainV2.comPort.sysidcurrent,
-                        (byte)MainV2.comPort.compidcurrent,
+                        (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
                         MAVLink.MAV_CMD.DO_MOTOR_TEST,
                         (float)motor,
                         (float)(byte)MAVLink.MOTOR_TEST_THROTTLE_TYPE.MOTOR_TEST_THROTTLE_PERCENT,
                         (float)speed,
                         (float)time,
-                        (float)motorcount,
+                        (float)mc,
                         0,
                         0))
                 {
-                    CustomMessageBox.Show("Command was denied by the autopilot");
+                    System.Threading.Thread.Sleep(200); // Give the drone a moment to send the STATUSTEXT
+                    string lastMessage = "No reason provided";
+                    if (MainV2.comPort.MAV.cs.messages.Count > 0) {
+                        lastMessage = MainV2.comPort.MAV.cs.messages[MainV2.comPort.MAV.cs.messages.Count - 1].message;
+                    }
+                    CustomMessageBox.Show("Command was denied by the autopilot (SysID: " + MainV2.comPort.sysidcurrent + ")\n\nAutopilot says: " + lastMessage);
                 }
             }
             catch

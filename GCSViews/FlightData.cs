@@ -7399,7 +7399,7 @@ namespace MissionPlanner.GCSViews
 
                 if (!string.IsNullOrEmpty(sub))
                 {
-                    g.DrawString(sub, new Font("Segoe UI", 6F), new SolidBrush(Color.FromArgb(100, 110, 125)), 5, 40);
+                    g.DrawString(sub, new Font("Segoe UI", 6F), new SolidBrush(Color.FromArgb(100, 110, 125)), 5, 45);
                 }
             };
             l.Text = value;
@@ -7408,30 +7408,72 @@ namespace MissionPlanner.GCSViews
 
         public void SwitchPage(int index)
         {
+            if (pnlContent != null) pnlContent.SuspendLayout();
+
             if (pnlFlightPage != null) pnlFlightPage.Visible = (index == 0);
-            if (pnlAnalyticsPage != null) pnlAnalyticsPage.Visible = (index == 1);
-            if (pnlWeatherPage != null) 
+            if (pnlWeatherPage != null) { pnlWeatherPage.Visible = (index == 2); }
+            if (pnlRadarPage != null) { pnlRadarPage.Visible = (index == 3); }
+            if (pnlEtaPlannerPage != null) { pnlEtaPlannerPage.Visible = (index == 4); }
+            if (pnlSettingsPage != null) { pnlSettingsPage.Visible = (index == 5); }
+
+            if (embeddedLogBrowser != null && !embeddedLogBrowser.IsDisposed)
             {
-                pnlWeatherPage.Visible = (index == 2);
-                if (index == 2)
+                embeddedLogBrowser.Visible = (index == 1);
+            }
+
+            if (pnlAnalyticsPage != null)
+            {
+                pnlAnalyticsPage.Visible = (index == 1);
+                if (index == 1)
                 {
-                    pnlWeatherPage.BringToFront();
+                    pnlAnalyticsPage.BringToFront();
                     if (pnlContent != null && pnlContent.Width > 100 && pnlContent.Height > 100)
                     {
-                        pnlWeatherPage.Bounds = pnlContent.ClientRectangle;
+                        pnlAnalyticsPage.Bounds = pnlContent.ClientRectangle;
                     }
-                    pnlWeatherPage.PerformLayout();
-                    if (weatherDashboard == null)
+                    if (embeddedLogBrowser == null || embeddedLogBrowser.IsDisposed)
                     {
-                        SetupWeatherPage();
+                        SetupAnalyticsPage();
                     }
-                    pnlWeatherPage.Invalidate(true);
-                    pnlWeatherPage.Update();
+                    if (embeddedLogBrowser != null && !embeddedLogBrowser.IsDisposed)
+                    {
+                        embeddedLogBrowser.Visible = true;
+                        embeddedLogBrowser.BringToFront();
+                        // User requested to be prompted again if no log is loaded when switching to this tab
+                        if (string.IsNullOrEmpty(embeddedLogBrowser.logfilename))
+                        {
+                            using (var ofd = new OpenFileDialog { Filter = "Log Files|*.log;*.bin;*.BIN;*.LOG", FilterIndex = 2 })
+                            {
+                                if (ofd.ShowDialog() == DialogResult.OK)
+                                    embeddedLogBrowser.LoadLogDirect(ofd.FileName);
+                            }
+                        }
+                    }
                 }
             }
-            if (pnlRadarPage != null) pnlRadarPage.Visible = (index == 3);
-            if (pnlEtaPlannerPage != null) pnlEtaPlannerPage.Visible = (index == 4);
-            if (pnlSettingsPage != null) pnlSettingsPage.Visible = (index == 5);
+
+            if (index == 2 && pnlWeatherPage != null)
+            {
+                pnlWeatherPage.BringToFront();
+                if (weatherDashboard == null) SetupWeatherPage();
+            }
+            if (index == 3 && pnlRadarPage != null) pnlRadarPage.BringToFront();
+            if (index == 4 && pnlEtaPlannerPage != null) pnlEtaPlannerPage.BringToFront();
+            if (index == 5 && pnlSettingsPage != null) pnlSettingsPage.BringToFront();
+
+            if (pnlContent != null)
+            {
+                pnlContent.ResumeLayout(true);
+                foreach (Control c in pnlContent.Controls)
+                {
+                    if (c.Visible) {
+                        if (pnlContent.Width > 100 && pnlContent.Height > 100)
+                            c.Bounds = pnlContent.ClientRectangle;
+                        c.Invalidate(true);
+                        c.Update();
+                    }
+                }
+            }
         }
 
         private void ApplyPanelPaint(Panel p, PaintEventArgs e, Color bgColor, Color borderColor, int radius)
@@ -7473,98 +7515,228 @@ namespace MissionPlanner.GCSViews
             pnlWeatherPage.Controls.Add(weatherDashboard);
         }
 
+        private Microsoft.Web.WebView2.WinForms.WebView2 radarWebView;
+        private bool radarWebViewInitialized = false;
+        private System.Windows.Forms.Label radarLoadingLabel;
+
         private void SetupRadarPage()
         {
-            PictureBox picRadar = new PictureBox { Size = new Size(360, 360), Location = new Point(30, 80), BackColor = Color.Transparent };
-            picRadar.Paint += (s, e) => {
-                Graphics g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
+            pnlRadarPage.BackColor = Color.FromArgb(10, 14, 20);
 
-                int cx = picRadar.Width / 2;
-                int cy = picRadar.Height / 2;
-                int radius = 160;
+            radarLoadingLabel = new System.Windows.Forms.Label();
+            radarLoadingLabel.Text = "Loading Flight Radar Engine...";
+            radarLoadingLabel.ForeColor = Color.White;
+            radarLoadingLabel.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            radarLoadingLabel.AutoSize = false;
+            radarLoadingLabel.Dock = DockStyle.Fill;
+            radarLoadingLabel.TextAlign = ContentAlignment.MiddleCenter;
+            pnlRadarPage.Controls.Add(radarLoadingLabel);
 
-                using (Pen pen = new Pen(Color.FromArgb(32, 38, 46), 1.5F))
-                {
-                    g.DrawEllipse(pen, cx - radius, cy - radius, radius * 2, radius * 2);
-                    g.DrawEllipse(pen, cx - radius * 2/3, cy - radius * 2/3, radius * 4/3, radius * 4/3);
-                    g.DrawEllipse(pen, cx - radius / 3, cy - radius / 3, radius * 2/3, radius * 2/3);
-                }
-
-                using (Pen pen = new Pen(Color.FromArgb(32, 38, 46), 1F))
-                {
-                    g.DrawLine(pen, cx - radius, cy, cx + radius, cy);
-                    g.DrawLine(pen, cx, cy - radius, cx, cy + radius);
-                }
-
-                double rad = radarSweepAngle * Math.PI / 180.0;
-                int sx = cx + (int)(radius * Math.Cos(rad));
-                int sy = cy + (int)(radius * Math.Sin(rad));
-                using (Pen sweepPen = new Pen(Color.FromArgb(120, 255, 90, 31), 2.5F))
-                {
-                    g.DrawLine(sweepPen, cx, cy, sx, sy);
-                }
-
-                DrawRadarTarget(g, cx - 60, cy - 80, "ADSB-102", "ALT: 2100m", Color.FromArgb(16, 185, 129));
-                DrawRadarTarget(g, cx + 90, cy + 40, "AIC-482", "ALT: 3400m", Color.FromArgb(245, 158, 11));
-                DrawRadarTarget(g, cx - 80, cy + 90, "EXP-98", "ALT: 1200m", Color.FromArgb(239, 68, 68));
-            };
-            pnlRadarPage.Controls.Add(picRadar);
-
-            Panel card = new Panel { Width = 300, Height = 360, Location = new Point(410, 80), BackColor = Color.FromArgb(20, 25, 31) };
-            card.Paint += (s, e) => ApplyPanelPaint(card, e, Color.FromArgb(20, 25, 31), Color.FromArgb(38, 45, 54), 12);
-
-            System.Windows.Forms.Label title = new System.Windows.Forms.Label {
-                Text = "TRAFFIC MONITOR (ADS-B)",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(255, 90, 31),
-                Location = new Point(20, 20),
-                AutoSize = true
-            };
-            card.Controls.Add(title);
-
-            string[] headers = { "CALLSIGN", "ALTITUDE", "THREAT" };
-            for (int i = 0; i < 3; i++)
+            pnlRadarPage.VisibleChanged += (s, e) =>
             {
-                System.Windows.Forms.Label lblHeader = new System.Windows.Forms.Label {
-                    Text = headers[i],
-                    Font = new Font("Segoe UI", 7.5F, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(124, 135, 150),
-                    Location = new Point(20 + i * 90, 60),
-                    AutoSize = true
-                };
-                card.Controls.Add(lblHeader);
-            }
-
-            string[,] data = {
-                { "ADSB-102", "2100 m", "LOW" },
-                { "AIC-482", "3400 m", "MEDIUM" },
-                { "EXP-98", "1200 m", "HIGH" }
+                if (pnlRadarPage.Visible && !radarWebViewInitialized)
+                {
+                    radarWebViewInitialized = true;
+                    InitializeRadarWebViewAsync();
+                }
             };
-            Color[] colors = { Color.FromArgb(16, 185, 129), Color.FromArgb(245, 158, 11), Color.FromArgb(239, 68, 68) };
-
-            for (int i = 0; i < 3; i++)
-            {
-                System.Windows.Forms.Label lblCall = new System.Windows.Forms.Label { Text = data[i, 0], Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 95 + i * 40), AutoSize = true };
-                System.Windows.Forms.Label lblAltVal = new System.Windows.Forms.Label { Text = data[i, 1], Font = new Font("Segoe UI", 8.5F), ForeColor = Color.White, Location = new Point(110, 95 + i * 40), AutoSize = true };
-                System.Windows.Forms.Label lblThreat = new System.Windows.Forms.Label { Text = data[i, 2], Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = colors[i], Location = new Point(200, 95 + i * 40), AutoSize = true };
-                card.Controls.Add(lblCall);
-                card.Controls.Add(lblAltVal);
-                card.Controls.Add(lblThreat);
-            }
-            pnlRadarPage.Controls.Add(card);
         }
 
-        private void DrawRadarTarget(Graphics g, int tx, int ty, string call, string alt, Color threatColor)
+        // ── RADAR API PROXY: Rate limiting & caching guardrails ──
+        private static readonly System.Net.Http.HttpClient radarHttpClient = new System.Net.Http.HttpClient() { Timeout = TimeSpan.FromSeconds(12) };
+        private string radarCachedResponse = null;
+        private DateTime radarCacheExpiry = DateTime.MinValue;
+        private int radarRequestCount = 0;
+        private DateTime radarRequestWindowStart = DateTime.UtcNow;
+        private const int RADAR_MAX_REQUESTS_PER_HOUR = 100;  // Hard cap: 100 requests/hour
+        private const int RADAR_CACHE_SECONDS = 15;           // Serve cached data for 15s between live fetches
+
+        private async void InitializeRadarWebViewAsync()
         {
-            using (SolidBrush b = new SolidBrush(threatColor))
+            try
             {
-                Point[] pts = { new Point(tx, ty - 6), new Point(tx - 5, ty + 4), new Point(tx + 5, ty + 4) };
-                g.FillPolygon(b, pts);
+                radarWebView = new Microsoft.Web.WebView2.WinForms.WebView2();
+                radarWebView.Dock = DockStyle.Fill;
+                radarWebView.Visible = false;
+                pnlRadarPage.Controls.Add(radarWebView);
+
+                string userDataFolder = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "MissionPlanner", "WebView2Cache_Radar");
+                var options = new Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions("--disable-web-security --allow-running-insecure-content");
+                var env = await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+                await radarWebView.EnsureCoreWebView2Async(env);
+
+                string webAppFolder = System.IO.Path.Combine(
+                    System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                    "..", "..", "..", "FR", "dist");
+                webAppFolder = System.IO.Path.GetFullPath(webAppFolder);
+
+                // Fallback to hardcoded path if relative doesn't work
+                if (!System.IO.Directory.Exists(webAppFolder))
+                    webAppFolder = @"e:\Projects\Wingspann GCS 0.1.1\FR\dist";
+
+                if (System.IO.Directory.Exists(webAppFolder))
+                {
+                    radarWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        "flightradar.local",
+                        webAppFolder,
+                        Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+
+                    // ── INTERCEPT API REQUESTS: Proxy through C# to bypass CORS ──
+                    radarWebView.CoreWebView2.AddWebResourceRequestedFilter(
+                        "https://flightradar.local/api/*",
+                        Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
+
+                    radarWebView.CoreWebView2.WebResourceRequested += async (sender, args) =>
+                    {
+                        var deferral = args.GetDeferral();
+                        try
+                        {
+                            var uri = args.Request.Uri;
+                            if (uri.Contains("/api/flights"))
+                            {
+                                string jsonResponse = await FetchFlightDataWithGuardrails(uri);
+                                var stream = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(jsonResponse));
+                                args.Response = radarWebView.CoreWebView2.Environment.CreateWebResourceResponse(
+                                    stream, 200, "OK",
+                                    "Content-Type: application/json\nAccess-Control-Allow-Origin: *\nCache-Control: no-cache");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            string errorJson = "{\"error\":\"" + ex.Message.Replace("\"", "'") + "\",\"ac\":[],\"states\":[]}";
+                            var stream = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(errorJson));
+                            args.Response = radarWebView.CoreWebView2.Environment.CreateWebResourceResponse(
+                                stream, 200, "OK",
+                                "Content-Type: application/json\nAccess-Control-Allow-Origin: *");
+                        }
+                        finally
+                        {
+                            deferral.Complete();
+                        }
+                    };
+
+                    radarWebView.CoreWebView2.NavigationCompleted += (sender, args) =>
+                    {
+                        if (args.IsSuccess)
+                        {
+                            radarLoadingLabel.Visible = false;
+                            radarWebView.Visible = true;
+                        }
+                        else
+                        {
+                            radarLoadingLabel.Text = "Failed to load Flight Radar Engine.";
+                        }
+                    };
+
+                    radarWebView.CoreWebView2.Navigate("https://flightradar.local/index.html");
+                }
+                else
+                {
+                    radarLoadingLabel.Text = $"Error: Flight Radar app not found at:\n{webAppFolder}";
+                }
             }
-            g.DrawString(call, new Font("Segoe UI", 7F, FontStyle.Bold), Brushes.White, tx + 8, ty - 8);
-            g.DrawString(alt, new Font("Segoe UI", 6F), Brushes.Gray, tx + 8, ty + 2);
+            catch (Exception ex)
+            {
+                if (radarLoadingLabel != null)
+                    radarLoadingLabel.Text = "WebView2 Runtime error:\n" + ex.Message;
+            }
         }
+
+        /// <summary>
+        /// Server-side flight data fetcher with rate limiting, caching, and multi-source failover.
+        /// Guardrails:
+        ///   - 15-second response cache (prevents hammering APIs on every poll)
+        ///   - 100 requests/hour hard cap (prevents token/credit exhaustion)
+        ///   - Primary: ADSB.lol (free, no auth, no rate limit)
+        ///   - Secondary: OpenSky Network (authenticated, 4000 credits/day)
+        /// </summary>
+        private async Task<string> FetchFlightDataWithGuardrails(string requestUri)
+        {
+            // ── GUARDRAIL 1: Serve cached response if still fresh ──
+            if (radarCachedResponse != null && DateTime.UtcNow < radarCacheExpiry)
+            {
+                return radarCachedResponse;
+            }
+
+            // ── GUARDRAIL 2: Hourly request cap ──
+            if ((DateTime.UtcNow - radarRequestWindowStart).TotalHours >= 1.0)
+            {
+                radarRequestCount = 0;
+                radarRequestWindowStart = DateTime.UtcNow;
+            }
+            if (radarRequestCount >= RADAR_MAX_REQUESTS_PER_HOUR)
+            {
+                return "{\"error\":\"Rate limit: " + radarRequestCount + "/" + RADAR_MAX_REQUESTS_PER_HOUR + " requests this hour. Cooling down.\",\"ac\":[],\"states\":[],\"rateLimited\":true}";
+            }
+            radarRequestCount++;
+
+            // Parse lat/lon from query string (manual parsing to avoid System.Web dependency)
+            double lat = 28.6139, lon = 77.2090; // Default: New Delhi
+            try
+            {
+                var queryPart = new Uri(requestUri).Query.TrimStart('?');
+                foreach (var param in queryPart.Split('&'))
+                {
+                    var parts = param.Split('=');
+                    if (parts.Length == 2)
+                    {
+                        if (parts[0] == "lat") lat = double.Parse(parts[1], CultureInfo.InvariantCulture);
+                        if (parts[0] == "lon") lon = double.Parse(parts[1], CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+            catch { }
+
+            // ── SOURCE 1: ADSB.lol (Primary — free, no CORS issues server-side) ──
+            try
+            {
+                string adsbUrl = $"https://api.adsb.lol/v2/lat/{lat.ToString(CultureInfo.InvariantCulture)}/lon/{lon.ToString(CultureInfo.InvariantCulture)}/dist/250";
+                var response = await radarHttpClient.GetStringAsync(adsbUrl);
+                if (!string.IsNullOrEmpty(response) && response.Contains("\"ac\""))
+                {
+                    // Wrap with metadata for the frontend
+                    string result = "{\"source\":\"adsb.lol\",\"requestsThisHour\":" + radarRequestCount + ",\"maxRequestsPerHour\":" + RADAR_MAX_REQUESTS_PER_HOUR + ",\"data\":" + response + "}";
+                    radarCachedResponse = result;
+                    radarCacheExpiry = DateTime.UtcNow.AddSeconds(RADAR_CACHE_SECONDS);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("ADSB.lol fetch failed: " + ex.Message);
+            }
+
+            // ── SOURCE 2: OpenSky Network (Secondary — authenticated) ──
+            try
+            {
+                double lamin = lat - 0.9, lamax = lat + 0.9, lomin = lon - 1.0, lomax = lon + 1.0;
+                string openSkyUrl = $"https://opensky-network.org/api/states/all?lamin={lamin.ToString(CultureInfo.InvariantCulture)}&lomin={lomin.ToString(CultureInfo.InvariantCulture)}&lamax={lamax.ToString(CultureInfo.InvariantCulture)}&lomax={lomax.ToString(CultureInfo.InvariantCulture)}";
+                
+                var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, openSkyUrl);
+                // Add Basic Auth for higher rate limits
+                string credentials = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("aadarsh-api-client:RILvkI9duWRatzk8RytcKMSo2sbRRGkb"));
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+                
+                var response = await radarHttpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    string body = await response.Content.ReadAsStringAsync();
+                    string result = "{\"source\":\"opensky\",\"requestsThisHour\":" + radarRequestCount + ",\"maxRequestsPerHour\":" + RADAR_MAX_REQUESTS_PER_HOUR + ",\"data\":" + body + "}";
+                    radarCachedResponse = result;
+                    radarCacheExpiry = DateTime.UtcNow.AddSeconds(RADAR_CACHE_SECONDS);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("OpenSky fetch failed: " + ex.Message);
+            }
+
+            return "{\"error\":\"All flight data sources unavailable\",\"ac\":[],\"states\":[]}";
+        }
+
 
         private MissionPlanner.Log.LogBrowse embeddedLogBrowser;
 
@@ -7572,18 +7744,68 @@ namespace MissionPlanner.GCSViews
         {
             pnlAnalyticsPage.Controls.Clear();
             pnlAnalyticsPage.AllowDrop = true;
+            pnlAnalyticsPage.DragEnter -= PnlAnalyticsPage_DragEnter;
+            pnlAnalyticsPage.DragDrop -= PnlAnalyticsPage_DragDrop;
             pnlAnalyticsPage.DragEnter += PnlAnalyticsPage_DragEnter;
             pnlAnalyticsPage.DragDrop += PnlAnalyticsPage_DragDrop;
 
-
-            // Embed LogBrowse
-            embeddedLogBrowser = new MissionPlanner.Log.LogBrowse();
-            embeddedLogBrowser.TopLevel = false;
-            embeddedLogBrowser.FormBorderStyle = FormBorderStyle.None;
-            embeddedLogBrowser.Dock = DockStyle.Fill;
-            
-            pnlAnalyticsPage.Controls.Add(embeddedLogBrowser);
-            embeddedLogBrowser.Show();
+            try
+            {
+                // Embed LogBrowse
+                embeddedLogBrowser = new MissionPlanner.Log.LogBrowse();
+                embeddedLogBrowser.TopLevel = false;
+                embeddedLogBrowser.FormBorderStyle = FormBorderStyle.None;
+                embeddedLogBrowser.Dock = DockStyle.Fill;
+                
+                // Explicitly set size before adding to panel
+                if (pnlAnalyticsPage.Width > 0 && pnlAnalyticsPage.Height > 0)
+                {
+                    embeddedLogBrowser.Size = pnlAnalyticsPage.ClientSize;
+                }
+                else
+                {
+                    embeddedLogBrowser.Size = new Size(1024, 768);
+                }
+                
+                pnlAnalyticsPage.Controls.Add(embeddedLogBrowser);
+                embeddedLogBrowser.Visible = true;
+                embeddedLogBrowser.Show();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("SetupAnalyticsPage failed: " + ex.ToString());
+                // Fallback: show an upload button directly on the panel
+                pnlAnalyticsPage.Controls.Clear();
+                var fallbackBtn = new Button();
+                fallbackBtn.Text = "Upload Log (.bin / .log)";
+                fallbackBtn.Size = new Size(250, 50);
+                fallbackBtn.Location = new Point(
+                    (pnlAnalyticsPage.Width - 250) / 2,
+                    (pnlAnalyticsPage.Height - 50) / 2);
+                fallbackBtn.Anchor = AnchorStyles.None;
+                fallbackBtn.BackColor = Color.FromArgb(118, 255, 3);
+                fallbackBtn.ForeColor = Color.Black;
+                fallbackBtn.FlatStyle = FlatStyle.Flat;
+                fallbackBtn.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+                fallbackBtn.Click += (s, ev) =>
+                {
+                    using (var ofd = new OpenFileDialog())
+                    {
+                        ofd.Filter = "Log Files|*.log;*.bin;*.BIN;*.LOG";
+                        ofd.FilterIndex = 2;
+                        if (ofd.ShowDialog() == DialogResult.OK)
+                        {
+                            // Re-try full setup and load the file
+                            SetupAnalyticsPage();
+                            if (embeddedLogBrowser != null && !embeddedLogBrowser.IsDisposed)
+                            {
+                                embeddedLogBrowser.LoadLogDirect(ofd.FileName);
+                            }
+                        }
+                    }
+                };
+                pnlAnalyticsPage.Controls.Add(fallbackBtn);
+            }
         }
 
         private void PnlAnalyticsPage_DragEnter(object sender, DragEventArgs e)
@@ -7689,7 +7911,7 @@ namespace MissionPlanner.GCSViews
             Panel dash = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.FromArgb(12, 16, 21), Padding = new Padding(20) };
 
             // 1. HUD Card
-            Panel cardHud = new Panel { Width = 380, Height = 200, Location = new Point(20, 20), BackColor = Color.FromArgb(20, 26, 32) };
+            Panel cardHud = new Panel { Width = 380, Height = 280, Location = new Point(20, 20), BackColor = Color.FromArgb(20, 26, 32) };
             cardHud.Paint += (s, e) => ApplyPanelPaint(cardHud, e, Color.FromArgb(20, 26, 32), Color.FromArgb(118, 255, 3), 14); // #141A20 with neon green border #76FF03
             
             System.Windows.Forms.Label titleHud = new System.Windows.Forms.Label { Text = "HUD TELEMETRY CENTER", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
@@ -7697,42 +7919,42 @@ namespace MissionPlanner.GCSViews
             lblEtaTimerHUD = new System.Windows.Forms.Label { Text = "00:00", Font = new Font("Courier New", 36F, FontStyle.Bold), ForeColor = Color.FromArgb(118, 255, 3), Location = new Point(15, 65), AutoSize = true };
             
             // Right-side metrics with proper spacing so sub-labels don't overlap
-            lblTakeoffMass = new System.Windows.Forms.Label { Text = "0.0 kg", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 42), AutoSize = true };
-            System.Windows.Forms.Label l1 = new System.Windows.Forms.Label { Text = "TAKEOFF MASS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 62), AutoSize = true };
+            lblTakeoffMass = new System.Windows.Forms.Label { Text = "0.0 kg", Font = new Font("Courier New", 12F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 50), AutoSize = true };
+            System.Windows.Forms.Label l1 = new System.Windows.Forms.Label { Text = "TAKEOFF MASS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 75), AutoSize = true };
 
-            lblHoverCurrentHUD = new System.Windows.Forms.Label { Text = "0.0 A", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 90), AutoSize = true };
-            System.Windows.Forms.Label l2 = new System.Windows.Forms.Label { Text = "HOVER CURRENT", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 110), AutoSize = true };
+            lblHoverCurrentHUD = new System.Windows.Forms.Label { Text = "0.0 A", Font = new Font("Courier New", 12F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 110), AutoSize = true };
+            System.Windows.Forms.Label l2 = new System.Windows.Forms.Label { Text = "HOVER CURRENT", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 135), AutoSize = true };
 
-            lblRange = new System.Windows.Forms.Label { Text = "0.0 km", Font = new Font("Courier New", 11F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 138), AutoSize = true };
-            System.Windows.Forms.Label l3 = new System.Windows.Forms.Label { Text = "MAX CRUISE RANGE", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 158), AutoSize = true };
+            lblRange = new System.Windows.Forms.Label { Text = "0.0 km", Font = new Font("Courier New", 12F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(220, 170), AutoSize = true };
+            System.Windows.Forms.Label l3 = new System.Windows.Forms.Label { Text = "MAX CRUISE RANGE", Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(140, 155, 169), Location = new Point(220, 195), AutoSize = true };
 
             cardHud.Controls.AddRange(new Control[] { titleHud, lblEtaLabel, lblEtaTimerHUD, lblTakeoffMass, l1, lblHoverCurrentHUD, l2, lblRange, l3 });
             
             // 2. Aircraft Tuning Card
-            Panel cardTune = new Panel { Width = 380, Height = 250, Location = new Point(20, 240), BackColor = Color.FromArgb(20, 26, 32) };
+            Panel cardTune = new Panel { Width = 380, Height = 320, Location = new Point(20, 320), BackColor = Color.FromArgb(20, 26, 32) };
             cardTune.Paint += (s, e) => ApplyPanelPaint(cardTune, e, Color.FromArgb(20, 26, 32), Color.FromArgb(41, 49, 58), 14); 
 
             System.Windows.Forms.Label titleTune = new System.Windows.Forms.Label { Text = "AIRCRAFT PARAMETERS", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
             cardTune.Controls.Add(titleTune);
 
             // Helpers for trackbars
-            int yPos = 50;
+            int yPos = 55;
             EventHandler recalc = new EventHandler(CalculateEstimatedEndurance);
 
-            tbWeight = CreateTrackBar(cardTune, "TAKEOFF WEIGHT (KG)", 1, 20, 10, yPos, recalc); yPos += 60;
-            tbBatteryCapacity = CreateTrackBar(cardTune, "BATTERY CAPACITY (Ah)", 5, 50, 16, yPos, recalc); yPos += 60;
-            tbHoverCurrent = CreateTrackBar(cardTune, "BASE HOVER CURRENT @ 10KG (A)", 10, 80, 25, yPos, recalc); yPos += 60;
+            tbWeight = CreateTrackBar(cardTune, "TAKEOFF WEIGHT (KG)", 1, 20, 10, yPos, recalc); yPos += 75;
+            tbBatteryCapacity = CreateTrackBar(cardTune, "BATTERY CAPACITY (Ah)", 5, 50, 16, yPos, recalc); yPos += 75;
+            tbHoverCurrent = CreateTrackBar(cardTune, "BASE HOVER CURRENT @ 10KG (A)", 10, 80, 25, yPos, recalc); yPos += 75;
 
             // 3. Environmental Card
-            Panel cardEnv = new Panel { Width = 380, Height = 190, Location = new Point(420, 20), BackColor = Color.FromArgb(20, 26, 32) };
+            Panel cardEnv = new Panel { Width = 380, Height = 260, Location = new Point(420, 20), BackColor = Color.FromArgb(20, 26, 32) };
             cardEnv.Paint += (s, e) => ApplyPanelPaint(cardEnv, e, Color.FromArgb(20, 26, 32), Color.FromArgb(41, 49, 58), 14);
             
             System.Windows.Forms.Label titleEnv = new System.Windows.Forms.Label { Text = "ENVIRONMENTAL DERATING", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 15), AutoSize = true };
             cardEnv.Controls.Add(titleEnv);
 
-            int eyPos = 50;
-            tbWindSpeed = CreateTrackBar(cardEnv, "WIND VELOCITY (KM/H)", 0, 60, 5, eyPos, recalc); eyPos += 60;
-            tbTemperature = CreateTrackBar(cardEnv, "AMBIENT TEMPERATURE (°C)", -10, 45, 20, eyPos, recalc); eyPos += 60;
+            int eyPos = 55;
+            tbWindSpeed = CreateTrackBar(cardEnv, "WIND VELOCITY (KM/H)", 0, 60, 5, eyPos, recalc); eyPos += 75;
+            tbTemperature = CreateTrackBar(cardEnv, "AMBIENT TEMPERATURE (°C)", -10, 45, 20, eyPos, recalc); eyPos += 75;
 
             // Add all
             dash.Controls.AddRange(new Control[] { cardHud, cardTune, cardEnv });

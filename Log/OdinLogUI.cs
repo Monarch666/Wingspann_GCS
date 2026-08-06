@@ -59,8 +59,8 @@ namespace MissionPlanner.Log
             pnlOdinTopToolbar.Controls.Add(btnUpload);
 
             var btnDownload = CreateOdinButton("Download via MAVLink", Color.FromArgb(39, 49, 59), Color.White);
-            btnDownload.Size = new Size(160, 30);
-            btnDownload.Location = new Point(130, 10);
+            btnDownload.Size = new Size(165, 30);
+            btnDownload.Location = new Point(140, 10);
             btnDownload.Click += (s, e) => {
                 var downloadForm = new MissionPlanner.Log.LogDownloadMavLink();
                 downloadForm.ShowDialog(this);
@@ -68,17 +68,17 @@ namespace MissionPlanner.Log
             pnlOdinTopToolbar.Controls.Add(btnDownload);
 
             var btnClear = CreateOdinButton("Clear Graph", Color.FromArgb(39, 49, 59), Color.White);
-            btnClear.Location = new Point(295, 10);
+            btnClear.Location = new Point(310, 10);
             btnClear.Click += (s, e) => BUT_cleargraph_Click(null, null);
             pnlOdinTopToolbar.Controls.Add(btnClear);
 
             var btnMap = CreateOdinButton("Toggle Map", Color.FromArgb(39, 49, 59), Color.White);
-            btnMap.Location = new Point(410, 10);
+            btnMap.Location = new Point(435, 10);
             btnMap.Click += (s, e) => { splitContainerZgMap.Panel2Collapsed = !splitContainerZgMap.Panel2Collapsed; };
             pnlOdinTopToolbar.Controls.Add(btnMap);
             
             var btnGrid = CreateOdinButton("Data Table", Color.FromArgb(39, 49, 59), Color.White);
-            btnGrid.Location = new Point(525, 10);
+            btnGrid.Location = new Point(560, 10);
             btnGrid.Click += (s, e) => { splitContainerZgGrid.Panel2Collapsed = !splitContainerZgGrid.Panel2Collapsed; };
             pnlOdinTopToolbar.Controls.Add(btnGrid);
 
@@ -116,10 +116,10 @@ namespace MissionPlanner.Log
 
             // 4. Setup Flight Summary Card (Overlay on Graph)
             pnlOdinSummaryCard = new Panel();
-            pnlOdinSummaryCard.Size = new Size(250, 200);
+            pnlOdinSummaryCard.Size = new Size(this.splitContainerZgMap.Panel1.Width - 30, 90);
             pnlOdinSummaryCard.BackColor = Color.FromArgb(200, 20, 26, 32); // Semi-transparent
-            pnlOdinSummaryCard.Location = new Point(this.splitContainerZgMap.Panel1.Width - 270, 20);
-            pnlOdinSummaryCard.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pnlOdinSummaryCard.Location = new Point(15, 15);
+            pnlOdinSummaryCard.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pnlOdinSummaryCard.Visible = false; // Hidden until log loads
             this.splitContainerZgMap.Panel1.Controls.Add(pnlOdinSummaryCard);
             this.splitContainerZgMap.Panel1.Controls.SetChildIndex(pnlOdinSummaryCard, 0);
@@ -202,7 +202,7 @@ namespace MissionPlanner.Log
             btn.BackColor = Color.FromArgb(20, 26, 32);
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
-            btn.Size = new Size(245, 28);
+            btn.Size = new Size(260, 28);
             btn.TextAlign = ContentAlignment.MiddleLeft;
             btn.Margin = new Padding(5, 1, 5, 1);
             
@@ -255,7 +255,7 @@ namespace MissionPlanner.Log
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
             btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btn.Size = new Size(110, 30);
+            btn.Size = new Size(120, 30);
             btn.Cursor = Cursors.Hand;
             return btn;
         }

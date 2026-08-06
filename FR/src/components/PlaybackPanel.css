@@ -1,0 +1,94 @@
+.playback-panel {
+  position: absolute;
+  bottom: 80px;
+  left: 360px; /* Offset from left panel */
+  width: 450px;
+  background: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 30px; /* Highly rounded like screenshot */
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.play-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-btn:hover {
+  filter: brightness(1.1);
+}
+
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(57, 255, 106, 0.1);
+  border: 1px solid rgba(57, 255, 106, 0.3);
+  color: var(--accent-primary);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.scrubber-timeline {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  opacity: 0.5;
+  height: 24px;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.tick {
+  position: relative;
+  z-index: 1;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tick.current {
+  color: var(--accent-primary);
+}
+
+.tick-marker {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  margin-bottom: 2px;
+}

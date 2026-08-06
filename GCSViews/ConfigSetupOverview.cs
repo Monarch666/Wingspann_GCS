@@ -92,14 +92,15 @@ namespace MissionPlanner.GCSViews
             gridCards = new TableLayoutPanel();
             gridCards.Dock = DockStyle.Fill;
             gridCards.ColumnCount = 3;
-            gridCards.RowCount = 4;
+            gridCards.RowCount = 5;
             gridCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             gridCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             gridCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
-            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
-            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
-            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
+            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 20f));
+            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 20f));
+            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 20f));
+            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 20f));
+            gridCards.RowStyles.Add(new RowStyle(SizeType.Percent, 20f));
             gridCards.Padding = new Padding(0, 15, 0, 15);
             pnlMain.Controls.Add(gridCards);
 
@@ -244,6 +245,8 @@ namespace MissionPlanner.GCSViews
             AddCard(1, 3, "HW ID", "Read and verify autopilot hardware ID.", "🆔", typeof(ConfigHWIDs));
             AddCard(2, 3, "ADSB", "Configure ADS-B receiver and settings.", "📡", typeof(ConfigADSB));
 
+            AddCard(0, 4, "Motor Test", "Test individual motors and verify spin direction.", "🔄", typeof(ConfigMotorTest));
+
             this.Resize += ConfigSetupOverview_Resize;
             ConfigSetupOverview_Resize(this, EventArgs.Empty);
         }
@@ -302,7 +305,7 @@ namespace MissionPlanner.GCSViews
             {
                 if (!isConnected)
                 {
-                    card.ModuleStatus = (card.Title == "Servo Output" || card.Title == "Serial Ports" || card.Title == "Flight Modes" || card.Title == "Initial Tune Parameter" || card.Title == "ADSB") 
+                    card.ModuleStatus = (card.Title == "Servo Output" || card.Title == "Serial Ports" || card.Title == "Flight Modes" || card.Title == "Initial Tune Parameter" || card.Title == "ADSB" || card.Title == "Motor Test") 
                         ? CalibrationStatus.NotConfigured 
                         : CalibrationStatus.NotCalibrated;
                     card.Invalidate();
@@ -396,6 +399,11 @@ namespace MissionPlanner.GCSViews
                                 card.ModuleStatus = CalibrationStatus.Completed;
                             else
                                 card.ModuleStatus = CalibrationStatus.NotConfigured;
+                            break;
+
+                        case "Motor Test":
+                            // Motor test is always available when connected — mark as Completed (ready to use)
+                            card.ModuleStatus = CalibrationStatus.Completed;
                             break;
                     }
                 }

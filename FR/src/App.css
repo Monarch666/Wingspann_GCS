@@ -1,0 +1,63 @@
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-corner-controls {
+  position: absolute;
+  bottom: 80px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.corner-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.corner-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.floating-search {
+  position: absolute;
+  top: 20px;
+  left: 360px; /* Right next to FlightRadarCard */
+  width: 320px;
+  display: flex;
+  align-items: center;
+  background: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px; /* Highly rounded like screenshot */
+  padding: 10px 16px;
+  gap: 12px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.floating-search-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  flex: 1;
+  outline: none;
+}
+
+.floating-search-input::placeholder {
+  color: var(--text-secondary);
+}

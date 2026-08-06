@@ -304,54 +304,18 @@ namespace MissionPlanner.Log
 
             chk_time_CheckedChanged(null, null);
 
-            if (!File.Exists(logfilename))
-            {
-                using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
-                {
-                    openFileDialog1.Filter = "Log Files|*.log;*.bin;*.BIN;*.LOG";
-                    openFileDialog1.FilterIndex = 2;
-                    openFileDialog1.Multiselect = true;
-                    openFileDialog1.InitialDirectory = lastLogDir ?? Settings.Instance.LogDir;
-
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        lastLogDir = Path.GetDirectoryName(openFileDialog1.FileName);
-
-                        int a = 0;
-                        foreach (var fileName in openFileDialog1.FileNames)
-                        {
-                            Loading.ShowLoading(fileName, this);
-
-                            if (a == 0)
-                            {
-                                // load first file
-                                logfilename = fileName;
-                                ThreadPool.QueueUserWorkItem(o => LoadLog(logfilename));
-                            }
-                            else
-                            {
-                                // load additional files in new windows
-                                if (File.Exists(fileName))
-                                {
-                                    LogBrowse browse = new LogBrowse();
-                                    browse.logfilename = fileName;
-                                    browse.Show(this);
-                                }
-                            }
-
-                            a++;
-                        }
-                    }
-                    else
-                    {
-                        this.BeginInvoke((Action)delegate { this.Close(); });
-                        return;
-                    }
-                }
-            }
-            else
+            if (File.Exists(logfilename))
             {
                 ThreadPool.QueueUserWorkItem(o => LoadLog(logfilename));
+            }
+            else if (TopLevel)
+            {
+                BUT_loadlog_Click(sender, e);
+                if (string.IsNullOrEmpty(logfilename))
+                {
+                    this.BeginInvoke((Action)delegate { this.Close(); });
+                    return;
+                }
             }
 
             zg1.ContextMenuBuilder += Zg1_ContextMenuBuilder;
@@ -497,7 +461,10 @@ namespace MissionPlanner.Log
             if (dflog.logformat.Count == 0)
             {
                 CustomMessageBox.Show(Strings.WarningLogBrowseFMTMissing, Strings.ERROR);
-                this.Close();
+                if (TopLevel)
+                {
+                    this.Close();
+                }
                 return;
             }
 
@@ -2858,12 +2825,42 @@ main()
 
         private void BUT_loadlog_Click(object sender, EventArgs e)
         {
-            // clear existing lists
-            zg1.GraphPane.CurveList.Clear();
-            // reset logname
-            logfilename = "";
-            // reload
-            LogBrowse_Load(sender, e);
+            using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
+            {
+                openFileDialog1.Filter = "Log Files|*.log;*.bin;*.BIN;*.LOG";
+                openFileDialog1.FilterIndex = 2;
+                openFileDialog1.Multiselect = true;
+                openFileDialog1.InitialDirectory = lastLogDir ?? Settings.Instance.LogDir;
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    lastLogDir = Path.GetDirectoryName(openFileDialog1.FileName);
+
+                    int a = 0;
+                    foreach (var fileName in openFileDialog1.FileNames)
+                    {
+                        Loading.ShowLoading(fileName, this);
+
+                        if (a == 0)
+                        {
+                            zg1.GraphPane.CurveList.Clear();
+                            logfilename = fileName;
+                            ThreadPool.QueueUserWorkItem(o => LoadLog(logfilename));
+                        }
+                        else
+                        {
+                            if (File.Exists(fileName))
+                            {
+                                LogBrowse browse = new LogBrowse();
+                                browse.logfilename = fileName;
+                                browse.Show(this);
+                            }
+                        }
+
+                        a++;
+                    }
+                }
+            }
         }
 
         private void dataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)

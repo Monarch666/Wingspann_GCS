@@ -1,0 +1,61 @@
+.map-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1; /* Lowest z-index so panels sit on top */
+}
+
+.radar-map {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+.custom-leaflet-icon {
+  background: transparent;
+  border: none;
+}
+
+.plane-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s linear; /* Smooth interpolation for map marker rotation */
+}
+
+.plane-marker svg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+.plane-marker.selected svg {
+  filter: drop-shadow(0 0 8px var(--accent-primary));
+}
+
+.text-danger {
+  color: var(--status-danger);
+}
+
+.text-warning {
+  color: var(--status-warning);
+}
+
+.marker-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  backdrop-filter: var(--panel-blur);
+  pointer-events: none;
+}

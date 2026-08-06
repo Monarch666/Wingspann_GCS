@@ -709,6 +709,20 @@
       border-radius: 7px;
       transition: height 400ms ease;
     }
+
+    #radarOverlayView {
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: calc(100vh - 70px);
+      border: none;
+      z-index: 450;
+      display: none;
+      background-color: var(--bg-window);
+    }
   </style>
 </head>
 <body>
@@ -899,6 +913,9 @@
     </div>
   </div>
 
+  <!-- RADAR DASHBOARD OVERLAY VIEW -->
+  <iframe id="radarOverlayView" src="FR/dist/index.html"></iframe>
+
   <!-- Connection Dropdown Popup Card -->
   <div id="connPopupCard" class="conn-popup-card">
     <div class="popup-row">
@@ -997,18 +1014,27 @@
       });
 
       var wxOverlay = document.getElementById('weatherOverlayView');
+      var radarOverlay = document.getElementById('radarOverlayView');
       var mapDiv = document.getElementById('map');
       var rightToolbar = document.querySelector('.right-glass-toolbar');
       var bottomTelem = document.querySelector('.bottom-telemetry-bar');
 
       if (screenName === 'Weather') {
         if (wxOverlay) wxOverlay.classList.add('show');
+        if (radarOverlay) radarOverlay.style.display = 'none';
         if (mapDiv) mapDiv.style.display = 'none';
         if (rightToolbar) rightToolbar.style.display = 'none';
         if (bottomTelem) bottomTelem.style.display = 'none';
         if (!weatherFetched) fetchWeatherData();
+      } else if (screenName === 'Radar') {
+        if (wxOverlay) wxOverlay.classList.remove('show');
+        if (radarOverlay) radarOverlay.style.display = 'block';
+        if (mapDiv) mapDiv.style.display = 'none';
+        if (rightToolbar) rightToolbar.style.display = 'none';
+        if (bottomTelem) bottomTelem.style.display = 'none';
       } else {
         if (wxOverlay) wxOverlay.classList.remove('show');
+        if (radarOverlay) radarOverlay.style.display = 'none';
         if (mapDiv) mapDiv.style.display = 'block';
         if (rightToolbar) rightToolbar.style.display = 'flex';
         if (bottomTelem) bottomTelem.style.display = 'flex';
