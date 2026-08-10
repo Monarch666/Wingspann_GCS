@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ODIN GCS — Motor Configuration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ───────────── DESIGN TOKENS ───────────── */
+    :root {
+      --bg-body:        #0b0e13;
+      --bg-panel:       #111820;
+      --bg-panel-alt:   #141c25;
+      --bg-input:       #0d1117;
+      --border-panel:   rgba(255,255,255,0.07);
+      --border-input:   rgba(255,255,255,0.10);
+      --border-accent:  rgba(16,185,129,0.35);
+      --color-white:    #ffffff;
+      --color-dim:      #7c8a98;
+      --color-muted:    #4b5563;
+      --color-emerald:  #10b981;
+      --color-emerald-h:#059669;
+      --color-emerald-d:#047857;
+      --color-orange:   #f59e0b;
+      --color-red:      #ef4444;
+      --color-red-bg:   rgba(239,68,68,0.12);
+      --color-red-br:   rgba(239,68,68,0.35);
+      --color-green-glow: rgba(16,185,129,0.25);
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      font-family: var(--font);
+      background: var(--bg-body);
+      color: var(--color-white);
+      overflow-y: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ───────────── GRID SHELL ───────────── */
+    .motor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 16px;
+      padding: 24px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px 24px;
+      position: relative;
+      transition: border-color 0.25s;
+    }
+    .panel:hover { border-color: rgba(255,255,255,0.12); }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      color: var(--color-emerald);
+      margin-bottom: 20px;
+    }
+
+    .panel-safety {
+      grid-column: 1 / -1;
+    }
+
+    /* ───────────── PANEL 1: Motor Configuration ───────────── */
+    .config-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-dim);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Throttle slider */
+    .throttle-group { margin-bottom: 18px; }
+
+    .slider-container {
+      position: relative;
+      padding-top: 28px;   /* room for bubble */
+    }
+
+    .throttle-bubble {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%);
+      background: var(--bg-input);
+      border: 1.5px solid var(--color-emerald);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--color-emerald);
+      pointer-events: none;
+      transition: left 0.05s linear;
+      white-space: nowrap;
+      box-shadow: 0 0 8px var(--color-green-glow);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(
+        to right,
+        var(--color-emerald) var(--slider-fill, 5%),
+        rgba(255,255,255,0.08) var(--slider-fill, 5%)
+      );
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--color-emerald);
+      border: 3px solid var(--bg-panel);
+      box-shadow: 0 0 10px var(--color-green-glow);
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 18px var(--color-green-glow);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--color-emerald);
+      border: 3px solid var(--bg-panel);
+      box-shadow: 0 0 10px var(--color-green-glow);
+      cursor: pointer;
+    }
+
+    .slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 0 2px;
+    }
+    .slider-ticks span {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-muted);
+    }
+
+    /* Duration input */
+    .duration-group { margin-bottom: 18px; }
+
+    .num-input {
+      width: 80px;
+      height: 40px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      color: var(--color-white);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .num-input:focus {
+      border-color: var(--color-emerald);
+      box-shadow: 0 0 0 2px var(--color-green-glow);
+    }
+
+    /* Dropdowns */
+    .selects-row {
+      display: flex;
+      gap: 16px;
+    }
+    .select-group { flex: 1; }
+
+    .custom-select {
+      width: 100%;
+      height: 40px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      color: var(--color-white);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0 12px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c8a98' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .custom-select:focus {
+      border-color: var(--color-emerald);
+    }
+
+    /* ───────────── PANEL 2: Individual Motor Test ───────────── */
+    .motor-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+    }
+    .motor-row + .motor-row {
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .motor-letter {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--color-emerald);
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .btn-test-motor {
+      padding: 8px 22px;
+      border-radius: 8px;
+      border: none;
+      background: var(--color-emerald);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+      flex-shrink: 0;
+    }
+    .btn-test-motor:hover:not(:disabled) {
+      background: var(--color-emerald-h);
+      box-shadow: 0 0 14px var(--color-green-glow);
+      transform: translateY(-1px);
+    }
+    .btn-test-motor:active:not(:disabled) {
+      background: var(--color-emerald-d);
+      transform: translateY(0);
+    }
+    .btn-test-motor:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .btn-test-motor.running {
+      background: var(--color-orange);
+      animation: pulse-btn 0.9s infinite alternate;
+    }
+    @keyframes pulse-btn {
+      from { box-shadow: 0 0 6px rgba(245,158,11,0.3); }
+      to   { box-shadow: 0 0 18px rgba(245,158,11,0.55); }
+    }
+
+    .motor-meta {
+      font-size: 12px;
+      color: var(--color-dim);
+      flex: 1;
+    }
+    .motor-meta strong {
+      color: var(--color-white);
+      font-weight: 700;
+    }
+
+    /* ───────────── PANEL 3: Global Actions ───────────── */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-action {
+      padding: 14px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--color-emerald);
+      background: transparent;
+      color: var(--color-emerald);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-action:hover:not(:disabled) {
+      background: rgba(16,185,129,0.10);
+      box-shadow: 0 0 14px var(--color-green-glow);
+      transform: translateY(-1px);
+    }
+    .btn-action:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-action.danger {
+      border-color: var(--color-red);
+      color: var(--color-red);
+    }
+    .btn-action.danger:hover:not(:disabled) {
+      background: var(--color-red-bg);
+      box-shadow: 0 0 14px rgba(239,68,68,0.3);
+    }
+
+    .btn-stop-always {
+      border-color: var(--color-red) !important;
+      color: var(--color-red) !important;
+    }
+    .btn-stop-always:hover {
+      background: var(--color-red-bg) !important;
+      box-shadow: 0 0 14px rgba(239,68,68,0.3) !important;
+      opacity: 1 !important;
+    }
+
+    /* ───────────── PANEL 4: Motor Spin Parameters ───────────── */
+    .spin-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 0;
+    }
+    .spin-row + .spin-row {
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .btn-spin-param {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1.5px solid var(--color-orange);
+      background: transparent;
+      color: var(--color-orange);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.18s;
+    }
+    .btn-spin-param:hover {
+      background: rgba(245,158,11,0.10);
+      box-shadow: 0 0 12px rgba(245,158,11,0.25);
+    }
+
+    .spin-desc {
+      font-size: 12px;
+      color: var(--color-dim);
+      line-height: 1.5;
+    }
+
+    /* ───────────── PANEL 5: Safety Notes ───────────── */
+    .safety-text {
+      font-size: 12px;
+      color: var(--color-dim);
+      line-height: 1.7;
+    }
+    .safety-text strong {
+      color: var(--color-red);
+      font-weight: 700;
+    }
+
+    /* ───────────── SAFETY INTERLOCK MODAL ───────────── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.70);
+      backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--color-red-br);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+    }
+    .modal-backdrop.show .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-icon {
+      font-size: 38px;
+      margin-bottom: 12px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--color-red);
+      margin-bottom: 10px;
+    }
+    .modal-body {
+      font-size: 13px;
+      color: var(--color-dim);
+      line-height: 1.7;
+      margin-bottom: 22px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-modal {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+      border: none;
+    }
+    .btn-modal.cancel {
+      background: rgba(255,255,255,0.06);
+      color: var(--color-dim);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-modal.cancel:hover { background: rgba(255,255,255,0.10); }
+
+    .btn-modal.confirm {
+      background: var(--color-red);
+      color: #fff;
+    }
+    .btn-modal.confirm:hover {
+      background: #dc2626;
+      box-shadow: 0 0 14px rgba(239,68,68,0.4);
+    }
+
+    /* ───────────── INLINE PARAM DIALOG ───────────── */
+    .param-dialog {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.60);
+      backdrop-filter: blur(6px);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .param-dialog.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .param-dialog-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 20px 48px rgba(0,0,0,0.4);
+    }
+
+    .param-dialog-card h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--color-orange);
+      margin-bottom: 8px;
+    }
+    .param-dialog-card p {
+      font-size: 12px;
+      color: var(--color-dim);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .param-dialog-card .num-input {
+      width: 120px;
+      margin-bottom: 18px;
+    }
+
+    /* ───────────── STATUS TOAST ───────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-accent);
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-emerald);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 9500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(.22,1,.36,1);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.error {
+      border-color: var(--color-red-br);
+      color: var(--color-red);
+    }
+
+    /* ───────────── RESPONSIVE ───────────── */
+    @media (max-width: 720px) {
+      .motor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════ SAFETY INTERLOCK MODAL ════════════ -->
+<div id="safetyModal" class="modal-backdrop show">
+  <div class="modal-card">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Safety Confirmation Required</div>
+    <div class="modal-body">
+      Before running any motor test, confirm that:<br><br>
+      <strong style="color:#ef4444">① All propellers have been removed.</strong><br>
+      <strong style="color:#ef4444">② The aircraft is secured on a flat surface.</strong><br>
+      <strong style="color:#ef4444">③ All personnel are clear of the motors.</strong><br><br>
+      <span style="color:#9ea8b3">Motor tests will spin motors at the configured throttle. Proceeding without removing props can cause serious injury.</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal cancel" onclick="dismissSafety(false)">Cancel</button>
+      <button class="btn-modal confirm" id="btnSafetyConfirm" onclick="dismissSafety(true)">Props Removed — Safe to Spin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ PARAMETER DIALOG ════════════ -->
+<div id="paramDialog" class="param-dialog">
+  <div class="param-dialog-card">
+    <h3 id="paramDialogTitle">Set Motor Spin Arm</h3>
+    <p id="paramDialogDesc">Enter the minimum throttle % that will be output when armed on the ground.</p>
+    <input type="number" class="num-input" id="paramDialogInput" min="0" max="20" value="0">
+    <div class="modal-actions">
+      <button class="btn-modal cancel" onclick="closeParamDialog()">Cancel</button>
+      <button class="btn-modal confirm" style="background:var(--color-orange)" onclick="confirmParamDialog()">Set Value</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ TOAST ════════════ -->
+<div id="toast" class="toast"></div>
+
+
+<!-- ════════════ MAIN GRID ════════════ -->
+<div class="motor-grid">
+
+  <!-- ═══ Panel 1: Motor Configuration ═══ -->
+  <div class="panel" id="panelConfig">
+    <div class="panel-title">Motor Configuration</div>
+
+    <!-- Throttle % -->
+    <div class="throttle-group">
+      <div class="config-label">Throttle %</div>
+      <div class="slider-container">
+        <div class="throttle-bubble" id="thrBubble">5%</div>
+        <input type="range" id="thrSlider" min="0" max="100" step="1" value="5"
+               oninput="updateThrottleBubble(this)">
+      </div>
+      <div class="slider-ticks">
+        <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span>
+        <span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+      </div>
+    </div>
+
+    <!-- Duration -->
+    <div class="duration-group">
+      <div class="config-label">Duration (s)</div>
+      <input type="number" class="num-input" id="durInput" min="1" max="999" value="2">
+    </div>
+
+    <!-- Class / Type dropdowns -->
+    <div class="selects-row">
+      <div class="select-group">
+        <div class="config-label">Class</div>
+        <select class="custom-select" id="selClass" onchange="onClassTypeChange()">
+          <option value="Quad" selected>Quad</option>
+          <option value="Hexa">Hexa</option>
+          <option value="Octo">Octo</option>
+        </select>
+      </div>
+      <div class="select-group">
+        <div class="config-label">Type</div>
+        <select class="custom-select" id="selType" onchange="onClassTypeChange()">
+          <option value="X" selected>X</option>
+          <option value="Plus">Plus</option>
+          <option value="H">H</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Panel 2: Individual Motor Test ═══ -->
+  <div class="panel" id="panelIndividual">
+    <div class="panel-title">Individual Motor Test</div>
+    <div id="motorRows"></div>
+  </div>
+
+  <!-- ═══ Panel 3: Global Actions ═══ -->
+  <div class="panel" id="panelGlobal">
+    <div class="panel-title">Global Actions</div>
+    <div class="actions-grid">
+      <button class="btn-action" id="btnTestAll" onclick="testAllMotors()" disabled>Test all motors</button>
+      <button class="btn-action btn-stop-always" id="btnStopAll1" onclick="stopAllMotors()">Stop all motors</button>
+      <button class="btn-action" id="btnTestSeq" onclick="testAllSequence()" disabled>Test all in sequence</button>
+      <button class="btn-action btn-stop-always" id="btnStopAll2" onclick="stopAllMotors()">Stop all motors</button>
+    </div>
+  </div>
+
+  <!-- ═══ Panel 4: Motor Spin Parameters ═══ -->
+  <div class="panel" id="panelSpin">
+    <div class="panel-title">Motor Spin Parameters</div>
+    <div class="spin-row">
+      <button class="btn-spin-param" onclick="openParamDialog('arm')">Set motor spin arm</button>
+      <div class="spin-desc">Set the min % output when armed on the ground.</div>
+    </div>
+    <div class="spin-row">
+      <button class="btn-spin-param" onclick="openParamDialog('min')">Set motor spin min</button>
+      <div class="spin-desc">Set the min % output while armed and flying.</div>
+    </div>
+  </div>
+
+  <!-- ═══ Panel 5: Safety Notes (full width) ═══ -->
+  <div class="panel panel-safety" id="panelSafety">
+    <div class="panel-title">Safety Notes</div>
+    <div class="safety-text">
+      <strong>Remove all props before testing.</strong>
+      Motors run in the sequence A, B, C, D, starting clockwise from the front right.
+      Hold the aircraft steady during any motor test.
+      The "Stop all motors" button is always active — use it immediately if anything looks wrong.
+    </div>
+  </div>
+
+</div><!-- .motor-grid -->
+
+
+<script>
+/* ════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════ */
+var safetyConfirmed = false;
+var isTestRunning   = false;
+var activeTimers    = [];         // running setTimeout ids so Stop can cancel them
+var runningMotors   = new Set();  // motor indices currently spinning
+var currentParamType = null;      // 'arm' | 'min'
+
+// Stored spin param values (persisted in localStorage)
+var spinParams = JSON.parse(localStorage.getItem('odinMotorSpinParams') || '{"arm":0,"min":0}');
+
+/* Motor layout tables — rotation depends on Class + Type */
+var motorLayouts = {
+  'Quad-X':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}],
+  'Quad-Plus': [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}],
+  'Quad-H':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}],
+  'Hexa-X':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}],
+  'Hexa-Plus': [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}],
+  'Hexa-H':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}],
+  'Octo-X':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}, {n:7, dir:'CW'}, {n:8, dir:'CCW'}],
+  'Octo-Plus': [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}, {n:7, dir:'CW'}, {n:8, dir:'CCW'}],
+  'Octo-H':    [{n:1, dir:'CCW'}, {n:2, dir:'CW'},  {n:3, dir:'CW'},  {n:4, dir:'CCW'}, {n:5, dir:'CCW'}, {n:6, dir:'CW'}, {n:7, dir:'CW'}, {n:8, dir:'CCW'}],
+};
+
+/* ════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', function() {
+  updateThrottleBubble(document.getElementById('thrSlider'));
+  buildMotorRows();
+});
+
+/* ════════════════════════════════════════════
+   THROTTLE BUBBLE
+   ════════════════════════════════════════════ */
+function updateThrottleBubble(slider) {
+  var val = parseInt(slider.value, 10);
+  var pct = val / 100;
+  var bubble = document.getElementById('thrBubble');
+  bubble.textContent = val + '%';
+
+  // Position bubble above thumb
+  var sliderW = slider.offsetWidth;
+  var thumbW = 18;
+  var left = (pct * (sliderW - thumbW)) + (thumbW / 2);
+  bubble.style.left = left + 'px';
+
+  // Update fill gradient
+  slider.style.setProperty('--slider-fill', val + '%');
+}
+
+/* ════════════════════════════════════════════
+   DYNAMIC MOTOR ROWS
+   ════════════════════════════════════════════ */
+function getLayoutKey() {
+  var cls = document.getElementById('selClass').value;
+  var typ = document.getElementById('selType').value;
+  return cls + '-' + typ;
+}
+
+function getCurrentMotors() {
+  var key = getLayoutKey();
+  return motorLayouts[key] || motorLayouts['Quad-X'];
+}
+
+function buildMotorRows() {
+  var motors = getCurrentMotors();
+  var container = document.getElementById('motorRows');
+  container.innerHTML = '';
+
+  motors.forEach(function(m, i) {
+    var letter = String.fromCharCode(65 + i);
+    var row = document.createElement('div');
+    row.className = 'motor-row';
+    row.id = 'motorRow' + i;
+
+    var isRunning = runningMotors.has(i);
+    var disabled = (!safetyConfirmed || (isTestRunning && !isRunning)) ? 'disabled' : '';
+    var runClass = isRunning ? ' running' : '';
+
+    row.innerHTML =
+      '<span class="motor-letter">' + letter + '</span>' +
+      '<button class="btn-test-motor' + runClass + '" id="btnMotor' + i + '" onclick="testSingleMotor(' + i + ')" ' + disabled + '>' +
+        'Test motor ' + letter +
+      '</button>' +
+      '<span class="motor-meta">Motor number <strong>' + m.n + '</strong>, ' + m.dir + '</span>';
+
+    container.appendChild(row);
+  });
+}
+
+function onClassTypeChange() {
+  buildMotorRows();
+  // Notify C# backend of frame change
+  tryExternal('SetFrameClass', document.getElementById('selClass').value);
+  tryExternal('SetFrameType',  document.getElementById('selType').value);
+}
+
+/* ════════════════════════════════════════════
+   SAFETY INTERLOCK
+   ════════════════════════════════════════════ */
+function dismissSafety(confirmed) {
+  safetyConfirmed = confirmed;
+  document.getElementById('safetyModal').classList.remove('show');
+
+  if (confirmed) {
+    enableTestButtons(true);
+    showToast('✅ Safety acknowledged — motor tests enabled.');
+  }
+}
+
+function enableTestButtons(enabled) {
+  document.getElementById('btnTestAll').disabled  = !enabled;
+  document.getElementById('btnTestSeq').disabled  = !enabled;
+
+  // Rebuild motor rows to pick up enabled state
+  buildMotorRows();
+}
+
+/* ════════════════════════════════════════════
+   MOTOR COMMAND HELPERS
+   ════════════════════════════════════════════ */
+function getThrottle() { return parseInt(document.getElementById('thrSlider').value, 10); }
+function getDuration() { return parseInt(document.getElementById('durInput').value, 10) || 2; }
+
+function sendMotorCommand(motorIndex, speed, duration) {
+  // Attempt real MAVLink via C# WebBrowser bridge
+  if (tryExternal('TestMotor', motorIndex + 1, speed, duration)) return;
+  // Fallback: simulate locally
+  console.log('Motor', motorIndex + 1, '→ speed', speed + '%, duration', duration + 's');
+}
+
+function sendStopCommand(motorIndex) {
+  if (tryExternal('TestMotor', motorIndex + 1, 0, 0)) return;
+  console.log('STOP motor', motorIndex + 1);
+}
+
+function tryExternal(method) {
+  try {
+    if (window.external && window.external[method]) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      window.external[method].apply(window.external, args);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+/* ════════════════════════════════════════════
+   SINGLE MOTOR TEST
+   ════════════════════════════════════════════ */
+function testSingleMotor(idx) {
+  if (!safetyConfirmed || isTestRunning) return;
+  var speed = getThrottle();
+  var dur   = getDuration();
+
+  isTestRunning = true;
+  runningMotors.add(idx);
+  buildMotorRows();
+  setGlobalActionsDisabled(true);
+
+  sendMotorCommand(idx, speed, dur);
+  showToast('⚡ Motor ' + String.fromCharCode(65 + idx) + ' running at ' + speed + '% for ' + dur + 's');
+
+  var t = setTimeout(function() {
+    runningMotors.delete(idx);
+    isTestRunning = false;
+    buildMotorRows();
+    setGlobalActionsDisabled(false);
+    showToast('✅ Motor ' + String.fromCharCode(65 + idx) + ' test complete.');
+  }, dur * 1000);
+  activeTimers.push(t);
+}
+
+/* ════════════════════════════════════════════
+   GLOBAL: TEST ALL
+   ════════════════════════════════════════════ */
+function testAllMotors() {
+  if (!safetyConfirmed || isTestRunning) return;
+  var speed = getThrottle();
+  var dur   = getDuration();
+  var motors = getCurrentMotors();
+
+  isTestRunning = true;
+  motors.forEach(function(_, i) {
+    runningMotors.add(i);
+    sendMotorCommand(i, speed, dur);
+  });
+  buildMotorRows();
+  setGlobalActionsDisabled(true);
+  showToast('⚡ All ' + motors.length + ' motors running at ' + speed + '%');
+
+  var t = setTimeout(function() {
+    runningMotors.clear();
+    isTestRunning = false;
+    buildMotorRows();
+    setGlobalActionsDisabled(false);
+    showToast('✅ All motors test complete.');
+  }, dur * 1000);
+  activeTimers.push(t);
+}
+
+/* ════════════════════════════════════════════
+   GLOBAL: TEST SEQUENCE
+   ════════════════════════════════════════════ */
+function testAllSequence() {
+  if (!safetyConfirmed || isTestRunning) return;
+  var speed = getThrottle();
+  var dur   = getDuration();
+  var motors = getCurrentMotors();
+  var pauseMs = 400;
+
+  isTestRunning = true;
+  setGlobalActionsDisabled(true);
+  showToast('⚡ Sequential test started…');
+
+  var idx = 0;
+  function runNext() {
+    if (idx >= motors.length) {
+      isTestRunning = false;
+      buildMotorRows();
+      setGlobalActionsDisabled(false);
+      showToast('✅ Sequential test complete.');
+      return;
+    }
+    runningMotors.add(idx);
+    buildMotorRows();
+    sendMotorCommand(idx, speed, dur);
+
+    var current = idx;
+    var t = setTimeout(function() {
+      runningMotors.delete(current);
+      buildMotorRows();
+      // pause then next
+      var t2 = setTimeout(function() {
+        runNext();
+      }, pauseMs);
+      activeTimers.push(t2);
+    }, dur * 1000);
+    activeTimers.push(t);
+    idx++;
+  }
+  runNext();
+}
+
+/* ════════════════════════════════════════════
+   GLOBAL: STOP ALL (always active)
+   ════════════════════════════════════════════ */
+function stopAllMotors() {
+  // Clear all pending timers
+  activeTimers.forEach(function(t) { clearTimeout(t); });
+  activeTimers = [];
+
+  // Send stop to every motor
+  var motors = getCurrentMotors();
+  motors.forEach(function(_, i) { sendStopCommand(i); });
+  tryExternal('StopAllMotors');
+
+  runningMotors.clear();
+  isTestRunning = false;
+  buildMotorRows();
+  setGlobalActionsDisabled(false);
+  showToast('🛑 All motors stopped.', true);
+}
+
+function setGlobalActionsDisabled(disabled) {
+  document.getElementById('btnTestAll').disabled = disabled;
+  document.getElementById('btnTestSeq').disabled = disabled;
+  // Stop buttons always enabled
+}
+
+/* ════════════════════════════════════════════
+   SPIN PARAMETER DIALOG
+   ════════════════════════════════════════════ */
+function openParamDialog(type) {
+  currentParamType = type;
+  var title = type === 'arm' ? 'Set Motor Spin Arm' : 'Set Motor Spin Min';
+  var desc  = type === 'arm'
+    ? 'Enter the minimum throttle % applied when the vehicle is armed on the ground.'
+    : 'Enter the minimum throttle % applied when armed and in flight.';
+
+  document.getElementById('paramDialogTitle').textContent = title;
+  document.getElementById('paramDialogDesc').textContent  = desc;
+  document.getElementById('paramDialogInput').value = spinParams[type] || 0;
+  document.getElementById('paramDialog').classList.add('show');
+}
+
+function closeParamDialog() {
+  document.getElementById('paramDialog').classList.remove('show');
+  currentParamType = null;
+}
+
+function confirmParamDialog() {
+  var val = parseInt(document.getElementById('paramDialogInput').value, 10);
+  if (isNaN(val) || val < 0 || val > 20) {
+    showToast('Value must be between 0 and 20%', true);
+    return;
+  }
+  spinParams[currentParamType] = val;
+  localStorage.setItem('odinMotorSpinParams', JSON.stringify(spinParams));
+
+  // Send to backend
+  if (currentParamType === 'arm') {
+    tryExternal('SetMotorSpinArm', val);
+  } else {
+    tryExternal('SetMotorSpinMin', val);
+  }
+
+  closeParamDialog();
+  showToast('✅ Motor spin ' + currentParamType + ' set to ' + val + '%');
+}
+
+/* ════════════════════════════════════════════
+   TOAST
+   ════════════════════════════════════════════ */
+var toastTimer = null;
+function showToast(msg, isError) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    el.classList.remove('show');
+  }, 3200);
+}
+</script>
+</body>
+</html>

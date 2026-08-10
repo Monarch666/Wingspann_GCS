@@ -42,6 +42,12 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
         public void Activate()
         {
+            // Detach native controls before disposing custom panels to prevent them from being destroyed
+            if (NUM_thr_percent != null) NUM_thr_percent.Parent = this;
+            if (NUM_duration != null) NUM_duration.Parent = this;
+            if (but_mot_spin_arm != null) but_mot_spin_arm.Parent = this;
+            if (but_mot_spin_min != null) but_mot_spin_min.Parent = this;
+
             // Remove previous dynamically added panels to avoid duplicates
             for (int i = this.Controls.Count - 1; i >= 0; i--)
             {
@@ -61,28 +67,76 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             gbConfig.Name = "custom_gbConfig";
             gbConfig.Text = "Motor Configuration";
             gbConfig.Location = new Point(15, 15);
-            gbConfig.Size = new Size(460, 240);
+            gbConfig.Size = new Size(460, 290);
             this.Controls.Add(gbConfig);
 
+            // --- Throttle % label ---
             Label lblThr = new Label();
             lblThr.Text = "Throttle %";
-            lblThr.Location = new Point(15, 30);
-            lblThr.Size = new Size(180, 20);
+            lblThr.Location = new Point(15, 28);
+            lblThr.Size = new Size(80, 20);
             gbConfig.Controls.Add(lblThr);
 
-            NUM_thr_percent.Parent = gbConfig;
-            NUM_thr_percent.Location = new Point(15, 55);
-            NUM_thr_percent.Size = new Size(180, 30);
+            // --- Live value badge ---
+            Label lblThrVal = new Label();
+            lblThrVal.Name = "custom_lblThrVal";
+            lblThrVal.Text = ((int)NUM_thr_percent.Value) + "%";
+            lblThrVal.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblThrVal.ForeColor = Color.FromArgb(16, 185, 129);
+            lblThrVal.Location = new Point(95, 25);
+            lblThrVal.Size = new Size(55, 24);
+            lblThrVal.TextAlign = ContentAlignment.MiddleLeft;
+            gbConfig.Controls.Add(lblThrVal);
 
+            // --- TrackBar slider (0–100) ---
+            TrackBar thrSlider = new TrackBar();
+            thrSlider.Name = "custom_thrSlider";
+            thrSlider.Minimum = 0;
+            thrSlider.Maximum = 100;
+            thrSlider.Value = Math.Max(0, Math.Min(100, (int)NUM_thr_percent.Value));
+            thrSlider.TickFrequency = 10;
+            thrSlider.SmallChange = 1;
+            thrSlider.LargeChange = 5;
+            thrSlider.TickStyle = TickStyle.BottomRight;
+            thrSlider.Location = new Point(12, 50);
+            thrSlider.Size = new Size(432, 45);
+            thrSlider.ValueChanged += (s, ev) =>
+            {
+                NUM_thr_percent.Value = thrSlider.Value;
+                lblThrVal.Text = thrSlider.Value + "%";
+            };
+            gbConfig.Controls.Add(thrSlider);
+
+            // Hide original NumericUpDown but keep it synced for motor commands
+            NUM_thr_percent.Parent = gbConfig;
+            NUM_thr_percent.Visible = false;
+            NUM_thr_percent.Location = new Point(-200, -200);
+
+            // --- Duration (s) ---
             Label lblDur = new Label();
             lblDur.Text = "Duration (s)";
-            lblDur.Location = new Point(230, 30);
+            lblDur.Location = new Point(15, 102);
             lblDur.Size = new Size(180, 20);
             gbConfig.Controls.Add(lblDur);
 
             NUM_duration.Parent = gbConfig;
-            NUM_duration.Location = new Point(230, 55);
-            NUM_duration.Size = new Size(180, 30);
+            NUM_duration.Location = new Point(15, 125);
+            NUM_duration.Size = new Size(80, 30);
+
+            // --- Class / Type side by side ---
+            Label lblClass = new Label();
+            lblClass.Name = "custom_lblClass";
+            lblClass.Text = "Class";
+            lblClass.Location = new Point(15, 165);
+            lblClass.Size = new Size(60, 20);
+            gbConfig.Controls.Add(lblClass);
+
+            Label lblType = new Label();
+            lblType.Name = "custom_lblType";
+            lblType.Text = "Type";
+            lblType.Location = new Point(230, 165);
+            lblType.Size = new Size(60, 20);
+            gbConfig.Controls.Add(lblType);
 
             ComboBox cmbClass = new ComboBox();
             cmbClass.Name = "custom_cmbClass";
@@ -94,8 +148,8 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             cmbClass.Items.Add("Class: Y6");
             cmbClass.Items.Add("Class: Heli");
             cmbClass.Items.Add("Class: Tri");
-            cmbClass.Location = new Point(15, 110);
-            cmbClass.Size = new Size(430, 30);
+            cmbClass.Location = new Point(15, 188);
+            cmbClass.Size = new Size(200, 30);
             cmbClass.FlatStyle = FlatStyle.Flat;
             gbConfig.Controls.Add(cmbClass);
             
@@ -126,8 +180,8 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             cmbType.Items.Add("Type: X");
             cmbType.Items.Add("Type: V");
             cmbType.Items.Add("Type: H");
-            cmbType.Location = new Point(15, 165);
-            cmbType.Size = new Size(430, 30);
+            cmbType.Location = new Point(230, 188);
+            cmbType.Size = new Size(200, 30);
             cmbType.FlatStyle = FlatStyle.Flat;
             gbConfig.Controls.Add(cmbType);
 
@@ -156,7 +210,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             GroupBox gbGlobal = new GroupBox();
             gbGlobal.Name = "custom_gbGlobal";
             gbGlobal.Text = "Global Actions";
-            gbGlobal.Location = new Point(15, 270);
+            gbGlobal.Location = new Point(15, 320);
             gbGlobal.Size = new Size(460, 220);
             this.Controls.Add(gbGlobal);
 
@@ -264,7 +318,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             GroupBox gbSafety = new GroupBox();
             gbSafety.Name = "custom_gbSafety";
             gbSafety.Text = "Safety Notes";
-            gbSafety.Location = new Point(490, 435);
+            gbSafety.Location = new Point(490, 485);
             gbSafety.Size = new Size(600, 150);
             this.Controls.Add(gbSafety);
 
